@@ -7,6 +7,260 @@ interface HealthLog {
   date: string;
   bloodPressure: string;
   heartRate: number;
+  weight: number;
+  temperature: number;
+  mood: string;
+  sleepHours: number;
+  medications: string[];
+  meals: { type: string; items: string }[];
+  notes: string;
+}
+
+const mockLogs: HealthLog[] = [
+  {
+    date: 'Today',
+    bloodPressure: '120/80',
+    heartRate: 72,
+    weight: 75.2,
+    temperature: 98.6,
+    mood: 'Great',
+    sleepHours: 8,
+    medications: ['Lisinopril 10mg', 'Metformin 500mg'],
+    meals: [
+      { type: 'Breakfast', items: 'Oatmeal with berries, toast' },
+      { type: 'Lunch', items: 'Grilled chicken, rice, vegetables' },
+      { type: 'Dinner', items: 'Salmon, sweet potato, broccoli' },
+    ],
+    notes: 'Feeling well, no issues',
+  },
+  {
+    date: 'Yesterday',
+    bloodPressure: '118/78',
+    heartRate: 70,
+    weight: 75.0,
+    temperature: 98.6,
+    mood: 'Good',
+    sleepHours: 7.5,
+    medications: ['Lisinopril 10mg', 'Metformin 500mg'],
+    meals: [
+      { type: 'Breakfast', items: 'Toast with peanut butter' },
+      { type: 'Lunch', items: 'Salad with chicken' },
+      { type: 'Dinner', items: 'Pasta with light sauce' },
+    ],
+    notes: 'Slight headache in the afternoon',
+  },
+];
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
+
+export default function HealthPage() {
+  const [selectedLog, setSelectedLog] = useState<HealthLog | null>(mockLogs[0]);
+  const [expandedSection, setExpandedSection] = useState<string | null>('vitals');
+
+  const VitalCard = ({ label, value, unit, icon, color }: any) => (
+    <motion.div
+      whileHover={{ y: -4 }}
+      className={`bg-gradient-to-br ${color} rounded-xl p-6 text-white shadow-lg`}
+    >
+      <p className="text-sm opacity-90 mb-1">{label}</p>
+      <p className="text-3xl font-bold">{value}</p>
+      <p className="text-xs opacity-75 mt-1">{unit}</p>
+      <p className="text-2xl mt-4">{icon}</p>
+    </motion.div>
+  );
+
+  return (
+    <div className="max-w-6xl mx-auto">
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+          Health Logs
+        </h1>
+        <p className="text-gray-600">Track your weekly health metrics and wellness data</p>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Sidebar - Date Selection */}
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 border-b border-gray-200">
+              <h3 className="font-semibold text-gray-900">Select Date</h3>
+            </div>
+            <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
+              {mockLogs.map((log, idx) => (
+                <motion.button
+                  key={log.date}
+                  whileHover={{ x: 4 }}
+                  onClick={() => setSelectedLog(log)}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                    selectedLog?.date === log.date
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md'
+                      : 'hover:bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <p className="font-medium">{log.date}</p>
+                  <p className={`text-xs ${selectedLog?.date === log.date ? 'opacity-80' : 'text-gray-500'}`}>
+                    Mood: {log.mood}
+                  </p>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Main Content */}
+        {selectedLog && (
+          <motion.div
+            key={selectedLog.date}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="lg:col-span-2 space-y-6"
+          >
+            {/* Vital Signs */}
+            <motion.div
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            >
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'vitals' ? null : 'vitals')}
+                className="w-full flex items-center justify-between mb-4 hover:opacity-70 transition-opacity"
+              >
+                <h2 className="text-2xl font-bold text-gray-900">Vital Signs</h2>
+                <motion.span animate={{ rotate: expandedSection === 'vitals' ? 180 : 0 }}>
+                  ⌄
+                </motion.span>
+              </button>
+
+              {expandedSection === 'vitals' && (
+                <motion.div
+                  variants={container}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                >
+                  <VitalCard
+                    label="Blood Pressure"
+                    value={selectedLog.bloodPressure}
+                    unit="mmHg"
+                    icon="💓"
+                    color="from-blue-500 to-cyan-500"
+                  />
+                  <VitalCard
+                    label="Heart Rate"
+                    value={selectedLog.heartRate}
+                    unit="bpm"
+                    icon="❤️"
+                    color="from-red-500 to-pink-500"
+                  />
+                  <VitalCard
+                    label="Weight"
+                    value={selectedLog.weight}
+                    unit="kg"
+                    icon="⚖️"
+                    color="from-yellow-500 to-orange-500"
+                  />
+                  <VitalCard
+                    label="Temperature"
+                    value={selectedLog.temperature}
+                    unit="°F"
+                    icon="🌡️"
+                    color="from-purple-500 to-pink-500"
+                  />
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Wellness Data */}
+            <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
+              {/* Mood & Sleep */}
+              <motion.div variants={item} className="grid grid-cols-2 gap-4">
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 shadow-sm">
+                  <p className="text-sm text-amber-700 mb-2">Mood</p>
+                  <p className="text-3xl font-bold text-amber-900">{selectedLog.mood} 😊</p>
+                </div>
+                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6 shadow-sm">
+                  <p className="text-sm text-indigo-700 mb-2">Sleep Duration</p>
+                  <p className="text-3xl font-bold text-indigo-900">{selectedLog.sleepHours}h</p>
+                </div>
+              </motion.div>
+
+              {/* Medications */}
+              <motion.div
+                variants={item}
+                className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+              >
+                <h3 className="font-bold text-gray-900 mb-4">Medications Taken</h3>
+                <div className="space-y-2">
+                  {selectedLog.medications.map((med) => (
+                    <motion.div
+                      key={med}
+                      whileHover={{ x: 4 }}
+                      className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100"
+                    >
+                      <span className="text-xl">💊</span>
+                      <span className="text-gray-900 font-medium">{med}</span>
+                      <span className="ml-auto text-green-600 font-semibold">✓</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Meals */}
+              <motion.div
+                variants={item}
+                className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+              >
+                <h3 className="font-bold text-gray-900 mb-4">Daily Meals</h3>
+                <div className="space-y-3">
+                  {selectedLog.meals.map((meal, idx) => (
+                    <motion.div
+                      key={idx}
+                      whileHover={{ x: 4 }}
+                      className="border-l-4 border-green-500 pl-4 py-2"
+                    >
+                      <p className="font-semibold text-gray-900">{meal.type}</p>
+                      <p className="text-gray-600 text-sm">{meal.items}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Notes */}
+              {selectedLog.notes && (
+                <motion.div
+                  variants={item}
+                  className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 shadow-sm"
+                >
+                  <h3 className="font-bold text-green-900 mb-2">Notes</h3>
+                  <p className="text-green-800">{selectedLog.notes}</p>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface HealthLog {
+  date: string;
+  bloodPressure: string;
+  heartRate: number;
   temperature: string;
   weight: string;
   mood: string;

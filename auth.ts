@@ -5,6 +5,7 @@ import { getUserByEmail } from '@/lib/users-db';
 import '@/lib/auth-types';
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET || 'dev-secret-key-change-in-production',
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -14,26 +15,31 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
+          return null;
         }
 
-        const user = getUserByEmail(credentials.email);
-        
-        if (!user) {
-          throw new Error('User not found');
-        }
+        try {
+          const user = getUserByEmail(credentials.email);
+          
+          if (!user) {
+            return null;
+          }
 
-        const isPasswordValid = await compare(credentials.password, user.password);
-        if (!isPasswordValid) {
-          throw new Error('Invalid password');
-        }
+          const isPasswordValid = await compare(credentials.password, user.password);
+          if (!isPasswordValid) {
+            return null;
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       },
     }),
   ],
@@ -45,7 +51,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role || 'family';
+        token.role = user.role;
       }
       return token;
     },

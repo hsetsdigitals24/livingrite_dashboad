@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  CLIENT
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String?    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          Role       @default(CLIENT)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Booking {
+  id                String   @id @default(cuid())
+  calendlyEventId   String   @unique
+  calendlyEventUri  String
+  
+  // Client Info
+  clientName        String
+  clientEmail       String
+  clientPhone       String?
+  clientTimezone    String
+  
+  // Intake Form
+  intakeFormData    Json?
+  
+  // Scheduling
+  scheduledAt       DateTime
+  duration          Int // minutes
+  status            BookingStatus @default(SCHEDULED)
+  
+  // Payment
+  requiresPayment   Boolean  @default(false)
+  paymentAmount     Float?
+  paymentStatus     PaymentStatus @default(PENDING)
+  paystackReference String?
+  invoiceNumber     String?
+  
+  // Follow-ups
+  confirmationSent  Boolean  @default(false)
+  reminderSent      Boolean  @default(false)
+  thankYouSent      Boolean  @default(false)
+  followUpSent      Boolean  @default(false)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  cancelledAt       DateTime?
+  rescheduledFrom   String?
+  
+  @@index([clientEmail])
+  @@index([scheduledAt])
+}
+
+enum BookingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}

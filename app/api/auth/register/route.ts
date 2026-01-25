@@ -1,51 +1,57 @@
-import { hash } from 'bcryptjs';
-import { NextRequest, NextResponse } from 'next/server';
-import { userExists, createUser } from '@/lib/users-db';
+import { NextRequest, NextResponse } from "next/server"
+import { hash } from "bcryptjs"
+import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  name: z.string().min(1),
+  role: z.enum(["ADMIN", "STAFF", "CLIENT"]).default("CLIENT"),
+})
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, name, role = 'family' } = await request.json();
+    const body = await request.json()
 
-    // Validate input
-    if (!email || !password || !name) {
-      return NextResponse.json(
-        { error: 'Email, password, and name are required' },
-        { status: 400 }
-      );
-    }
+    const { email, password, name, role } = registerSchema.parse(body)
 
-    // Check if user already exists
-    if (userExists(email)) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    })
+
+    if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists' },
+        { error: "User already exists" },
         { status: 409 }
-      );
+      )
     }
 
-    // Hash password
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await hash(password, 12)
 
-    // Create new user
-    const newUser = createUser(email, name, hashedPassword, role);
-
-    // Return success (don't return password)
-    return NextResponse.json(
-      {
-        message: 'User created successfully',
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          name: newUser.name,
-          role: newUser.role,
-        },
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+        role,
       },
-      { status: 201 }
-    );
+    })
+
+    const { password: _, ...userWithoutPassword } = user
+
+    return NextResponse.json(userWithoutPassword, { status: 201 })
   } catch (error) {
-    console.error('Registration error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid input", details: error.errors },
+        { status: 400 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Registration failed' },
+      { error: "Internal server error" },
       { status: 500 }
-    );
+    )
   }
 }

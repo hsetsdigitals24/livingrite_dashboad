@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import React from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
@@ -11,6 +12,7 @@ interface SignUpFormData {
   email: string
   password: string
   confirmPassword: string
+  invitationCode?: string
 }
 
 export default function SignUp() {
@@ -19,9 +21,21 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<SignUpFormData>()
+  const [requiresInvitation, setRequiresInvitation] = useState(false)
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<SignUpFormData>()
 
   const password = watch('password')
+
+  // Extract invitation code from URL params on mount
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code) {
+      setValue('invitationCode', code)
+      setRequiresInvitation(true)
+    }
+  }, [setValue])
 
   const onSubmit = async (data: SignUpFormData) => {
     if (data.password !== data.confirmPassword) {
@@ -40,7 +54,7 @@ export default function SignUp() {
           name: data.name,
           email: data.email,
           password: data.password,
-          role: 'CLIENT',
+          invitationCode: data.invitationCode,
         }),
       })
 
@@ -86,6 +100,22 @@ export default function SignUp() {
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Invitation Code Field - if required */}
+            {requiresInvitation && (
+              <div className="animate-scale-in" style={{ animationDelay: '0.05s' }}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Invitation Code
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  {...register('invitationCode')}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-500 mt-1">Your invitation code has been pre-filled</p>
+              </div>
+            )}
+
             {/* Name Field */}
             <div className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
               <label className="block text-sm font-medium text-gray-700 mb-2">

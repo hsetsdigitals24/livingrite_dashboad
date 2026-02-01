@@ -1,10 +1,11 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { Mail, Lock, ChevronRight, AlertCircle } from 'lucide-react'
 
 interface SignInFormData {
@@ -14,9 +15,30 @@ interface SignInFormData {
 
 export default function SignIn() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const { register, handleSubmit, formState: { errors } } = useForm<SignInFormData>()
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      router.push('/dashboard')
+    }
+  }, [status, session, router])
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  // Don't render if already authenticated
+  if (status === 'authenticated') {
+    return null
+  }
 
   const onSubmit = async (data: SignInFormData) => {
     setIsLoading(true)

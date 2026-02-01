@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, ChevronDown, Search, LogOut, User } from "lucide-react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  Search,
+  LogOut,
+  User,
+  User2,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import logo from "@/public/logo.png";
 import Image from "next/image";
@@ -18,6 +27,12 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+
+  // Hide header on admin dashboard routes
+  if (pathname.startsWith("/dashboard/admin")) {
+    return null;
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,7 +48,7 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "bg-white/95 backdrop-blur-sm border-b border-gray-200"
           : "bg-transparent"
@@ -55,7 +70,7 @@ export function Header() {
           <div className="hidden md:flex items-center gap-8">
             {/* Services Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-gray-700 hover:text-blue-600 transition-colors font-medium group">
+              <DropdownMenuTrigger className="flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium group">
                 Services
                 <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
               </DropdownMenuTrigger>
@@ -112,7 +127,7 @@ export function Header() {
 
             <Link
               href="/about"
-              className="relative text-gray-700 hover:text-blue-600 transition-colors font-medium group"
+              className="relative text-gray-700 hover:text-primary transition-colors font-medium group"
             >
               About
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
@@ -122,6 +137,13 @@ export function Header() {
               className="relative text-gray-700 hover:text-primary transition-colors font-medium group"
             >
               Testimonials
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+            </Link>
+            <Link
+              href="/booking"
+              className="relative text-gray-700 hover:text-primary transition-colors font-medium group"
+            >
+              Book Consultation
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link
@@ -154,23 +176,31 @@ export function Header() {
                 <Link href="/dashboard">
                   <Button
                     size="lg"
-                    className="font-semibold rounded-full bg-blue-600 hover:shadow-lg hover:shadow-blue-600/20 hover:scale-105 transition-all duration-300"
+                    className="font-semibold rounded-full bg-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
                   >
                     Dashboard
                   </Button>
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-cyan-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      {session.user.name?.charAt(0) ||
+                        session.user.email?.charAt(0) ||
+                        "U"}
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem disabled className="text-xs text-gray-500">
+                    <DropdownMenuItem
+                      disabled
+                      className="text-xs text-gray-500"
+                    >
                       {session.user.email}
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer flex items-center gap-2">
+                      <Link
+                        href="/dashboard"
+                        className="cursor-pointer flex items-center gap-2"
+                      >
                         <User className="w-4 h-4" />
                         Profile
                       </Link>
@@ -190,19 +220,15 @@ export function Header() {
                 <Link href="/booking">
                   <Button
                     size="lg"
-                    className="font-semibold rounded-full bg-blue-600 hover:shadow-lg hover:shadow-blue-600/20 hover:scale-105 transition-all duration-300"
+                    className="font-semibold rounded-full bg-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
                   >
-                    Book Free Consultation
+                    Book Consultation
                   </Button>
                 </Link>
                 <Link href="/auth/signin">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="rounded-full border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
-                  >
-                    Sign In
-                  </Button>
+                  {/* <span className="text-primary"> */}
+                    <User2 />
+                  {/* </span> */}
                 </Link>
               </>
             )}
@@ -344,7 +370,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block"
                   >
-                    <Button className="w-full rounded-full font-semibold bg-blue-600 hover:bg-blue-700">
+                    <Button className="w-full rounded-full font-semibold bg-primary hover:bg-primary/90">
                       Dashboard
                     </Button>
                   </Link>
@@ -366,8 +392,8 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block"
                   >
-                    <Button className="w-full rounded-full font-semibold bg-blue-600 hover:bg-blue-700">
-                      Book Free Consultation
+                    <Button className="w-full rounded-full font-semibold bg-primary hover:bg-primary/90">
+                      Book Consultation
                     </Button>
                   </Link>
                   <Link
@@ -377,7 +403,7 @@ export function Header() {
                   >
                     <Button
                       variant="outline"
-                      className="w-full rounded-full border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                      className="w-full rounded-full border-primary text-primary hover:bg-primary hover:text-white"
                     >
                       Sign In
                     </Button>

@@ -1,72 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
+import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
-import { generateInvoice } from '@/lib/invoice';
 
-// Singleton PrismaClient to avoid connection issues in serverless
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+const prisma = new PrismaClient();
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
+export const dynamic = 'force-dynamic';
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
-
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { reference, bookingId } = body;
+    const reference = req.nextUrl.searchParams.get('reference');
 
-    // Basic validation
-    if (!reference || typeof reference !== 'string' || !bookingId || typeof bookingId !== 'string') {
-      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+    if (!reference) {
+      return NextResponse.json(
+        { error: 'No reference provided' },
+        { status: 400 }
+      );
     }
 
-    // Verify payment with Paystack
-    const response = await fetch(
+    const response = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${PAYSTACK_SECRET}`,
         },
       }
     );
 
-    if (!response.ok) {
-      throw new Error('Paystack API request failed');
-    }
+    const { status, data } = response.data;
 
-    const data = await response.json();
+    if (status && data.status === 'success') {
+      const { bookingId } = data.metadata;
 
-    if (!data.data || data.data.status !== 'success') {
-      return NextResponse.json({ success: false }, { status: 400 });
-    }
-
-    // Use transaction for atomic updates
-    const result = await prisma.$transaction(async (tx) => {
-      // Update booking with payment details
-      const booking = await tx.booking.update({
+      // Update booking as paid
+      const booking = await prisma.booking.update({
         where: { id: bookingId },
         data: {
           paymentStatus: 'PAID',
+          paymentReference: reference,
           paystackReference: reference,
         },
       });
 
-      // Generate invoice
-      const invoiceNumber = await generateInvoice(booking);
-
-      // Update with invoice number
-      await tx.booking.update({
-        where: { id: bookingId },
-        data: { invoiceNumber },
-      });
-
-      return { invoiceNumber };
-    });
-
-    return NextResponse.json({ success: true, invoiceNumber: result.invoiceNumber });
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/booking/schedule?reference=${reference}`
+      );
+    } else {
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/payments/failed`
+      );
+    }
   } catch (error) {
     console.error('Payment verification error:', error);
-    return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/payments/failed`
+    );
   }
 }

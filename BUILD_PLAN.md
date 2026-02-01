@@ -93,11 +93,11 @@ Business and support staff.
 ### 4.1 Smart Booking System
 
 **Functional Requirements**
-- Embedded Calendly consultation scheduler
+- Embedded Cal.com consultation scheduler
 - Real-time availability display
 - Automatic time zone detection
 - Pre-consultation intake form
-- Reschedule/cancel via Calendly
+- Reschedule/cancel via Cal.com
 - Paid booking using Paystack
 - Google Calendar & Outlook sync
 

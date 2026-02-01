@@ -204,3 +204,6 @@
     animation: fadeInScale 0.5s ease-out;
   }
 }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

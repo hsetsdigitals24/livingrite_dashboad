@@ -1,53 +1,72 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-enum Role {
-  ADMIN
-  STAFF
-  CLIENT
-}
-
 model User {
-  id            String     @id @default(cuid())
-  name          String?
-  email         String?    @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  role          Role       @default(CLIENT)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  accounts      Account[]
-  sessions      Session[]
+  id                    String    @id @default(cuid())
+  name                  String?
+  email                 String?   @unique
+  emailVerified         DateTime?
+  password              String?
+  image                 String? 
+  role                  Role      @default(CLIENT)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  accounts              Account[]
+  sessions              Session[]
+  vitals                Vitals[]
+  userProfile           UserProfile?
+  dailyLogs             DailyLog[]
+  labResults            LabResults[]
+  medicalAppointments   MedicalAppointment[]
 
   @@map("users")
 }
 
-model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+model VerificationCode {
+  id                    String    @id @default(cuid())
+  code                  String
+  used                  Boolean    @default(false) 
+}
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model UserProfile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  name                  String?
+  age                   Int?
+  biologicalGender      String?
+  heightCm              Float?
+  weightKg              Float?
+  timezone              String?
+  medicalConditions     String[]
+  medications           Json?     // Array of {name, dosage, frequency}
+  primaryCaregiverProvider String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -73,52 +92,338 @@ model VerificationToken {
 }
 
 model Booking {
-  id                String   @id @default(cuid())
-  calendlyEventId   String   @unique
-  calendlyEventUri  String
-  
-  // Client Info
+  id                String        @id @default(cuid())
+  calcomId          String        @unique
+  meetingUri        String?
   clientName        String
   clientEmail       String
   clientPhone       String?
   clientTimezone    String
-  
-  // Intake Form
-  intakeFormData    Json?
-  
-  // Scheduling
+  eventTitle        String?
+  note             String?
   scheduledAt       DateTime
-  duration          Int // minutes
-  status            BookingStatus @default(SCHEDULED)
-  
-  // Payment
-  requiresPayment   Boolean  @default(false)
+  duration          Int
+  status            String    @default("PENDING")  // PENDING, CONFIRMED, PAID, CANCELLED, RESCHEDULED, COMPLETED
+  intakeFormData    Json?
+  paymentReference  String?   @unique
   paymentAmount     Float?
   paymentStatus     PaymentStatus @default(PENDING)
   paystackReference String?
   invoiceNumber     String?
-  
-  // Follow-ups
-  confirmationSent  Boolean  @default(false)
-  reminderSent      Boolean  @default(false)
-  thankYouSent      Boolean  @default(false)
-  followUpSent      Boolean  @default(false)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  confirmationSent  Boolean       @default(false)
+  reminderSent      Boolean       @default(false)
+  thankYouSent      Boolean       @default(false)
+  followUpSent      Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   cancelledAt       DateTime?
   rescheduledFrom   String?
-  
+
   @@index([clientEmail])
   @@index([scheduledAt])
 }
 
-enum BookingStatus {
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-  RESCHEDULED
-  NO_SHOW
+model Vitals {
+  id            String    @id @default(cuid())
+  userId        String
+  temperature   Float
+  bloodPressure String
+  heartRate     Int
+  recordedAt    DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([recordedAt])
+  @@map("vitals")
+}
+
+model DailyLog {
+  id                    String    @id @default(cuid())
+  userId                String
+  date                  DateTime
+  sleepData             SleepLog?
+  morningVitals         MorningVitals?
+  eveningVitals         EveningVitals?
+  physicalActivity      PhysicalActivity?
+  nutritionData         Nutrition?
+  mentalHealthData      MentalHealth?
+  cognitivePerformance  CognitivePerformance?
+  environmentalExposure EnvironmentalExposure?
+  womenHealth           WomenHealth?
+  glucoseMonitoring     GlucoseMonitoring?
+  medicationAdherence   Json?
+  hygieneSelfcare       Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+  @@map("daily_logs")
+}
+
+model SleepLog {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  bedtime               DateTime
+  wakeTime              DateTime
+  totalSleepMinutes     Int
+  awakeMinutes          Int?
+  lightSleepMinutes     Int?
+  deepSleepMinutes      Int?
+  remSleepMinutes       Int?
+  sleepScore            Int?
+  interruptions         Int?
+  avgHeartRateDuringSleep Float?
+  lowestHeartRate       Int?
+  highestHeartRate      Int?
+  respiratoryRateAvg    Float?
+  bloodOxygenAvg        Float?
+  roomTemperature       Float?
+  noiseLevel            String?
+  lightExposure         String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("sleep_logs")
+}
+
+model MorningVitals {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  timestamp             DateTime
+  systolic              Int
+  diastolic             Int
+  pulse                 Int
+  temperatureCelsius    Float
+  weightKg              Float?
+  restingHeartRate      Int?
+  heartRateVariability  Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("morning_vitals")
+}
+
+model EveningVitals {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  timestamp             DateTime
+  systolic              Int
+  diastolic             Int
+  pulse                 Int
+  temperatureCelsius    Float
+  weightKg              Float?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("evening_vitals")
+}
+
+model PhysicalActivity {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  steps                 Int?
+  distanceKm            Float?
+  activeMinutes         Int?
+  caloriesBurned        Float?
+  floorsClimbed         Int?
+  sedentaryMinutes      Int?
+  standingMinutes       Int?
+  workouts              Workout[]
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("physical_activities")
+}
+
+model Workout {
+  id                    String    @id @default(cuid())
+  physicalActivityId    String
+  type                  String
+  startTime             DateTime
+  durationMinutes       Int
+  distanceKm            Float?
+  calories              Float?
+  avgHeartRate          Int?
+  maxHeartRate          Int?
+  cadenceAvg            Int?
+  elevationGainM        Int?
+  perceivedExertion     Int?
+  notes                 String?
+  zone1Minutes          Int?
+  zone2Minutes          Int?
+  zone3Minutes          Int?
+  zone4Minutes          Int?
+  zone5Minutes          Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  physicalActivity      PhysicalActivity @relation(fields: [physicalActivityId], references: [id], onDelete: Cascade)
+
+  @@map("workouts")
+}
+
+model Nutrition {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  totalCalories         Float
+  totalProteinG         Float
+  totalCarbsG           Float
+  totalFatG             Float
+  totalFiberG           Float
+  totalSugarG           Float
+  totalSodiumMg         Int?
+  totalWaterMl          Float?
+  meals                 Meal[]
+  supplements           Json?     // Array of {name, dosage, time}
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("nutrition")
+}
+
+model Meal {
+  id                    String    @id @default(cuid())
+  nutritionId           String
+  mealType              String    // breakfast, lunch, dinner, snack
+  mealTime              DateTime
+  foods                 Json      // Array of {name, calories, macros, micronutrients}
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  nutrition             Nutrition @relation(fields: [nutritionId], references: [id], onDelete: Cascade)
+
+  @@map("meals")
+}
+
+model MentalHealth {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  moodRatings           Json      // Array of {time, overall_mood, energy_level, stress_level, anxiety_level, notes}
+  meditationSessions    Int?
+  meditationTotalMin    Int?
+  meditationType        String?
+  meditationTime        DateTime?
+  gratitudeJournal      String[]
+  qualityTimeSocialMin  Int?
+  meaningfulConversations Int?
+  socialEnergyLevel     Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("mental_health")
+}
+
+model CognitivePerformance {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  focusSessions         Json?     // Array of {start_time, duration_minutes, task_type, productivity_rating, interruptions}
+  brainTrainingCompleted Boolean?
+  gamesPlayed           Json?     // Array of game names
+  averageScore          Int?
+  reactionTimeMs        Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("cognitive_performance")
+}
+
+model EnvironmentalExposure {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  totalScreenMinutes    Int?
+  workScreenMinutes     Int?
+  leisureScreenMinutes  Int?
+  blueLightEveningExposure String?
+  outdoorTimeMinutes    Int?
+  sunlightExposureMin   Int?
+  airQualityIndex       Int?
+  uvExposureIndex       Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("environmental_exposure")
+}
+
+model WomenHealth {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  menstrualCycleDay     Int?
+  cyclePhase            String?
+  symptoms              Json?     // Array of symptom strings
+  basalBodyTemperature  Float?
+  cervicalMucus         String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("women_health")
+}
+
+model GlucoseMonitoring {
+  id                    String    @id @default(cuid())
+  dailyLogId            String    @unique
+  fastingGlucoseMgDl    Int?
+  averageGlucoseMgDl    Int?
+  timeInRangePercent    Int?
+  postMealReadings      Json?     // Array of {time, reading_mg_dl, meal_context}
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  dailyLog              DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@map("glucose_monitoring")
+}
+
+model MedicalAppointment {
+  id                    String    @id @default(cuid())
+  userId                String
+  date                  DateTime
+  provider              String
+  reason                String
+  pulse                 Int?
+  systolic              Int?
+  diastolic             Int?
+  weightKg              Float?
+  temperatureCelsius    Float?
+  labOrders             Json?     // Array of lab test names
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@map("medical_appointments")
+}
+
+model LabResults {
+  id                    String    @id @default(cuid())
+  userId                String
+  date                  DateTime
+  testResults           Json      // Array of {name, value, unit, reference_range, status}
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@map("lab_results")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  CLIENT
 }
 
 enum PaymentStatus {

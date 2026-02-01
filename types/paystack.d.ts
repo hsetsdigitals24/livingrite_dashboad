@@ -1,4 +1,4 @@
-// filepath: /home/victor-olorunda/Documents/WORKSPACE/hsets/livingrite_portal/types/paystack.d.ts
+
 declare module '@paystack/inline-js' {
   export default class PaystackPop {
     newTransaction(options: {
@@ -8,6 +8,8 @@ declare module '@paystack/inline-js' {
       currency: string;
       reference: string;
       metadata?: {
+        bookingId: string | number;
+        clientName: string;
         custom_fields?: {
           display_name: string;
           variable_name: string;

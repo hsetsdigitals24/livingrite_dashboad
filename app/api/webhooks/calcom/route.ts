@@ -1,0 +1,291 @@
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { sendConfirmationEmail } from "@/lib/email";
+
+const prisma = new PrismaClient();
+
+// Verify Cal.com webhook signature (optional but recommended)
+function verifyCalcomWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string,
+): boolean {
+  const crypto = require("crypto");
+  const hash = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("hex");
+  return hash === signature;
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    // const signature = req.headers.get('x-cal-signature');
+    // const webhookSecret = process.env.CALCOM_WEBHOOK_SECRET;
+
+    // Optionally verify webhook signature
+    // if (webhookSecret && signature) {
+    //   const rawBody = await req.text();
+    //   if (!verifyCalcomWebhookSignature(rawBody, signature, webhookSecret)) {
+    //     console.warn('Invalid Cal.com webhook signature');
+    //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    //   }
+    // }
+
+    const { triggerEvent, payload } = body;
+
+    console.log("Cal.com webhook event:", triggerEvent);
+    console.log("Cal.com webhook payload:", JSON.stringify(payload, null, 2));
+
+    // Extract booking data from Cal.com payload
+    const {
+      uid,
+      title,
+      description,
+      additionalNotes,
+      startTime,
+      endTime,
+      attendees,
+      organizer,
+      metadata,
+      customInputs,
+      rescheduleUrl,
+      cancellationUrl,
+    } = payload;
+
+    const attendeeEmail = attendees?.[0]?.email || attendees?.[0] || null;
+    const attendeeName = attendees?.[0]?.name || null;
+    const attendeeTimeZone = attendees?.[0]?.timeZone || null;
+    const note = additionalNotes || description || null;
+
+    // Route events
+    switch (triggerEvent) {
+      case "BOOKING_CREATED":
+        await handleBookingCreated({
+          uid,
+          title,
+          note,
+          startTime,
+          endTime,
+          attendeeEmail,
+          attendeeName,
+          metadata,
+          attendeeTimeZone,
+          customInputs,
+          rescheduleUrl,
+          cancellationUrl,
+        });
+        break;
+
+      case "BOOKING_CANCELLED":
+        await handleBookingCancelled({ uid, payload });
+        break;
+
+      case "BOOKING_RESCHEDULED":
+        await handleBookingRescheduled({
+          uid,
+          startTime,
+          endTime,
+          payload,
+        });
+        break;
+
+      case "BOOKING_COMPLETED":
+        await handleBookingCompleted({ uid });
+        break;
+
+      default:
+        console.log("Unhandled Cal.com event:", triggerEvent);
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Cal.com webhook error:", error);
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleBookingCreated(data: any) {
+  const {
+    uid,
+    title,
+    note,
+    startTime,
+    endTime,
+    attendeeEmail,
+    attendeeName,
+    attendeeTimeZone,
+    metadata,
+    customInputs,
+    rescheduleUrl,
+    cancellationUrl,
+  } = data;
+
+  if (!uid || !attendeeEmail) {
+    console.warn("Cal.com booking missing uid or attendeeEmail, skipping");
+    return;
+  }
+
+  const scheduledAt = new Date(startTime);
+  const endDate = new Date(endTime);
+  const duration = (endDate.getTime() - scheduledAt.getTime()) / 60000; // minutes
+
+  try {
+    const booking = await prisma.booking.upsert({
+      where: { calcomId: uid },
+      update: {
+        clientName: attendeeName || "",
+        clientEmail: attendeeEmail || "",
+        clientTimezone: attendeeTimeZone || "",
+        eventTitle: title || "",
+        meetingUri: metadata.videoCallUrl || "",
+        note: note || "",
+        scheduledAt,
+        duration,
+        intakeFormData: customInputs || {},
+        status: "SCHEDULED",
+        // calcomUri: rescheduleUrl || cancellationUrl || "",
+      },
+      create: {
+        calcomId: uid,
+        clientName: attendeeName || "",
+        clientEmail: attendeeEmail || "",
+        clientTimezone: attendeeTimeZone || "",
+        eventTitle: title || "",
+        meetingUri: metadata.videoCallUrl || "",
+        note: note || "",
+        scheduledAt,
+        duration,
+        intakeFormData: customInputs || {},
+        status: "SCHEDULED",
+        // calcomUri: rescheduleUrl || cancellationUrl || "",
+      },
+    });
+
+    // Send confirmation email
+    try {
+      const info = await sendConfirmationEmail(booking);
+      if (info.messageId) {
+        await prisma.booking.update({
+          where: { id: booking.id },
+          data: { confirmationSent: true },
+        });
+        console.log(
+          "✓ Confirmation email sent for booking:",
+          booking.id,
+          info.messageId,
+        );
+      }
+    } catch (emailError) {
+      console.error("✗ Failed to send confirmation email:", emailError);
+    }
+
+    console.log(
+      "✓ Created/updated booking from Cal.com:",
+      booking.id,
+      "(calcomId:",
+      uid,
+      ")",
+    );
+  } catch (error) {
+    console.error("Error creating booking from Cal.com:", error);
+    throw error;
+  }
+}
+
+async function handleBookingCancelled(data: any) {
+  const { uid, payload } = data;
+
+  if (!uid) {
+    console.warn("Cal.com cancellation missing uid, skipping");
+    return;
+  }
+
+  try {
+    const updated = await prisma.booking.updateMany({
+      where: { calcomId: uid },
+      data: {
+        status: "CANCELLED",
+        cancelledAt: new Date(),
+      },
+    });
+
+    console.log(
+      "✓ Cancelled booking(s):",
+      updated.count,
+      "(calcomId:",
+      uid,
+      ")",
+    );
+  } catch (error) {
+    console.error("Error cancelling booking:", error);
+    throw error;
+  }
+}
+
+async function handleBookingRescheduled(data: any) {
+  const { uid, startTime, endTime, payload } = data;
+
+  if (!uid) {
+    console.warn("Cal.com reschedule missing uid, skipping");
+    return;
+  }
+
+  try {
+    const scheduledAt = new Date(startTime);
+    const endDate = new Date(endTime);
+    const duration = (endDate.getTime() - scheduledAt.getTime()) / 60000; // minutes
+
+    const updated = await prisma.booking.updateMany({
+      where: { calcomId: uid },
+      data: {
+        scheduledAt,
+        duration,
+        status: "RESCHEDULED",
+        rescheduledFrom: uid,
+      },
+    });
+
+    console.log(
+      "✓ Rescheduled booking(s):",
+      updated.count,
+      "(calcomId:",
+      uid,
+      ")",
+    );
+  } catch (error) {
+    console.error("Error rescheduling booking:", error);
+    throw error;
+  }
+}
+
+async function handleBookingCompleted(data: any) {
+  const { uid } = data;
+
+  if (!uid) {
+    console.warn("Cal.com completion missing uid, skipping");
+    return;
+  }
+
+  try {
+    const updated = await prisma.booking.updateMany({
+      where: { calcomId: uid },
+      data: { status: "COMPLETED" },
+    });
+
+    console.log(
+      "✓ Completed booking(s):",
+      updated.count,
+      "(calcomId:",
+      uid,
+      ")",
+    );
+  } catch (error) {
+    console.error("Error completing booking:", error);
+    throw error;
+  }
+}

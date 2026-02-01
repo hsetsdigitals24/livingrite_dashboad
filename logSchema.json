@@ -1,0 +1,365 @@
+{
+  "user_profile": {
+    "name": "Sarah Martinez",
+    "age": 34,
+    "biological_gender": "female",
+    "height_cm": 168,
+    "weight_kg": 64.5,
+    "timezone": "America/New_York",
+    "medical_conditions": ["hypothyroidism", "seasonal allergies"],
+    "primary_caregiver": "Dr. Sarah Johnson - Endocrinology"
+  },
+  
+  "daily_logs": [
+    {
+      "date": "2026-01-31",
+      
+      "vital_signs": {
+        "morning": {
+          "timestamp": "2026-01-31T07:30:00Z",
+          "blood_pressure": {
+            "systolic": 118,
+            "diastolic": 76,
+            "pulse": 62
+          },
+          "temperature_celsius": 36.6,
+          "weight_kg": 64.5,
+          "heart_rate": 61
+        },
+        "evening": {
+          "timestamp": "2026-01-31T21:00:00Z",
+          "blood_pressure": {
+            "systolic": 122,
+            "diastolic": 78,
+            "pulse": 68
+          },
+          "temperature_celsius": 36.8,
+          "weight_kg": 65.1
+        }
+      },
+      
+      "nutrition": {
+        "meals": [
+          {
+            "meal_type": "breakfast",
+            "time": "2026-01-31T08:00:00Z",
+            "foods": [
+              {
+                "name": "Oatmeal with berries and almonds",
+                "calories": 320,
+                "macros": {
+                  "protein_g": 12,
+                  "carbs_g": 48,
+                  "fat_g": 10,
+                  "fiber_g": 8
+                }
+              },
+              {
+                "name": "Green tea",
+                "calories": 2,
+                "caffeine_mg": 35
+              }
+            ]
+          },
+          {
+            "meal_type": "lunch",
+            "time": "2026-01-31T12:30:00Z",
+            "foods": [
+              {
+                "name": "Grilled chicken salad",
+                "calories": 425,
+                "macros": {
+                  "protein_g": 38,
+                  "carbs_g": 22,
+                  "fat_g": 18,
+                  "fiber_g": 6
+                }
+              },
+              {
+                "name": "Whole grain roll",
+                "calories": 110,
+                "macros": {
+                  "protein_g": 4,
+                  "carbs_g": 22,
+                  "fat_g": 1,
+                  "fiber_g": 3
+                }
+              }
+            ]
+          },
+          {
+            "meal_type": "snack",
+            "time": "2026-01-31T15:30:00Z",
+            "foods": [
+              {
+                "name": "Apple with peanut butter",
+                "calories": 195,
+                "macros": {
+                  "protein_g": 4,
+                  "carbs_g": 28,
+                  "fat_g": 8,
+                  "fiber_g": 5
+                }
+              }
+            ]
+          },
+          {
+            "meal_type": "dinner",
+            "time": "2026-01-31T18:45:00Z",
+            "foods": [
+              {
+                "name": "Baked salmon with quinoa and roasted vegetables",
+                "calories": 580,
+                "macros": {
+                  "protein_g": 42,
+                  "carbs_g": 48,
+                  "fat_g": 22,
+                  "fiber_g": 9
+                }
+              }
+            ]
+          }
+        ],
+        "daily_totals": {
+          "calories": 1832,
+          "protein_g": 100,
+          "carbs_g": 168,
+          "fat_g": 59,
+          "fiber_g": 31,
+          "sugar_g": 42,
+          "sodium_mg": 1850,
+          "water_ml": 2400
+        }
+      }
+    },
+    {
+      "date": "2026-01-30",
+      
+      "vital_signs": {
+        "morning": {
+          "timestamp": "2026-01-30T07:45:00Z",
+          "blood_pressure": {
+            "systolic": 116,
+            "diastolic": 74,
+            "pulse": 60
+          },
+          "temperature_celsius": 36.5,
+          "weight_kg": 64.7,
+          "heart_rate": 62
+        }
+      },
+      
+      "nutrition": {
+        "meals": [
+          {
+            "meal_type": "breakfast",
+            "time": "2026-01-30T08:15:00Z",
+            "foods": [
+              {
+                "name": "Greek yogurt with granola and honey",
+                "calories": 285,
+                "macros": {
+                  "protein_g": 18,
+                  "carbs_g": 42,
+                  "fat_g": 6,
+                  "fiber_g": 4
+                }
+              }
+            ]
+          },
+          {
+            "meal_type": "lunch",
+            "time": "2026-01-30T13:00:00Z",
+            "foods": [
+              {
+                "name": "Turkey sandwich with avocado",
+                "calories": 465,
+                "macros": {
+                  "protein_g": 32,
+                  "carbs_g": 38,
+                  "fat_g": 18,
+                  "fiber_g": 8
+                }
+              }
+            ]
+          },
+          {
+            "meal_type": "dinner",
+            "time": "2026-01-30T19:00:00Z",
+            "foods": [
+              {
+                "name": "Chicken stir-fry with brown rice",
+                "calories": 520,
+                "macros": {
+                  "protein_g": 36,
+                  "carbs_g": 58,
+                  "fat_g": 14,
+                  "fiber_g": 6
+                }
+              }
+            ]
+          }
+        ],
+        "daily_totals": {
+          "calories": 1745,
+          "protein_g": 94,
+          "carbs_g": 152,
+          "fat_g": 48,
+          "fiber_g": 26,
+          "sugar_g": 38,
+          "sodium_mg": 1720,
+          "water_ml": 2200
+        }
+      }
+    }
+  ],
+  
+  "medical_appointments": [
+    {
+      "date": "2026-01-15",
+      "provider": "Dr. Sarah Johnson - Endocrinology",
+      "reason": "Thyroid follow-up",
+      "vitals_taken": {
+        "blood_pressure": "116/74",
+        "weight_kg": 65.2,
+        "temperature_celsius": 36.7,
+        "pulse": 64
+      },
+      "lab_orders": ["TSH", "Free T4"],
+      "notes": "Continue current medication, recheck in 3 months"
+    },
+    {
+      "date": "2025-10-12",
+      "provider": "Dr. Michael Chen - Primary Care",
+      "reason": "Annual physical",
+      "vitals_taken": {
+        "blood_pressure": "118/76",
+        "weight_kg": 65.8,
+        "temperature_celsius": 36.6,
+        "pulse": 62
+      },
+      "lab_orders": ["Complete blood count", "Comprehensive metabolic panel", "Lipid panel", "HbA1c", "Vitamin D"],
+      "notes": "Overall good health, continue current management plan"
+    }
+  ],
+  
+  "lab_results": [
+    {
+      "date": "2026-01-20",
+      "ordered_by": "Dr. Sarah Johnson - Endocrinology",
+      "tests": [
+        {
+          "name": "TSH",
+          "value": 2.1,
+          "unit": "mIU/L",
+          "reference_range": "0.4-4.0",
+          "status": "normal"
+        },
+        {
+          "name": "Free T4",
+          "value": 1.3,
+          "unit": "ng/dL",
+          "reference_range": "0.8-1.8",
+          "status": "normal"
+        }
+      ]
+    },
+    {
+      "date": "2025-10-18",
+      "ordered_by": "Dr. Michael Chen - Primary Care",
+      "tests": [
+        {
+          "name": "Complete Blood Count - WBC",
+          "value": 6.8,
+          "unit": "10^3/uL",
+          "reference_range": "4.5-11.0",
+          "status": "normal"
+        },
+        {
+          "name": "Complete Blood Count - Hemoglobin",
+          "value": 13.5,
+          "unit": "g/dL",
+          "reference_range": "12.0-16.0",
+          "status": "normal"
+        },
+        {
+          "name": "Complete Blood Count - Platelets",
+          "value": 245,
+          "unit": "10^3/uL",
+          "reference_range": "150-400",
+          "status": "normal"
+        },
+        {
+          "name": "Glucose - Fasting",
+          "value": 92,
+          "unit": "mg/dL",
+          "reference_range": "70-100",
+          "status": "normal"
+        },
+        {
+          "name": "HbA1c",
+          "value": 5.2,
+          "unit": "%",
+          "reference_range": "<5.7",
+          "status": "normal"
+        },
+        {
+          "name": "Total Cholesterol",
+          "value": 185,
+          "unit": "mg/dL",
+          "reference_range": "<200",
+          "status": "normal"
+        },
+        {
+          "name": "LDL Cholesterol",
+          "value": 108,
+          "unit": "mg/dL",
+          "reference_range": "<100",
+          "status": "borderline_high"
+        },
+        {
+          "name": "HDL Cholesterol",
+          "value": 62,
+          "unit": "mg/dL",
+          "reference_range": ">40",
+          "status": "normal"
+        },
+        {
+          "name": "Triglycerides",
+          "value": 75,
+          "unit": "mg/dL",
+          "reference_range": "<150",
+          "status": "normal"
+        },
+        {
+          "name": "Vitamin D",
+          "value": 42,
+          "unit": "ng/mL",
+          "reference_range": "30-100",
+          "status": "normal"
+        },
+        {
+          "name": "Creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "reference_range": "0.6-1.2",
+          "status": "normal"
+        },
+        {
+          "name": "ALT",
+          "value": 22,
+          "unit": "U/L",
+          "reference_range": "7-56",
+          "status": "normal"
+        },
+        {
+          "name": "AST",
+          "value": 24,
+          "unit": "U/L",
+          "reference_range": "10-40",
+          "status": "normal"
+        }
+      ]
+    }
+  ]
+}

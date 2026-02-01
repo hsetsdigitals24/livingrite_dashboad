@@ -3,48 +3,60 @@
 import { useState } from 'react';
 
 export default function ManageBooking() {
-  const [eventUri, setEventUri] = useState('');
-
-  const handleReschedule = () => {
-    window.location.href = `${eventUri}/reschedule`;
-  };
+  const [bookingId, setBookingId] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleCancel = async () => {
-    if (!confirm('Are you sure you want to cancel?')) return;
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
 
-    const eventId = eventUri.split('/').pop();
-    await fetch(`/api/bookings/${eventId}/cancel`, {
-      method: 'POST',
-    });
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
+        method: 'POST',
+      });
 
-    alert('Booking cancelled successfully');
+      if (response.ok) {
+        alert('Booking cancelled successfully');
+        setBookingId('');
+      } else {
+        alert('Failed to cancel booking');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Your Booking</h1>
       
-      <input
-        type="text"
-        placeholder="Paste your Calendly event link"
-        value={eventUri}
-        onChange={(e) => setEventUri(e.target.value)}
-        className="w-full p-3 border rounded mb-4"
-      />
+      <div className="bg-white rounded-lg shadow p-6">
+        <p className="text-gray-600 mb-4">
+          To reschedule or cancel your consultation, please enter your booking ID or contact our support team.
+        </p>
+        
+        <input
+          type="text"
+          placeholder="Enter your booking ID"
+          value={bookingId}
+          onChange={(e) => setBookingId(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
 
-      <div className="flex gap-4">
-        <button
-          onClick={handleReschedule}
-          className="flex-1 bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
-        >
-          Reschedule
-        </button>
         <button
           onClick={handleCancel}
-          className="flex-1 bg-red-600 text-white py-3 rounded hover:bg-red-700"
+          disabled={!bookingId || loading}
+          className="w-full bg-red-600 text-white py-3 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Cancel
+          {loading ? 'Processing...' : 'Cancel Booking'}
         </button>
+
+        <p className="text-sm text-gray-500 mt-4">
+          For rescheduling, please contact our team directly or use the Cal.com link provided in your confirmation email.
+        </p>
       </div>
     </div>
   );

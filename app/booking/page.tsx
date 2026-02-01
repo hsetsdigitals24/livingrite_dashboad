@@ -1,62 +1,30 @@
-'use client';
+"use client";
+/* First make sure that you have installed the package */
 
-import { useEffect, useState } from 'react';
-import { InlineWidget } from 'react-calendly';
+/* If you are using yarn */
+// yarn add @calcom/embed-react
 
-export default function BookingPage() {
-  const [timezone, setTimezone] = useState('');
-
+/* If you are using npm */
+// npm install @calcom/embed-react
+  
+import Cal, { getCalApi } from "@calcom/embed-react";
+import { useEffect } from "react";
+export default function MyApp() {
   useEffect(() => {
-    // Auto-detect timezone
-    setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  }, []);
-
-  const handleEventScheduled = (e: any) => {
-    // Redirect to payment if needed
-    const { uri } = e.data.payload;
-    const eventId = uri.split('/').pop();
-    window.location.href = `/booking/payment?event=${eventId}`;
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Schedule Your Consultation</h1>
-      
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <InlineWidget
-          url="https://calendly.com/your-username/consultation"
-          prefill={{
-            customAnswers: {
-              a1: timezone, // Pass timezone to custom question
-            },
-          }}
-          utm={{
-            utmSource: 'website',
-            utmMedium: 'booking_page',
-          }}
-          pageSettings={{
-            hideEventTypeDetails: false,
-            hideLandingPageDetails: false,
-          }}
-          styles={{
-            height: '700px',
-          }}
-        />
-      </div>
-      
-      <script
-        type="text/javascript"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.addEventListener('message', function(e) {
-              if (e.data.event === 'calendly.event_scheduled') {
-                window.location.href = '/booking/payment?event=' + 
-                  e.data.payload.event.uri.split('/').pop();
-              }
-            });
-          `,
-        }}
-      />
-    </div>
-  );
-}
+    (async function () {
+      const cal = await getCalApi({"namespace":"30min"});
+      cal("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#00adef"},"dark":{"cal-brand":"#00EFB9"}},"hideEventTypeDetails":false,"layout":"month_view"});
+    })();
+  }, [])
+  return <div className="flex w-full h-screen flex-col justify-center items-center"> 
+  {/* <h1 className="font-bold">Schedule Your Appointment</h1> */}
+  <Cal namespace="30min" 
+  // title="Schedule Your Appointment"
+    calLink="circle-of-three-technologies-obtkkx/30min"
+    style={{width:"100%",height:"100%",overflow:"scroll"}}
+    config={{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}}    
+  />
+  
+  </div>
+};
+  

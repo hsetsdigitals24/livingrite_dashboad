@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/poppins": "^5.2.7",
     "@hookform/resolvers": "^3.3.4",
@@ -30,22 +31,22 @@
     "lucide-react": "^0.356.0",
     "next": "^14.2.0",
     "next-auth": "^4.24.7",
+    "nodemailer": "^7.0.13",
     "pdfkit": "^0.17.2",
     "postcss": "^8.5.6",
     "prisma": "5.22.0",
     "react": "^18.3.0",
-    "react-calendly": "^4.4.0",
     "react-dom": "^18.3.0",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.51.0",
     "recharts": "^2.12.0",
     "tailwind-merge": "^2.2.1",
-    "twilio": "^5.0.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.19.7",
+    "@types/nodemailer": "^7.0.9",
     "@types/paystack__inline-js": "^1.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",

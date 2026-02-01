@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import InvitationManager from '@/app/components/InvitationManager'
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
@@ -27,6 +28,11 @@ export default function AdminDashboard() {
         </Link>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+
+        {/* Invitation Manager */}
+        <div className="mb-12">
+          <InvitationManager />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow p-6">

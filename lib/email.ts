@@ -1,72 +1,93 @@
-import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
 import { Booking } from '@prisma/client';
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_PORT === '465',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 export async function sendConfirmationEmail(booking: Booking) {
-  const msg = {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
     to: booking.clientEmail,
-    from: process.env.SENDGRID_FROM_EMAIL!,
-    templateId: 'd-xxxxx', // Create template in SendGrid
-    dynamicTemplateData: {
-      clientName: booking.clientName,
-      scheduledAt: booking.scheduledAt.toLocaleString('en-US', {
-        timeZone: booking.clientTimezone,
-      }),
-      timezone: booking.clientTimezone,
-      calendarLink: booking.calendlyEventUri,
-      whatToExpect: [
-        'Please join 5 minutes early',
-        'Have your questions ready',
-        'Ensure stable internet connection',
-      ],
-    },
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Consultation Confirmation and Payment.',
+    html: `
+      <h2>Hi ${booking.clientName},</h2>
+      <p>Your consultation is confirmed for:</p>
+      <p><strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong></p>
+      <p>Timezone: ${booking.clientTimezone}</p>
+      <p><strong>Important:</strong> Please make your payment to validate your booking. Your schedule will only be valid after payment is received.</p>
+      <p>
+        <a href="${process.env.NEXTAUTH_URL}/booking/payment?bookingId=${booking.id}" style="display:inline-block;padding:10px 20px;background:#0070f3;color:#fff;text-decoration:none;border-radius:5px;">Pay Now</a>
+      </p>
+      <p>What to expect:</p>
+      <ul>
+        <li>Please join 5 minutes early</li>
+        <li>Have your questions ready</li>
+        <li>Ensure stable internet connection</li>
+      </ul>
+      <p>A joining link will be sent to you 24 hours before your consultation.</p>
+    `,
+    text: 'Your consultation is confirmed. Please make your payment to validate your booking. Your schedule will only be valid after payment is received.',
   };
 
-  await sgMail.send(msg);
+  return await transporter.sendMail(mailOptions);
 }
 
 export async function sendReminderEmail(booking: Booking, hoursAhead: number) {
-  const msg = {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
     to: booking.clientEmail,
-    from: process.env.SENDGRID_FROM_EMAIL!,
+    replyTo: process.env.SMTP_FROM,
     subject: `Reminder: Your consultation is in ${hoursAhead} hours`,
     html: `
       <h2>Hi ${booking.clientName},</h2>
       <p>This is a friendly reminder that your consultation is scheduled for:</p>
-      <p><strong>${booking.scheduledAt.toLocaleString('en-US', {
-        timeZone: booking.clientTimezone,
-      })}</strong></p>
-      <p>Join link: ${booking.calendlyEventUri}</p>
-      <p>Need to reschedule? <a href="${booking.calendlyEventUri}/reschedule">Click here</a></p>
+      <p><strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong></p>
+      <p>Your Cal.com meeting link will be available in your booking confirmation.</p>
+      <p>Need to reschedule? Contact us or check your booking details.</p>
     `,
   };
 
-  await sgMail.send(msg);
+  await transporter.sendMail(mailOptions);
 }
 
 export async function sendThankYouEmail(booking: Booking) {
-  const msg = {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
     to: booking.clientEmail,
-    from: process.env.SENDGRID_FROM_EMAIL!,
+    replyTo: process.env.SMTP_FROM,
     subject: 'Thank you for your consultation',
     html: `
       <h2>Thank you, ${booking.clientName}!</h2>
       <p>We hope you found our consultation valuable.</p>
       <p>We'd love to hear your feedback:</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/feedback?booking=${booking.id}">
-        Share Your Feedback
-      </a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/feedback?booking=${booking.id}">Share Your Feedback</a>
     `,
   };
 
-  await sgMail.send(msg);
+  await transporter.sendMail(mailOptions);
 }
 
 export async function sendFollowUpEmail(booking: Booking) {
-  const msg = {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
     to: booking.clientEmail,
-    from: process.env.SENDGRID_FROM_EMAIL!,
+    replyTo: process.env.SMTP_FROM,
     subject: "We're here if you need us",
     html: `
       <h2>Hi ${booking.clientName},</h2>
@@ -76,5 +97,5 @@ export async function sendFollowUpEmail(booking: Booking) {
     `,
   };
 
-  await sgMail.send(msg);
+  await transporter.sendMail(mailOptions);
 }

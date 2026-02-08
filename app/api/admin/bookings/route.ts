@@ -72,7 +72,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<PaginatedRespo
         clientName: true,
         clientEmail: true,
         clientPhone: true,
-        clientTimezone: true,
+        timezone: true,
         eventTitle: true,
         note: true,
         scheduledAt: true,

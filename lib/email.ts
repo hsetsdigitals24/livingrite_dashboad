@@ -52,7 +52,7 @@ export async function sendPaymentReminderEmail(booking: Booking) {
     subject: 'Payment Reminder for Your Consultation',
     html: `
       <h2>Hi ${booking.clientName},</h2>
-      <p>This is a reminder that your consultation scheduled for <strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong> has not been paid for yet.</p>
+      <p>This is a reminder that your consultation scheduled for <strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.timezone  || 'UTC'})}</strong> has not been paid for yet.</p>
       <p>Please complete your payment to confirm your booking and secure your spot.</p>
       <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/portal/booking/payment?bookingId=${booking.id}">Complete Payment</a></p>
       <p>If you have any questions or need assistance with payment, please don't hesitate to contact us.</p>
@@ -74,7 +74,7 @@ export async function sendReminderEmail(booking: Booking, hoursAhead: number) {
     html: `
       <h2>Hi ${booking.clientName},</h2>
       <p>This is a friendly reminder that your consultation is scheduled for:</p>
-      <p><strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong></p>
+      <p><strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.timezone  || 'UTC'})}</strong></p>
       <p>Your Cal.com meeting link will be available in your booking confirmation.</p>
       <p>Need to reschedule? Contact us or check your booking details.</p>
     `,
@@ -131,7 +131,7 @@ export async function sendCancellationEmail(booking: Booking) {
     subject: 'Booking Cancellation Confirmation',
     html: `
       <h2>Hi ${booking.clientName},</h2>
-      <p>Your consultation scheduled for <strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong> has been cancelled.</p>
+      <p>Your consultation scheduled for <strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.timezone  || 'UTC'})}</strong> has been cancelled.</p>
       <p>If you need to reschedule or would like to book another consultation, please feel free to reach out.</p>
       <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/portal/booking">Book a new consultation</a></p>
       <p>If you have any questions, please don't hesitate to contact us.</p>

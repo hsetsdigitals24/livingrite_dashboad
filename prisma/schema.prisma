@@ -539,6 +539,8 @@ model Payment {
   bookingId   String   @unique
   amount      Float
   status      PaymentStatus @default(PENDING)
+  providerRef  String?
+  paidAt      DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)

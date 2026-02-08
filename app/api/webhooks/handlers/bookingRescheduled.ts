@@ -14,7 +14,7 @@ export async function handleBookingRescheduled(payload: any) {
     data: {
       scheduledAt: new Date(startTime),
       timezone: timeZone,
-      status: "CONFIRMED",
+      status: "RESCHEDULED",
     },
   });
 }

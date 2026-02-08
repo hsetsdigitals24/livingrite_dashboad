@@ -172,7 +172,7 @@ async function handleBookingCreated(data: any) {
         update: {
           clientName: attendeeName || "",
           clientEmail: attendeeEmail || "",
-          clientTimezone: attendeeTimeZone || "",
+          timezone: attendeeTimeZone || "",
           eventTitle: title || "",
           meetingUri: metadata?.videoCallUrl || "",
           note: note || "",
@@ -186,7 +186,7 @@ async function handleBookingCreated(data: any) {
           userId: user.id,
           clientName: attendeeName || "",
           clientEmail: attendeeEmail || "",
-          clientTimezone: attendeeTimeZone || "",
+          timezone: attendeeTimeZone || "",
           eventTitle: title || "",
           meetingUri: metadata?.videoCallUrl || "",
           note: note || "",

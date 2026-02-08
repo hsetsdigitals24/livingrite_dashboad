@@ -1,5 +1,4 @@
-import { sendConfirmationEmail } from "@/lib/email";
-import { calculateServicePrice } from "@/lib/pricing/engine";
+import { sendConfirmationEmail } from "@/lib/email"; 
 import { prisma } from "@/lib/prisma";
 
 export async function handleBookingCreated(payload: any) {
@@ -42,7 +41,7 @@ console.log("Booking Data:", bookingData);
     },
   });
 
-  const clientProfile = await prisma.clientProfile.upsert({
+  const clientProfile = await prisma.userProfile.upsert({
     where: { userId: user.id },
     update: {},
     create: {
@@ -50,18 +49,7 @@ console.log("Booking Data:", bookingData);
       timezone: timeZone,
     },
   });
-
-  // id          String   @id @default(cuid())
-//   userId      String
-//   serviceId   String?
-//   patientId   String?
-//   eventId     String?
-//   scheduledAt DateTime
-//   timezone    String?
-//   status      BookingStatus @default(SCHEDULED)
-//   intakeForm  Json?
-//   notes       String?
-//   createdAt   DateTime @default(now())
+ 
 
   // 2️⃣ Create booking
   const booking = await prisma.booking.create({
@@ -69,15 +57,14 @@ console.log("Booking Data:", bookingData);
       userId: user.id,
       serviceId,
       scheduledAt: bookingData.startTime ? new Date(bookingData.startTime) : new Date(), 
-      eventId: bookingData.eventId || null,
+      id: bookingData.eventId || null,
       timezone: bookingData.timeZone || null,
       meetingUri: bookingData.metadata?.videoCallUrl || null,
       status: "SCHEDULED",
     },
   });
 
-  // 3️⃣ Calculate price
-  let pricingResult = null;
+  // 3️⃣ Calculate price 
   if (serviceId) {
     // Check if this is the client's first booking
     const previousBookings = await prisma.booking.findMany({
@@ -89,26 +76,15 @@ console.log("Booking Data:", bookingData);
     });
 
     const isFirstConsultation = previousBookings.length === 0;
-
-    pricingResult = await calculateServicePrice({
-      serviceId,
-      location,
-      hours,
-      sessions,
-      isDiaspora,
-      isFirstConsultation, // Pass this flag
-    });
-  }
+ 
 
   // 4️⃣ Create invoice
   await prisma.invoice.create({
-    data: {
-      clientId: clientProfile.id,
-      bookingId: booking.id,
-      invoiceNumber: `INV-${Date.now()}`,
-      amount: pricingResult?.price || 0,
-      currency: pricingResult?.currency || "NGN",
-      status: pricingResult?.isQuoteRequired ? "PENDING" : "PENDING",
+    data: { 
+      bookingId: booking.id, 
+      amount: 0,
+      currency: "USD",
+      status: "PENDING",
     },
   });
 
@@ -132,4 +108,5 @@ console.log("Booking Data:", bookingData);
   }
 
   sendConfirmationEmail(booking);
+}
 }

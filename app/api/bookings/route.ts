@@ -8,17 +8,18 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    const paymentReference = searchParams.get('paymentReference');
+    // const paymentReference = searchParams.get('paymentReference');
     const calcomId = searchParams.get('calcomId');
     const clientEmail = searchParams.get('clientEmail');
 
     let booking;
 
-    if (paymentReference) {
-      booking = await prisma.booking.findUnique({
-        where: { paymentReference },
-      });
-    } else if (calcomId) {
+    // if (paymentReference) {
+    //   booking = await prisma.booking.findUnique({
+    //     where: { paymentReference },
+    //   });
+    // }
+      if (calcomId) {
       booking = await prisma.booking.findUnique({
         where: { calcomId },
       });

@@ -190,11 +190,9 @@ model Booking {
   notes             String?
   clientName        String
   clientEmail       String
-  clientPhone       String?
-  clientTimezone    String
+  clientPhone       String? 
   eventTitle        String?
-  note              String?
-  duration          Int
+  note              String? 
   meetingUri        String?
   intakeFormData    Json?
   confirmationSent  Boolean       @default(false)

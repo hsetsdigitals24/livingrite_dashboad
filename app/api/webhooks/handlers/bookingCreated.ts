@@ -54,8 +54,12 @@ console.log("Booking Data:", bookingData);
   // 2️⃣ Create booking
   const booking = await prisma.booking.create({
     data: {
+      calcomId: eventId,
       userId: user.id,
       serviceId,
+      clientEmail: email,
+      clientName: fullName,
+      clientPhone: phone, 
       scheduledAt: bookingData.startTime ? new Date(bookingData.startTime) : new Date(), 
       id: bookingData.eventId || null,
       timezone: bookingData.timeZone || null,

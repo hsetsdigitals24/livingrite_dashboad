@@ -27,7 +27,7 @@ export async function GET() {
 
     await prisma.reminder.update({
       where: { id: reminder.id },
-      data: { status: "SENT", sentAt: new Date() },
+      data: { status: "SENT", updatedAt: new Date() },
     });
   }
 

@@ -1,40 +1,116 @@
 import PDFDocument from 'pdfkit';
-import { Booking } from '@prisma/client';
+import { Booking, Invoice } from '@prisma/client';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
+import { mkdir } from 'fs/promises';
+import { prisma } from '@/lib/prisma';
 
 export async function generateInvoice(booking: Booking): Promise<string> {
-  const invoiceNumber = `INV-${Date.now()}`;
-  const doc = new PDFDocument();
-  
-  const filePath = join(process.cwd(), 'public', 'invoices', `${invoiceNumber}.pdf`);
-  const stream = createWriteStream(filePath);
-  doc.pipe(stream);
+  try {
+    // Ensure invoices directory exists
+    const invoicesDir = join(process.cwd(), 'public', 'invoices');
+    await mkdir(invoicesDir, { recursive: true });
 
-  // Header
-  doc.fontSize(20).text('INVOICE', 50, 50);
-  doc.fontSize(10).text(`Invoice #: ${invoiceNumber}`, 50, 80);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, 95);
+    const invoiceNumber = `INV-${booking.id.slice(0, 8)}-${Date.now()}`;
+    const doc = new PDFDocument({ margin: 50 });
+    
+    const filePath = join(invoicesDir, `${invoiceNumber}.pdf`);
+    const stream = createWriteStream(filePath);
+    
+    doc.pipe(stream);
 
-  // Client details
-  doc.text(`Bill To:`, 50, 130);
-  doc.text(booking.clientName, 50, 145);
-  doc.text(booking.clientEmail, 50, 160);
+    // Header
+    doc.fontSize(24).font('Helvetica-Bold').text('INVOICE', { align: 'left' });
+    doc.fontSize(10).font('Helvetica').text(`Invoice #: ${invoiceNumber}`, { align: 'left' });
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, { align: 'left' });
+    doc.text(`Booking ID: ${booking.id}`, { align: 'left' });
+    doc.moveDown();
 
-  // Line items
-  doc.text('Description', 50, 200);
-  doc.text('Amount', 450, 200);
-  doc.moveTo(50, 215).lineTo(550, 215).stroke();
-  
-  doc.text('Consultation Service', 50, 230);
-  doc.text(`₦${booking.paymentAmount?.toLocaleString()}`, 450, 230);
+    // Client details
+    doc.fontSize(12).font('Helvetica-Bold').text('Bill To:', { underline: true });
+    doc.fontSize(10).font('Helvetica');
+    doc.text(`Name: ${booking.clientName}`);
+    doc.text(`Email: ${booking.clientEmail}`);
+    if (booking.clientPhone) doc.text(`Phone: ${booking.clientPhone}`);
+    doc.moveDown();
 
-  // Total
-  doc.moveTo(50, 260).lineTo(550, 260).stroke();
-  doc.fontSize(12).text('Total', 350, 275);
-  doc.text(`₦${booking.paymentAmount?.toLocaleString()}`, 450, 275);
+    // Service details
+    doc.fontSize(12).font('Helvetica-Bold').text('Service Details:', { underline: true });
+    doc.fontSize(10).font('Helvetica');
+    if (booking.eventTitle) doc.text(`Service: ${booking.eventTitle}`);
+    doc.text(`Scheduled: ${new Date(booking.scheduledAt).toLocaleString()}`);
+    if (booking.timezone) doc.text(`Timezone: ${booking.timezone}`);
+    doc.moveDown();
 
-  doc.end();
-  
-  return invoiceNumber;
+    // Line items table
+    const tableTop = doc.y;
+    const col1 = 50;
+    const col2 = 300;
+    const col3 = 450;
+
+    doc.fontSize(11).font('Helvetica-Bold');
+    doc.text('Description', col1, tableTop);
+    doc.text('Quantity', col2, tableTop);
+    doc.text('Amount', col3, tableTop, { align: 'right' });
+    
+    // Draw line under header
+    doc.moveTo(50, tableTop + 20).lineTo(550, tableTop + 20).stroke();
+
+    // Fetch invoice data from database
+    const invoice = await prisma.invoice.findUnique({
+      where: { bookingId: booking.id },
+    });
+
+    const amount = invoice?.amount || 0;
+    const currency = invoice?.currency || 'USD';
+
+    // Line item
+    doc.fontSize(10).font('Helvetica');
+    doc.text('Consultation Service', col1, tableTop + 35);
+    doc.text('1', col2, tableTop + 35);
+    doc.text(`${currency} ${amount.toFixed(2)}`, col3, tableTop + 35, { align: 'right' });
+
+    // Total
+    const totalY = tableTop + 80;
+    doc.moveTo(50, totalY).lineTo(550, totalY).stroke();
+    
+    doc.fontSize(12).font('Helvetica-Bold');
+    doc.text('Total:', col1, totalY + 15);
+    doc.text(`${currency} ${amount.toFixed(2)}`, col3, totalY + 15, { align: 'right' });
+
+    // Footer
+    doc.fontSize(9).font('Helvetica');
+    doc.moveDown(3);
+    doc.text('Thank you for your business!', { align: 'center' });
+    doc.text('For inquiries, contact support@livingrite.com', { align: 'center' });
+
+    doc.end();
+    
+    return new Promise((resolve, reject) => {
+      stream.on('finish', () => resolve(invoiceNumber));
+      stream.on('error', reject);
+    });
+  } catch (error) {
+    console.error('Error generating invoice:', error);
+    throw error;
+  }
+}
+
+export async function generateInvoiceForMultipleBookings(
+  bookingIds: string[]
+): Promise<string[]> {
+  const invoiceNumbers: string[] = [];
+
+  for (const bookingId of bookingIds) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+
+    if (booking) {
+      const invoiceNumber = await generateInvoice(booking);
+      invoiceNumbers.push(invoiceNumber);
+    }
+  }
+
+  return invoiceNumbers;
 }

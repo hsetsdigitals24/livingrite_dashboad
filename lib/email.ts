@@ -22,7 +22,7 @@ export async function sendConfirmationEmail(booking: Booking) {
     html: `
       <h2>Hi ${booking.clientName},</h2>
       <p>Your consultation is confirmed for:</p>
-      <p><strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong></p>
+      <p><strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.timezone })}</strong></p>
       <p>Timezone: ${booking.timezone}</p>
     
 

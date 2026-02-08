@@ -176,8 +176,7 @@ async function handleBookingCreated(data: any) {
           eventTitle: title || "",
           meetingUri: metadata?.videoCallUrl || "",
           note: note || "",
-          scheduledAt,
-          duration,
+          scheduledAt, 
           intakeFormData: customInputs || {},
           status: "SCHEDULED",
         },
@@ -190,8 +189,7 @@ async function handleBookingCreated(data: any) {
           eventTitle: title || "",
           meetingUri: metadata?.videoCallUrl || "",
           note: note || "",
-          scheduledAt,
-          duration,
+          scheduledAt, 
           intakeFormData: customInputs || {},
           status: "SCHEDULED",
         },
@@ -223,13 +221,12 @@ async function handleBookingCreated(data: any) {
       where: { calcomId: uid },
       update: {
         clientName: attendeeName || "",
-        clientEmail: attendeeEmail || "",
-        clientTimezone: attendeeTimeZone || "",
+        clientEmail: attendeeEmail || "", 
         eventTitle: title || "",
         meetingUri: metadata?.videoCallUrl || "",
         note: note || "",
-        scheduledAt,
-        duration,
+        scheduledAt, 
+        timezone: attendeeTimeZone || "",
         intakeFormData: customInputs || {},
         status: "SCHEDULED",
       },
@@ -238,12 +235,11 @@ async function handleBookingCreated(data: any) {
         userId: user.id,
         clientName: attendeeName || "",
         clientEmail: attendeeEmail || "",
-        clientTimezone: attendeeTimeZone || "",
+        timezone: attendeeTimeZone || "",
         eventTitle: title || "",
         meetingUri: metadata?.videoCallUrl || "",
         note: note || "",
-        scheduledAt,
-        duration,
+        scheduledAt, 
         intakeFormData: customInputs || {},
         status: "SCHEDULED",
       },
@@ -312,15 +308,12 @@ async function handleBookingRescheduled(data: any) {
   }
 
   try {
-    const scheduledAt = new Date(startTime);
-    const endDate = new Date(endTime);
-    const duration = (endDate.getTime() - scheduledAt.getTime()) / 60000; // minutes
+    const scheduledAt = new Date(startTime); 
 
-    const updated = await prisma.booking.updateMany({
+    await prisma.booking.updateMany({
       where: { calcomId: uid },
       data: {
-        scheduledAt,
-        duration,
+        scheduledAt, 
         status: "RESCHEDULED",
         rescheduledFrom: uid,
       },
@@ -348,7 +341,7 @@ async function handleBookingCompleted(data: any) {
   }
 
   try {
-    const updated = await prisma.booking.updateMany({
+    await prisma.booking.updateMany({
       where: { calcomId: uid },
       data: { status: "COMPLETED" },
     });

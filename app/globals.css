@@ -20,16 +20,16 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   /* Primary: Calming Teal (#6ec1e4) */
-  --primary: #00adef;
+  --primary: #00b2ec;
   --primary-foreground: oklch(0.985 0 0);
   /* Secondary/Accent: Warm Orange (#F4A261) */
-  --secondary: #00EFB9;
+  --secondary: #e50d92;
   --secondary-foreground: oklch(0.205 0 0);
   /* Muted grays for backgrounds */
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   /* Secondary/Accent: Green (#61ce70) */
-  --accent: #e40a89;
+  --accent: #e50d92;
   --accent-foreground: oklch(0.205 0 0);
   /* Coral for urgent notifications */
   --destructive: oklch(0.6 0.18 25);

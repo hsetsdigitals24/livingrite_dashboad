@@ -13,6 +13,7 @@ interface SignUpFormData {
   password: string
   confirmPassword: string
   invitationCode?: string
+  role: 'CLIENT' | 'CAREGIVER'
 }
 
 export default function SignUp() {
@@ -55,6 +56,7 @@ export default function SignUp() {
           email: data.email,
           password: data.password,
           invitationCode: data.invitationCode,
+          role: data.role
         }),
       })
 
@@ -213,11 +215,25 @@ export default function SignUp() {
               )}
             </div>
 
+            <div className='flex '>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  I am a:
+                </label>
+                <input type='radio' defaultChecked value='CLIENT' {...register('role', { required: 'Role is required' })} /> Client
+                <input type='radio' value='CAREGIVER' {...register('role', { required: 'Role is required' })} className='ml-4' /> Caregiver
+                 
+                {errors.role && (
+                  <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>
+                )}
+              </div>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-8 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 animate-scale-in"
+              className="w-full mt-8 py-3 bg-accent text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 animate-scale-in"
               style={{ animationDelay: '0.5s' }}
             >
               {isLoading ? (

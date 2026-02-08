@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { sendConfirmationEmail } from "@/lib/email";
+import { PrismaClient } from "@prisma/client"; 
+// import { redirect } from "next/navigation";
 
 const prisma = new PrismaClient();
 
 // Verify Cal.com webhook signature (optional but recommended)
-function verifyCalcomWebhookSignature(
-  payload: string,
-  signature: string,
-  secret: string,
-): boolean {
-  const crypto = require("crypto");
-  const hash = crypto
-    .createHmac("sha256", secret)
-    .update(payload)
-    .digest("hex");
-  return hash === signature;
-}
+// function verifyCalcomWebhookSignature(
+//   payload: string,
+//   signature: string,
+//   secret: string,
+// ): boolean {
+//   const crypto = require("crypto");
+//   const hash = crypto
+//     .createHmac("sha256", secret)
+//     .update(payload)
+//     .digest("hex");
+//   return hash === signature;
+// }
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,8 +35,9 @@ export async function POST(req: NextRequest) {
 
     const { triggerEvent, payload } = body;
 
-    console.log("Cal.com webhook event:", triggerEvent);
-    console.log("Cal.com webhook payload:", JSON.stringify(payload, null, 2));
+    // console.log("Cal.com webhook event:", triggerEvent);
+    console.log("Cal.com webhook payload:", payload);
+    console.log("Cal.com webhook payload attendees:", payload.attendees);
 
     // Extract booking data from Cal.com payload
     const {
@@ -54,11 +55,12 @@ export async function POST(req: NextRequest) {
       cancellationUrl,
     } = payload;
 
-    const attendeeEmail = attendees?.[0]?.email || attendees?.[0] || null;
-    const attendeeName = attendees?.[0]?.name || null;
+    const attendeeEmail = attendees[0]?.email || null;
+    const attendeeName = attendees[0]?.name || null;
     const attendeeTimeZone = attendees?.[0]?.timeZone || null;
     const note = additionalNotes || description || null;
 
+    console.log("Extracted booking data:", attendeeEmail)
     // Route events
     switch (triggerEvent) {
       case "BOOKING_CREATED":
@@ -132,9 +134,91 @@ async function handleBookingCreated(data: any) {
 
   const scheduledAt = new Date(startTime);
   const endDate = new Date(endTime);
-  const duration = (endDate.getTime() - scheduledAt.getTime()) / 60000; // minutes
+  const duration = (endDate.getTime() - scheduledAt.getTime()) / 60000;
 
   try {
+    // 1️⃣ Upsert user first
+    const user = await prisma.user.upsert({
+      where: { email: attendeeEmail },
+      update: { name: attendeeName },
+      create: {
+        email: attendeeEmail,
+        name: attendeeName,
+        role: "CLIENT",
+      },
+    });
+
+    // 2️⃣ Check if user already has a free booking
+    const existingFreeBooking = await prisma.booking.findFirst({
+      where: {
+        userId: user.id,
+        OR: [
+          { payment: null },
+          { payment: { status: 'FREE' } },
+        ],
+      },
+      include: {
+        payment: true,
+      },
+    });
+
+    if (existingFreeBooking) {
+      console.warn(
+        `User ${attendeeEmail} already has a free booking (${existingFreeBooking.id}). Creating paid booking instead.`,
+      );
+      // Create payment record for this booking - user must pay
+      const booking = await prisma.booking.upsert({
+        where: { calcomId: uid },
+        update: {
+          clientName: attendeeName || "",
+          clientEmail: attendeeEmail || "",
+          clientTimezone: attendeeTimeZone || "",
+          eventTitle: title || "",
+          meetingUri: metadata?.videoCallUrl || "",
+          note: note || "",
+          scheduledAt,
+          duration,
+          intakeFormData: customInputs || {},
+          status: "SCHEDULED",
+        },
+        create: {
+          calcomId: uid,
+          userId: user.id,
+          clientName: attendeeName || "",
+          clientEmail: attendeeEmail || "",
+          clientTimezone: attendeeTimeZone || "",
+          eventTitle: title || "",
+          meetingUri: metadata?.videoCallUrl || "",
+          note: note || "",
+          scheduledAt,
+          duration,
+          intakeFormData: customInputs || {},
+          status: "SCHEDULED",
+        },
+      });
+
+      // Create payment record
+      await prisma.payment.upsert({
+        where: { bookingId: booking.id },
+        update: { status: 'PENDING' },
+        create: {
+          bookingId: booking.id,
+          amount: 0, // Default amount, can be updated from service pricing
+          status: 'PENDING',
+        },
+      });
+
+      console.log(
+        "✓ Created/updated paid booking from Cal.com:",
+        booking.id,
+        "(calcomId:",
+        uid,
+        ")",
+      );
+      return;
+    }
+
+    // 3️⃣ Create free booking (first booking)
     const booking = await prisma.booking.upsert({
       where: { calcomId: uid },
       update: {
@@ -142,55 +226,47 @@ async function handleBookingCreated(data: any) {
         clientEmail: attendeeEmail || "",
         clientTimezone: attendeeTimeZone || "",
         eventTitle: title || "",
-        meetingUri: metadata.videoCallUrl || "",
+        meetingUri: metadata?.videoCallUrl || "",
         note: note || "",
         scheduledAt,
         duration,
         intakeFormData: customInputs || {},
         status: "SCHEDULED",
-        // calcomUri: rescheduleUrl || cancellationUrl || "",
       },
       create: {
         calcomId: uid,
+        userId: user.id,
         clientName: attendeeName || "",
         clientEmail: attendeeEmail || "",
         clientTimezone: attendeeTimeZone || "",
         eventTitle: title || "",
-        meetingUri: metadata.videoCallUrl || "",
+        meetingUri: metadata?.videoCallUrl || "",
         note: note || "",
         scheduledAt,
         duration,
         intakeFormData: customInputs || {},
         status: "SCHEDULED",
-        // calcomUri: rescheduleUrl || cancellationUrl || "",
       },
     });
 
-    // Send confirmation email
-    try {
-      const info = await sendConfirmationEmail(booking);
-      if (info.messageId) {
-        await prisma.booking.update({
-          where: { id: booking.id },
-          data: { confirmationSent: true },
-        });
-        console.log(
-          "✓ Confirmation email sent for booking:",
-          booking.id,
-          info.messageId,
-        );
-      }
-    } catch (emailError) {
-      console.error("✗ Failed to send confirmation email:", emailError);
-    }
-
+       // Create payment record
+      await prisma.payment.upsert({
+        where: { bookingId: booking.id },
+        update: { status: 'PENDING' },
+        create: {
+          bookingId: booking.id,
+          amount: 0, // Default amount, can be updated from service pricing
+          status: 'FREE',
+        },
+      });
     console.log(
-      "✓ Created/updated booking from Cal.com:",
+      "✓ Created/updated free booking from Cal.com:",
       booking.id,
       "(calcomId:",
       uid,
       ")",
     );
+
   } catch (error) {
     console.error("Error creating booking from Cal.com:", error);
     throw error;
@@ -214,13 +290,13 @@ async function handleBookingCancelled(data: any) {
       },
     });
 
-    console.log(
-      "✓ Cancelled booking(s):",
-      updated.count,
-      "(calcomId:",
-      uid,
-      ")",
-    );
+    // console.log(
+    //   "✓ Cancelled booking(s):",
+    //   updated.count,
+    //   "(calcomId:",
+    //   uid,
+    //   ")",
+    // );
   } catch (error) {
     console.error("Error cancelling booking:", error);
     throw error;
@@ -250,13 +326,13 @@ async function handleBookingRescheduled(data: any) {
       },
     });
 
-    console.log(
-      "✓ Rescheduled booking(s):",
-      updated.count,
-      "(calcomId:",
-      uid,
-      ")",
-    );
+    // console.log(
+    //   "✓ Rescheduled booking(s):",
+    //   updated.count,
+    //   "(calcomId:",
+    //   uid,
+    //   ")",
+    // );
   } catch (error) {
     console.error("Error rescheduling booking:", error);
     throw error;
@@ -277,13 +353,13 @@ async function handleBookingCompleted(data: any) {
       data: { status: "COMPLETED" },
     });
 
-    console.log(
-      "✓ Completed booking(s):",
-      updated.count,
-      "(calcomId:",
-      uid,
-      ")",
-    );
+    // console.log(
+    //   "✓ Completed booking(s):",
+    //   updated.count,
+    //   "(calcomId:",
+    //   uid,
+    //   ")",
+    // );
   } catch (error) {
     console.error("Error completing booking:", error);
     throw error;

@@ -7,7 +7,8 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   name: z.string().min(1),
-  role: z.enum(["ADMIN", "STAFF", "CLIENT"]).default("CLIENT"),
+  role: z.enum(["ADMIN", "CAREGIVER", "CLIENT"]).default("CLIENT"),
+  verificationCode: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -16,18 +17,36 @@ export async function POST(request: NextRequest) {
 
     const { email, password, name, role, verificationCode } = registerSchema.parse(body)
 
-    // Verify verification code only for admin registrations
+    // Verify admin signup code for ADMIN registrations
     if (role === "ADMIN") {
-      const isCodeValid = await prisma.verificationCode.findFirst({
-        where: {
-          code: verificationCode,
-          used: false,
-        },
+      if (!verificationCode) {
+        return NextResponse.json(
+          { error: "Admin signup code is required" },
+          { status: 400 }
+        )
+      }
+
+      const codeRecord = await prisma.adminSignupCode.findUnique({
+        where: { code: verificationCode },
       })
 
-      if (!isCodeValid) {
+      if (!codeRecord) {
         return NextResponse.json(
-          { error: "Invalid or used verification code" },
+          { error: "Invalid signup code" },
+          { status: 400 }
+        )
+      }
+
+      if (codeRecord.isUsed) {
+        return NextResponse.json(
+          { error: "Signup code has already been used" },
+          { status: 400 }
+        )
+      }
+
+      if (new Date(codeRecord.expiresAt) < new Date()) {
+        return NextResponse.json(
+          { error: "Signup code has expired" },
           { status: 400 }
         )
       }
@@ -55,23 +74,19 @@ export async function POST(request: NextRequest) {
       },
     })
     
-    const { password: _, ...userWithoutPassword } = user
-    
-    // Mark the verification code as used (only for admins)
-    if (role === "ADMIN") {
-      const verificationCodeRecord = await prisma.verificationCode.findFirst({
-        where: {
-          code: verificationCode,
+    // Mark the admin signup code as used
+    if (role === "ADMIN" && verificationCode) {
+      await prisma.adminSignupCode.update({
+        where: { code: verificationCode },
+        data: {
+          isUsed: true,
+          usedBy: email,
+          usedAt: new Date(),
         },
       })
-      
-      if (verificationCodeRecord) {
-        await prisma.verificationCode.update({
-          where: { id: verificationCodeRecord.id },
-          data: { used: true },
-        })
-      }
     }
+    
+    const { password: _, ...userWithoutPassword } = user
         
     return NextResponse.json(userWithoutPassword, { status: 201 })
   } catch (error) {

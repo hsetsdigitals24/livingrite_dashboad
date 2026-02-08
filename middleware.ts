@@ -6,43 +6,47 @@ export const middleware = withAuth(
     const token = request.nextauth.token
     const pathname = request.nextUrl.pathname
 
-    // Allow unauthenticated access to auth pages
-    if (pathname.startsWith("/auth/")) {
+    // Auth pages that should only be accessible by unauthenticated users
+    const authPages = ["/auth/signin", "/auth/signup", "/auth/forgot-password"]
+    const isAuthPage = authPages.some((page) => pathname === page)
+
+    // Prevent authenticated users from accessing auth pages
+    if (isAuthPage && token) {
+      return NextResponse.redirect(new URL(getRedirectUrlByRole(token.role), request.url))
+    }
+
+    // Allow unauthenticated users to access auth pages
+    if (isAuthPage && !token) {
       return NextResponse.next()
     }
 
-    // Redirect unauthenticated users from root to signin
-    // if (pathname === "/" && !token) {
-    //   return NextResponse.redirect(new URL("/auth/signin", request.url))
-    // }
-
-    // Redirect authenticated users away from signin page
-    if (pathname === "/auth/signin" && token) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
-    }
-
-    // Redirect admin users from /dashboard to /dashboard/admin
-    if (pathname === "/dashboard" && token?.role === "ADMIN") {
-      return NextResponse.redirect(new URL("/dashboard/admin", request.url))
-    }
-
-    // Protect admin routes
+    // Protect routes based on user role
     if (pathname.startsWith("/admin")) {
       if (!token || token.role !== "ADMIN") {
         return NextResponse.redirect(new URL("/auth/signin", request.url))
       }
     }
 
-    // Protect staff routes
-    if (pathname.startsWith("/staff")) {
-      if (!token || (token.role !== "STAFF" && token.role !== "ADMIN")) {
+    if (pathname.startsWith("/caregiver")) {
+      if (!token || token.role !== "CAREGIVER") {
         return NextResponse.redirect(new URL("/auth/signin", request.url))
       }
     }
 
-    // Protect dashboard and client routes
-    if ((pathname.startsWith("/dashboard") || pathname.startsWith("/client")) && !token) {
-      return NextResponse.redirect(new URL("/auth/signin", request.url))
+    if (pathname.startsWith("/client")) {
+      if (!token || token.role !== "CLIENT") {
+        return NextResponse.redirect(new URL("/auth/signin", request.url))
+      }
+    }
+
+    if (pathname.startsWith("/dashboard")) {
+      if (!token) {
+        return NextResponse.redirect(new URL("/auth/signin", request.url))
+      }
+      // Redirect /dashboard to role-specific dashboard
+      if (pathname === "/dashboard") {
+        return NextResponse.redirect(new URL(getRedirectUrlByRole(token.role), request.url))
+      }
     }
 
     return NextResponse.next()
@@ -50,10 +54,15 @@ export const middleware = withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
+        const pathname = req.nextUrl.pathname
+        const authPages = ["/auth/signin", "/auth/signup", "/auth/forgot-password"]
+        const isAuthPage = authPages.some((page) => pathname === page)
+
         // Allow auth pages without token
-        if (req.nextUrl.pathname.startsWith("/auth/")) {
+        if (isAuthPage) {
           return true
         }
+
         // Require token for all other protected routes
         return !!token
       },
@@ -61,10 +70,26 @@ export const middleware = withAuth(
   }
 )
 
+/**
+ * Redirects users to their role-specific page
+ */
+function getRedirectUrlByRole(role: string | undefined): string {
+  switch (role) {
+    case "ADMIN":
+      return "/admin"
+    case "CAREGIVER":
+      return "/caregiver"
+    case "CLIENT":
+      return "/client"
+    default:
+      return "/auth/signin"
+  }
+}
+
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/staff/:path*",
+    "/caregiver/:path*",
     "/client/:path*",
     "/dashboard/:path*",
     "/auth/:path*",

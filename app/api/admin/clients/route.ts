@@ -35,6 +35,11 @@ export async function GET(req: NextRequest): Promise<NextResponse<PaginatedRespo
     // Build filter conditions
     const whereConditions: any = {
       role: 'CLIENT',
+      NOT: {
+        role: {
+          in: ['CAREGIVER', 'ADMIN'],
+        },
+      },
     };
 
     // Search across name and email

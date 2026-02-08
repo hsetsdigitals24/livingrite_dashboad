@@ -18,16 +18,14 @@ export async function sendConfirmationEmail(booking: Booking) {
     from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
     to: booking.clientEmail,
     replyTo: process.env.SMTP_FROM,
-    subject: 'Consultation Confirmation and Payment.',
+    subject: 'Consultation Confirmation.',
     html: `
       <h2>Hi ${booking.clientName},</h2>
       <p>Your consultation is confirmed for:</p>
       <p><strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong></p>
       <p>Timezone: ${booking.clientTimezone}</p>
-      <p><strong>Important:</strong> Please make your payment to validate your booking. Your schedule will only be valid after payment is received.</p>
-      <p>
-        <a href="${process.env.NEXTAUTH_URL}/booking/payment?bookingId=${booking.id}" style="display:inline-block;padding:10px 20px;background:#0070f3;color:#fff;text-decoration:none;border-radius:5px;">Pay Now</a>
-      </p>
+    
+
       <p>What to expect:</p>
       <ul>
         <li>Please join 5 minutes early</li>
@@ -35,8 +33,31 @@ export async function sendConfirmationEmail(booking: Booking) {
         <li>Ensure stable internet connection</li>
       </ul>
       <p>A joining link will be sent to you 24 hours before your consultation.</p>
+      <p>Need to reschedule? Contact us or check your booking details.</p>
+
     `,
     text: 'Your consultation is confirmed. Please make your payment to validate your booking. Your schedule will only be valid after payment is received.',
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+export async function sendPaymentReminderEmail(booking: Booking) {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: booking.clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Payment Reminder for Your Consultation',
+    html: `
+      <h2>Hi ${booking.clientName},</h2>
+      <p>This is a reminder that your consultation scheduled for <strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong> has not been paid for yet.</p>
+      <p>Please complete your payment to confirm your booking and secure your spot.</p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/portal/booking/payment?bookingId=${booking.id}">Complete Payment</a></p>
+      <p>If you have any questions or need assistance with payment, please don't hesitate to contact us.</p>
+    `,
+    text: 'This is a reminder that your consultation has not been paid for yet. Please complete your payment to confirm your booking.',
   };
 
   return await transporter.sendMail(mailOptions);
@@ -98,4 +119,25 @@ export async function sendFollowUpEmail(booking: Booking) {
   };
 
   await transporter.sendMail(mailOptions);
+}
+
+export async function sendCancellationEmail(booking: Booking) {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: booking.clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Booking Cancellation Confirmation',
+    html: `
+      <h2>Hi ${booking.clientName},</h2>
+      <p>Your consultation scheduled for <strong>${booking.scheduledAt.toLocaleString('en-US', { timeZone: booking.clientTimezone })}</strong> has been cancelled.</p>
+      <p>If you need to reschedule or would like to book another consultation, please feel free to reach out.</p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/portal/booking">Book a new consultation</a></p>
+      <p>If you have any questions, please don't hesitate to contact us.</p>
+    `,
+    text: 'Your consultation has been cancelled. If you would like to reschedule, please visit our booking page.',
+  };
+
+  return await transporter.sendMail(mailOptions);
 }

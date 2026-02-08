@@ -30,7 +30,7 @@ export function Header() {
   const pathname = usePathname();
 
   // Hide header on admin dashboard routes
-  if (pathname.startsWith("/dashboard/admin")) {
+  if (pathname.startsWith("/admin")) {
     return null;
   }
 
@@ -140,7 +140,7 @@ export function Header() {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link
-              href="/booking"
+              href="/portal/booking"
               className="relative text-gray-700 hover:text-primary transition-colors font-medium group"
             >
               Book Consultation
@@ -217,7 +217,7 @@ export function Header() {
               </>
             ) : (
               <>
-                <Link href="/booking">
+                <Link href="/portal/booking">
                   <Button
                     size="lg"
                     className="font-semibold rounded-full bg-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
@@ -388,7 +388,7 @@ export function Header() {
               ) : (
                 <div className="pt-4 border-t border-gray-200 space-y-2">
                   <Link
-                    href="/booking"
+                    href="/portal/booking"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block"
                   >

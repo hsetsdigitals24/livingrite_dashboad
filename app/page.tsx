@@ -1,24 +1,53 @@
-'use client'
+"use client";
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import Cal, { getCalApi } from "@calcom/embed-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+export default function MyApp() {
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(false);
 
-  // useEffect(() => {
-  //   // Only redirect if authenticated - middleware handles unauthenticated users
-  //   if (status === 'authenticated' && session?.user) {
-  //     router.push('/dashboard')
-  //   } 
-  // }, [status, session, router])
+  useEffect(() => {
+    (async function () {
+      const cal = await getCalApi({ namespace: "30min" });
+      cal("ui", {
+        cssVarsPerTheme: {
+          light: { "cal-brand": "#00b2ec" },
+          dark: { "cal-brand": "#00b2ec" },
+        },
+        hideEventTypeDetails: false,
+        layout: "month_view",
+      });
 
-  // Show loading state while checking authentication
+      // Listen for successful booking
+      cal("on", {
+        action: "bookingSuccessful",
+        callback: async (data: any) => {
+          console.log("Booking successful:", data);
+
+          // Get email from data or from form
+          const bookingId = data?.detail?.data?.booking.uid;
+          
+          if (bookingId) {
+            router.push(`/portal/booking/intake?bookingId=${bookingId}`); 
+          }
+        },
+      });
+    })();
+  }, []); 
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    <div className="flex w-full h-screen flex-col justify-center items-center">
+      <Cal
+        namespace="30min"
+        calLink="circle-of-three-technologies-obtkkx/30min"
+        style={{ width: "100%", height: "100%", overflow: "scroll" }}
+        config={{
+          layout: "month_view",
+          useSlotsViewOnSmallScreen: "true",
+        }}
+      />
     </div>
-  )
+  );
 }

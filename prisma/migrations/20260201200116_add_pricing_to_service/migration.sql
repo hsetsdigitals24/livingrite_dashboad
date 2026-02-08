@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "services" ADD COLUMN     "basePrice" DOUBLE PRECISION,
+ADD COLUMN     "currency" TEXT NOT NULL DEFAULT 'NGN',
+ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true;

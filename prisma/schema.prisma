@@ -24,16 +24,100 @@ model User {
   dailyLogs             DailyLog[]
   labResults            LabResults[]
   medicalAppointments   MedicalAppointment[]
+  bookings              Booking[]
+  
+  // Caregiver relations
+  caregiverProfile      CaregiverProfile?
+  patientsAsCaregiver   PatientCaregiverAssignment[] @relation("CaregiverToPatient")
+  
+  // Patient relations
+  patientProfile        PatientProfile?
+  caregiversForPatient  PatientCaregiverAssignment[] @relation("PatientToCaregiver")
+  usersAssignedToPatient UserPatientAssignment[]
 
   @@map("users")
 }
 
-model VerificationCode {
+// A caregiver can be a User with CAREGIVER role
+// This stores additional caregiver-specific information
+model CaregiverProfile {
   id                    String    @id @default(cuid())
-  code                  String
-  used                  Boolean    @default(false) 
+  userId                String    @unique
+  licenseNumber         String?
+  specialization        String[]  // e.g., ["elderly care", "pediatric"]
+  yearsOfExperience     Int?
+  bio                   String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("caregiver_profiles")
 }
 
+// A patient can be a User with CLIENT role who receives care
+// This stores additional patient-specific information
+model PatientProfile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  dateOfBirth           DateTime?
+  biologicalGender      String?
+  heightCm              Float?
+  weightKg              Float?
+  timezone              String?
+  medicalConditions     String[]
+  medications           Json?     // Array of {name, dosage, frequency}
+  emergencyContact      String?
+  emergencyPhone        String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("patient_profiles")
+}
+
+// This model connects caregivers to patients (many-to-many)
+model PatientCaregiverAssignment {
+  id                    String    @id @default(cuid())
+  patientId             String
+  caregiverId           String
+  assignedAt            DateTime  @default(now())
+  unassignedAt          DateTime?
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  patient               User      @relation("PatientToCaregiver", fields: [patientId], references: [id], onDelete: Cascade)
+  caregiver             User      @relation("CaregiverToPatient", fields: [caregiverId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, caregiverId])
+  @@index([patientId])
+  @@index([caregiverId])
+  @@map("patient_caregiver_assignments")
+}
+
+// This model connects patients to multiple users (e.g., family members, healthcare providers)
+// A patient can have multiple users with access to their health data
+model UserPatientAssignment {
+  id                    String    @id @default(cuid())
+  userId                String
+  patientId             String
+  relationshipType      String    // "family_member", "healthcare_provider", "emergency_contact"
+  accessLevel           AccessLevel @default(VIEW) // View-only or edit permissions
+  assignedAt            DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Optionally reference patient via PatientProfile
+  // This assumes the patientId refers to a User who has a PatientProfile
+
+  @@unique([userId, patientId])
+  @@index([userId])
+  @@index([patientId])
+  @@map("user_patient_assignments")
+}
+
+// Keep UserProfile for additional user metadata if needed
 model UserProfile {
   id                    String    @id @default(cuid())
   userId                String    @unique
@@ -52,7 +136,7 @@ model UserProfile {
 
   @@map("user_profiles")
 }
-
+ 
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -94,22 +178,24 @@ model VerificationToken {
 model Booking {
   id                String        @id @default(cuid())
   calcomId          String        @unique
-  meetingUri        String?
+  userId            String
+  serviceId         String?
+  patientId         String?
+  calendlyEventId   String?
+  scheduledAt       DateTime
+  timezone          String?
+  status            BookingStatus @default(SCHEDULED)
+  intakeForm        Json?
+  notes             String?
   clientName        String
   clientEmail       String
   clientPhone       String?
   clientTimezone    String
   eventTitle        String?
-  note             String?
-  scheduledAt       DateTime
+  note              String?
   duration          Int
-  status            String    @default("PENDING")  // PENDING, CONFIRMED, PAID, CANCELLED, RESCHEDULED, COMPLETED
+  meetingUri        String?
   intakeFormData    Json?
-  paymentReference  String?   @unique
-  paymentAmount     Float?
-  paymentStatus     PaymentStatus @default(PENDING)
-  paystackReference String?
-  invoiceNumber     String?
   confirmationSent  Boolean       @default(false)
   reminderSent      Boolean       @default(false)
   thankYouSent      Boolean       @default(false)
@@ -118,9 +204,17 @@ model Booking {
   updatedAt         DateTime      @updatedAt
   cancelledAt       DateTime?
   rescheduledFrom   String?
+  
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service           Service?      @relation(fields: [serviceId], references: [id])
+  patient           Patient?      @relation(fields: [patientId], references: [id])
+  payment           Payment?
+  invoice           Invoice?
+  reminders         Reminder[]
 
   @@index([clientEmail])
   @@index([scheduledAt])
+  @@map("bookings")
 }
 
 model Vitals {
@@ -252,17 +346,11 @@ model Workout {
   durationMinutes       Int
   distanceKm            Float?
   calories              Float?
-  avgHeartRate          Int?
-  maxHeartRate          Int?
-  cadenceAvg            Int?
-  elevationGainM        Int?
-  perceivedExertion     Int?
-  notes                 String?
-  zone1Minutes          Int?
-  zone2Minutes          Int?
-  zone3Minutes          Int?
-  zone4Minutes          Int?
-  zone5Minutes          Int?
+  heartRateZone1Minutes Int?
+  heartRateZone2Minutes Int?
+  heartRateZone3Minutes Int?
+  heartRateZone4Minutes Int?
+  heartRateZone5Minutes Int?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   physicalActivity      PhysicalActivity @relation(fields: [physicalActivityId], references: [id], onDelete: Cascade)
@@ -420,15 +508,110 @@ model LabResults {
   @@map("lab_results")
 }
 
+model Service {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  description     String?
+  basePrice       Float?
+  currency        String   @default("NGN")
+  isActive        Boolean  @default(true)
+  pricingConfig   Json?    // {discountPercentage, minPrice, maxPrice, pricingNotes, enableForPayments}
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  bookings        Booking[]
+
+  @@map("services")
+}
+
+model Patient {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?   @unique  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bookings    Booking[]
+
+  @@map("patients")
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  bookingId   String   @unique
+  amount      Float
+  status      PaymentStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  bookingId   String   @unique
+  amount      Float
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
+}
+
+model Reminder {
+  id          String   @id @default(cuid())
+  bookingId   String
+  type        String
+  scheduledAt DateTime
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@map("reminders")
+}
+
+model AdminSignupCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  isUsed    Boolean   @default(false)
+  usedBy    String?
+  usedAt    DateTime?
+  createdBy String    // Admin who created the code
+
+  @@index([isUsed])
+  @@index([expiresAt])
+  @@map("admin_signup_codes")
+}
+
 enum Role {
   ADMIN
-  STAFF
+  CAREGIVER
   CLIENT
 }
 
+enum AccessLevel {
+  VIEW
+  EDIT
+  FULL_ACCESS
+}
+
 enum PaymentStatus {
+  FREE
   PENDING
   PAID
   FAILED
   REFUNDED
+}
+
+enum BookingStatus {
+  SCHEDULED
+  RESCHEDULED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
 }

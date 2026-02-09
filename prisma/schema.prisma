@@ -566,7 +566,7 @@ model Reminder {
   bookingId   String
   type        String
   scheduledAt DateTime
-  status      String   @default("PENDING")
+  status      ReminderStatus @default(PENDING)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
@@ -616,4 +616,10 @@ enum BookingStatus {
   CANCELLED
   COMPLETED
   NO_SHOW
+}
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
 }

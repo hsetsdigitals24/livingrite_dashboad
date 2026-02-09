@@ -11,38 +11,64 @@ interface Caregiver {
   email: string;
 }
 
-interface AddPatientFormProps {
+interface Patient {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  biologicalGender?: string;
+  heightCm?: number;
+  weightKg?: number;
+  timezone?: string;
+  medicalConditions?: string[];
+  medications?: any;
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  caregivers: Array<{
+    id: string;
+    caregiver: {
+      id: string;
+      name?: string;
+      email?: string;
+    };
+  }>;
+}
+
+interface EditPatientFormProps {
+  patient: Patient;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function AddPatientForm({
+export default function EditPatientForm({
+  patient,
   onClose,
   onSuccess,
-}: AddPatientFormProps) {
+}: EditPatientFormProps) {
   const [loading, setLoading] = useState(false);
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [loadingCaregivers, setLoadingCaregivers] = useState(true);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    biologicalGender: '',
-    heightCm: '',
-    weightKg: '',
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    medicalConditions: [] as string[],
-    medications: JSON.stringify([]),
-    emergencyContact: '',
-    emergencyPhone: '',
-    caregiverId: '',
-    caregiverNotes: '',
+    firstName: patient.firstName || '',
+    lastName: patient.lastName || '',
+    email: patient.email || '',
+    phone: patient.phone || '',
+    dateOfBirth: patient.dateOfBirth || '',
+    biologicalGender: patient.biologicalGender || '',
+    heightCm: patient.heightCm?.toString() || '',
+    weightKg: patient.weightKg?.toString() || '',
+    timezone: patient.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    medicalConditions: patient.medicalConditions || [],
+    medications: JSON.stringify(patient.medications || []),
+    emergencyContact: patient.emergencyContact || '',
+    emergencyPhone: patient.emergencyPhone || '',
+    caregiverId: patient.caregivers[0]?.caregiver.id || '',
+    caregiverNotes: patient.caregivers[0]?.id || '',
   });
 
-  // Fetch caregivers on mount
   useEffect(() => {
     fetchCaregivers();
   }, []);
@@ -50,7 +76,7 @@ export default function AddPatientForm({
   const fetchCaregivers = async () => {
     try {
       setLoadingCaregivers(true);
-      const response = await fetch('/api/admin/caregivers/list');
+      const response = await fetch('/api/admin/caregivers');
       if (!response.ok) throw new Error('Failed to fetch caregivers');
       const data = await response.json();
       setCaregivers(data.data || []);
@@ -88,11 +114,6 @@ export default function AddPatientForm({
       return;
     }
 
-    if (!formData.caregiverId) {
-      setError('Caregiver assignment is required');
-      return;
-    }
-
     try {
       setLoading(true);
 
@@ -104,8 +125,9 @@ export default function AddPatientForm({
         medications = null;
       }
 
-      const response = await fetch('/api/admin/patients', {
-        method: 'POST',
+      // Update patient details
+      const updateResponse = await fetch(`/api/admin/patients/${patient.id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName: formData.firstName.trim(),
@@ -121,20 +143,38 @@ export default function AddPatientForm({
           medications,
           emergencyContact: formData.emergencyContact || null,
           emergencyPhone: formData.emergencyPhone || null,
-          caregiverId: formData.caregiverId,
-          caregiverNotes: formData.caregiverNotes || null,
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create patient');
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(errorData.error || 'Failed to update patient');
+      }
+
+      // Handle caregiver reassignment if changed
+      if (formData.caregiverId && formData.caregiverId !== patient.caregivers[0]?.caregiver.id) {
+        const assignResponse = await fetch(
+          `/api/admin/patients/${patient.id}/assign-caregiver`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              caregiverId: formData.caregiverId,
+              notes: formData.caregiverNotes || null,
+            }),
+          }
+        );
+
+        if (!assignResponse.ok) {
+          const errorData = await assignResponse.json();
+          throw new Error(errorData.error || 'Failed to assign caregiver');
+        }
       }
 
       onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error creating patient:', err);
+      console.error('Error updating patient:', err);
     } finally {
       setLoading(false);
     }
@@ -144,7 +184,7 @@ export default function AddPatientForm({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold">Add New Patient</h2>
+          <h2 className="text-xl font-bold">Edit Patient</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -176,7 +216,6 @@ export default function AddPatientForm({
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  placeholder="John"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -190,7 +229,6 @@ export default function AddPatientForm({
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  placeholder="Doe"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -207,7 +245,6 @@ export default function AddPatientForm({
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="john@example.com"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -220,7 +257,6 @@ export default function AddPatientForm({
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="+234 123 456 7890"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -273,7 +309,6 @@ export default function AddPatientForm({
                   name="heightCm"
                   value={formData.heightCm}
                   onChange={handleInputChange}
-                  placeholder="170"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   step="0.1"
                 />
@@ -287,7 +322,6 @@ export default function AddPatientForm({
                   name="weightKg"
                   value={formData.weightKg}
                   onChange={handleInputChange}
-                  placeholder="70"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   step="0.1"
                 />
@@ -311,12 +345,8 @@ export default function AddPatientForm({
                       .filter((s) => s),
                   }))
                 }
-                placeholder="Comma-separated list (e.g., Diabetes, Hypertension)"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Enter conditions separated by commas
-              </p>
             </div>
 
             <div className="mt-4">
@@ -353,7 +383,6 @@ export default function AddPatientForm({
                   name="emergencyContact"
                   value={formData.emergencyContact}
                   onChange={handleInputChange}
-                  placeholder="Jane Doe"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -366,7 +395,6 @@ export default function AddPatientForm({
                   name="emergencyPhone"
                   value={formData.emergencyPhone}
                   onChange={handleInputChange}
-                  placeholder="+234 123 456 7890"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -376,28 +404,27 @@ export default function AddPatientForm({
           {/* Caregiver Assignment */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-4">
-              Caregiver Assignment *
+              Caregiver Assignment
             </h3>
             {loadingCaregivers ? (
               <p className="text-sm text-gray-600">Loading caregivers...</p>
             ) : caregivers.length === 0 ? (
               <p className="text-sm text-red-600">
-                No caregivers available. Please create a caregiver first.
+                No caregivers available.
               </p>
             ) : (
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Select Caregiver *
+                    Select Caregiver
                   </label>
                   <select
                     name="caregiverId"
                     value={formData.caregiverId}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
                   >
-                    <option value="">-- Select a Caregiver --</option>
+                    <option value="">-- Unassign Caregiver --</option>
                     {caregivers.map((caregiver) => (
                       <option key={caregiver.id} value={caregiver.id}>
                         {caregiver.name || caregiver.email}
@@ -438,7 +465,7 @@ export default function AddPatientForm({
               className="bg-blue-600 hover:bg-blue-700 text-white"
               disabled={loading || loadingCaregivers}
             >
-              {loading ? 'Creating...' : 'Create Patient'}
+              {loading ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </form>

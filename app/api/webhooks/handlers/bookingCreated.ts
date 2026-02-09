@@ -41,16 +41,6 @@ console.log("Booking Data:", bookingData);
     },
   });
 
-  const clientProfile = await prisma.userProfile.upsert({
-    where: { userId: user.id },
-    update: {},
-    create: {
-      userId: user.id,
-      timezone: timeZone,
-    },
-  });
- 
-
   // 2️⃣ Create booking
   const booking = await prisma.booking.create({
     data: {

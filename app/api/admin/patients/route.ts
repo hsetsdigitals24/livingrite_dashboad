@@ -1,116 +1,240 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+// GET: Fetch patients with pagination, search, and sorting
+export async function GET(req: Request) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
 
     const skip = (page - 1) * limit;
 
     // Build search filter
-    const where = search
+    const searchFilter = search
       ? {
           OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
+            { firstName: { contains: search, mode: 'insensitive' as const } },
+            { lastName: { contains: search, mode: 'insensitive' as const } },
             { email: { contains: search, mode: 'insensitive' as const } },
+            { phone: { contains: search, mode: 'insensitive' as const } },
           ],
         }
       : {};
 
-    // Fetch patients with pagination
-    const [patients, total] = await Promise.all([
-      prisma.patient.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          bookings: {
-            select: {
-              id: true,
-              status: true,
+    // Fetch patients with caregivers
+    const patients = await prisma.patient.findMany({
+      where: searchFilter,
+      include: {
+        caregivers: {
+          include: {
+            caregiver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                image: true,
+                caregiverProfile: {
+                  select: {
+                    specialization: true,
+                    yearsOfExperience: true,
+                  },
+                },
+              },
             },
           },
         },
-      }),
-      prisma.patient.count({ where }),
-    ]);
+        vitals: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        dailyLogs: {
+          orderBy: { date: 'desc' },
+          take: 1,
+        },
+        medicalAppointments: {
+          orderBy: { date: 'desc' },
+          take: 1,
+        },
+        bookings: {
+          orderBy: { scheduledAt: 'desc' },
+          take: 1,
+        },
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      skip,
+      take: limit,
+    });
 
-    const totalPages = Math.ceil(total / limit);
+    // Get total count for pagination
+    const total = await prisma.patient.count({
+      where: searchFilter,
+    });
 
     return NextResponse.json({
-      success: true,
-      data: patients,
+      patients,
       pagination: {
         page,
         limit,
         total,
-        totalPages,
+        pages: Math.ceil(total / limit),
       },
     });
   } catch (error) {
-    console.error('Error fetching patients:', error);
+    console.error('[PATIENTS_GET]', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch patients' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-export async function POST(request: NextRequest) {
+// POST: Create new patient
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const { name, email } = body;
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      dateOfBirth,
+      biologicalGender,
+      heightCm,
+      weightKg,
+      timezone,
+      medicalConditions,
+      medications,
+      emergencyContact,
+      emergencyPhone,
+      caregiverId,
+      caregiverNotes,
+      familyMemberId,
+      familyMemberRelationship,
+      familyMemberAccessLevel,
+    } = body;
 
     // Validate required fields
-    if (!name || !name.trim()) {
+    if (!firstName || !lastName) {
       return NextResponse.json(
-        { success: false, error: 'Patient name is required' },
+        { error: 'First name and last name are required' },
         { status: 400 }
       );
     }
 
-    // Check if patient with same email already exists (if email is provided)
-    if (email) {
-      const existingPatient = await prisma.patient.findUnique({
-        where: { email },
-      });
-
-      if (existingPatient) {
-        return NextResponse.json(
-          { success: false, error: 'Patient with this email already exists' },
-          { status: 409 }
-        );
-      }
+    if (!caregiverId) {
+      return NextResponse.json(
+        { error: 'Caregiver assignment is required' },
+        { status: 400 }
+      );
     }
 
-    // Create new patient
+    // Verify caregiver exists and has CAREGIVER role
+    const caregiver = await prisma.user.findFirst({
+      where: {
+        id: caregiverId,
+        role: 'CAREGIVER',
+      },
+    });
+
+    if (!caregiver) {
+      return NextResponse.json(
+        { error: 'Invalid caregiver selection' },
+        { status: 400 }
+      );
+    }
+
+    // Create patient with caregiver assignment
     const patient = await prisma.patient.create({
       data: {
-        name: name.trim(),
-        email: email ? email.trim().toLowerCase() : null,
+        firstName,
+        lastName,
+        email,
+        phone,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        biologicalGender,
+        heightCm: heightCm ? parseFloat(heightCm) : null,
+        weightKg: weightKg ? parseFloat(weightKg) : null,
+        timezone,
+        medicalConditions: medicalConditions || [],
+        medications,
+        emergencyContact,
+        emergencyPhone,
+        caregivers: {
+          create: {
+            caregiverId,
+            notes: caregiverNotes,
+          },
+        },
+        familyMembers: familyMemberId
+          ? {
+              create: {
+                clientId: familyMemberId,
+                relationshipType: familyMemberRelationship || 'family member',
+                accessLevel: familyMemberAccessLevel || 'VIEW',
+              },
+            }
+          : undefined,
       },
       include: {
-        bookings: {
-          select: {
-            id: true,
-            status: true,
+        caregivers: {
+          include: {
+            caregiver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                image: true,
+              },
+            },
+          },
+        },
+        familyMembers: {
+          include: {
+            client: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
     });
 
-    return NextResponse.json(
-      { success: true, data: patient, message: 'Patient added successfully' },
-      { status: 201 }
-    );
+    return NextResponse.json(patient, { status: 201 });
   } catch (error) {
-    console.error('Error creating patient:', error);
+    console.error('[PATIENTS_POST]', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create patient' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

@@ -23,9 +23,9 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
                      <button
                        key={item.id}
                        onClick={() => setActiveSection(item.id)}
-                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                       className={`w-full cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                          activeSection === item.id
-                           ? "bg-indigo-600 text-white shadow-md"
+                           ? "bg-primary text-white shadow-md"
                            : "text-gray-700 hover:bg-gray-100"
                        }`}
                      >

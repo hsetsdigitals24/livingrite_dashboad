@@ -163,7 +163,7 @@ export default function SignIn() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#00adef]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group animate-fade-in"
+                className="w-full my-4 py-3 px-4 bg-accent text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#00adef]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group animate-fade-in"
                 style={{ animationDelay: '0.4s' }}
               >
                 {isLoading ? (
@@ -190,14 +190,18 @@ export default function SignIn() {
               </div>
 
               {/* Sign Up Link */}
+              <span className="block text-center text-sm text-gray-600 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              
+                  Don't have an account?
               <Link
                 href="/auth/signup"
-                className="w-full py-3 px-4 border-2 border-[#00adef] text-[#00adef] font-semibold rounded-lg hover:bg-[#00adef]/5 transition-all duration-300 flex items-center justify-center gap-2 group animate-fade-in"
+                className="w-full text-[#00adef] font-semibold rounded-lg hover:bg-[#00adef]/5 flex items-center justify-center py-2"
                 style={{ animationDelay: '0.6s' }}
               >
-                Create Account
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                Create Account 
               </Link>
+              
+              </span>
             </form>
           </div>
 

@@ -156,7 +156,7 @@ export default function EditPatientForm({
       formData.append('file', mediaFile);
 
       const response = await fetch(
-        `/api/caregiver/patients/${patientId}/media`,
+        `/api/files/${patientId}`,
         {
           method: 'POST',
           body: formData,

@@ -143,6 +143,10 @@
     scroll-behavior: smooth;
   }
 
+  div {
+    background-repeat: no-repeat;
+  }
+
   /* Animation classes for page transitions */
   @keyframes fadeInUp {
     from {

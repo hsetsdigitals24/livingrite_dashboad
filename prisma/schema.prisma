@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("PRISMA_DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -84,6 +84,7 @@ model Patient {
   labResults          LabResults[]
   medicalAppointments MedicalAppointment[]
   bookings            Booking[]
+  files               File[]
 
   @@map("patients")
 }
@@ -270,6 +271,23 @@ model DailyLog {
   @@index([date])
   @@map("daily_logs")
 }
+
+model File {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  patientId    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  patient      Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@map("files")
+}
+
 
 model SleepLog {
   id                      String   @id @default(cuid())

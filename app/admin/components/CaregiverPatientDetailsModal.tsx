@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { X, AlertCircle, Calendar, Heart, FileText, Stethoscope } from 'lucide-react';
+import { X, AlertCircle, Calendar, Heart, FileText, Stethoscope, Trash2 } from 'lucide-react';
 
 interface PatientDetails {
   id: string;
@@ -67,8 +67,10 @@ export default function CaregiverPatientDetailsModal({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'vitals' | 'logs' | 'appointments'
+    'overview' | 'vitals' | 'logs' | 'appointments' | 'files'
   >('overview');
+  const [files, setFiles] = useState<Array<any>>([]);
+  const [filesLoading, setFilesLoading] = useState(false);
 
   useEffect(() => {
     fetchPatientDetails();
@@ -93,6 +95,43 @@ export default function CaregiverPatientDetailsModal({
       setLoading(false);
     }
   };
+
+  const fetchFiles = async () => {
+    try {
+      setFilesLoading(true);
+      const response = await fetch(`/api/files/${patientId}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch files');
+      }
+
+      const data = await response.json();
+      setFiles(data);
+    } catch (err) {
+      console.error('Error fetching files:', err);
+    } finally {
+      setFilesLoading(false);
+    }
+  };
+
+ const handleFileDelete = async (fileId: string) => {
+  try {
+    setLoading(true);
+    const deleteResponse = await fetch(`/api/files/${fileId}`, {
+      method: "DELETE",
+    });
+
+    if (deleteResponse?.status === 200) {
+      setFiles((prev) => prev.filter((file) => file.id !== fileId));
+    } else {
+      console.error("Failed to delete file");
+    }
+  } catch (error) {
+    console.error("Error deleting file:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) {
     return (
@@ -155,12 +194,18 @@ export default function CaregiverPatientDetailsModal({
             { id: 'vitals', label: 'Latest Vitals', icon: Heart },
             { id: 'logs', label: 'Daily Logs', icon: FileText },
             { id: 'appointments', label: 'Medical', icon: Stethoscope },
+            { id: 'files', label: 'Files', icon: FileText },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  if (tab.id === 'files' && files.length === 0 && !filesLoading) {
+                    fetchFiles();
+                  }
+                }}
                 className={`pb-3 px-4 font-medium text-sm flex items-center gap-2 border-b-2 transition ${
                   activeTab === tab.id
                     ? 'border-blue-600 text-blue-600'
@@ -408,6 +453,58 @@ export default function CaregiverPatientDetailsModal({
                           </p>
                         </div>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Files Tab */}
+          {activeTab === 'files' && (
+            <div>
+              {filesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+                </div>
+              ) : files.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No files found
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">
+                          {file.originalName}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                          <span>{(file.size / 1024).toFixed(2)} KB</span>
+                          <span>{file.mimeType}</span>
+                          <span>
+                            {new Date(file.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* manage file */}
+                      <div className="flex gap-2">
+                        <button onClick={() => handleFileDelete(file.id)}>
+                          <Trash2 />
+                        </button>
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium flex-shrink-0"
+                      >
+                        View
+                      </a>
+                        </div>
                     </div>
                   ))}
                 </div>

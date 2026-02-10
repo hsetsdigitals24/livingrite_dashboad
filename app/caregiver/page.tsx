@@ -32,10 +32,10 @@ export default function StaffDashboard() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Caregiver Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">My Clients</h2>
-            <p className="text-gray-600 mb-4">View and manage your assigned clients</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">My Patients</h2>
+            <p className="text-gray-600 mb-4">View and manage your assigned patients</p>
             <Link href="/caregiver/clients" className="text-blue-600 hover:text-blue-800">
-              View Clients →
+              View Patients →
             </Link>
           </div>
 

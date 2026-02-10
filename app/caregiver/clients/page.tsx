@@ -1,9 +1,8 @@
+"use client";
 
-'use client';
-
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -11,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   ChevronLeft,
   ChevronRight,
@@ -20,8 +19,10 @@ import {
   AlertCircle,
   Users,
   Heart,
-} from 'lucide-react';
-import CaregiverPatientDetailsModal from '@/app/admin/components/CaregiverPatientDetailsModal';
+  Edit2,
+} from "lucide-react";
+import CaregiverPatientDetailsModal from "@/app/admin/components/CaregiverPatientDetailsModal";
+import EditPatientFormModal from "@/app/admin/components/EditPatientFormModal";
 
 interface Patient {
   id: string;
@@ -58,12 +59,13 @@ export default function CaregiverClients() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Fetch patients
   useEffect(() => {
@@ -73,21 +75,21 @@ export default function CaregiverClients() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const response = await fetch(
-        `/api/caregiver/patients?page=${currentPage}&limit=${itemsPerPage}&search=${searchQuery}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+        `/api/caregiver/patients?page=${currentPage}&limit=${itemsPerPage}&search=${searchQuery}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch patients');
+        throw new Error("Failed to fetch patients");
       }
 
       const data = await response.json();
       setPatients(data.patients);
       setTotalItems(data.pagination.total);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching patients:', err);
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error("Error fetching patients:", err);
     } finally {
       setLoading(false);
     }
@@ -98,6 +100,11 @@ export default function CaregiverClients() {
     setShowDetailsModal(true);
   };
 
+  const handleEditPatient = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setShowEditModal(true);
+  };
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page on search
@@ -105,10 +112,10 @@ export default function CaregiverClients() {
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(field);
-      setSortOrder('desc');
+      setSortOrder("desc");
     }
   };
 
@@ -142,8 +149,12 @@ export default function CaregiverClients() {
     <div className="space-y-6 w-[80%] relative mx-auto py-6">
       {/* Header */}
       <div>
-        <button className='flex items-center justify-start gap-2 cursor-pointer px-4 my-2' onClick={() => window.history.back()}>
-        <ChevronLeft className="w-5 h-5 text-gray-600 hover:text-gray-900 transition" /> Back
+        <button
+          className="flex items-center justify-start gap-2 cursor-pointer px-4 my-2"
+          onClick={() => window.history.back()}
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-600 hover:text-gray-900 transition" />{" "}
+          Back
         </button>
         <h1 className="text-3xl font-bold text-gray-900">Your Patients</h1>
         <p className="text-gray-600 mt-1">
@@ -177,8 +188,8 @@ export default function CaregiverClients() {
             <p className="text-gray-500 text-lg">No patients assigned yet</p>
             <p className="text-gray-400 text-sm mt-1">
               {searchQuery
-                ? 'Try adjusting your search criteria'
-                : 'Contact your administrator to get assigned to patients'}
+                ? "Try adjusting your search criteria"
+                : "Contact your administrator to get assigned to patients"}
             </p>
           </div>
         ) : (
@@ -189,13 +200,13 @@ export default function CaregiverClients() {
                   <TableRow className="bg-gray-50 border-b">
                     <TableHead
                       className="cursor-pointer hover:bg-gray-100 transition"
-                      onClick={() => handleSort('firstName')}
+                      onClick={() => handleSort("firstName")}
                     >
                       <div className="flex items-center gap-2">
                         Name
-                        {sortBy === 'firstName' && (
+                        {sortBy === "firstName" && (
                           <span className="text-blue-600">
-                            {sortOrder === 'asc' ? '↑' : '↓'}
+                            {sortOrder === "asc" ? "↑" : "↓"}
                           </span>
                         )}
                       </div>
@@ -209,13 +220,13 @@ export default function CaregiverClients() {
                     <TableHead className="text-center">Appointments</TableHead>
                     <TableHead
                       className="cursor-pointer hover:bg-gray-100 transition"
-                      onClick={() => handleSort('createdAt')}
+                      onClick={() => handleSort("createdAt")}
                     >
                       <div className="flex items-center gap-2">
                         Assigned
-                        {sortBy === 'createdAt' && (
+                        {sortBy === "createdAt" && (
                           <span className="text-blue-600">
-                            {sortOrder === 'asc' ? '↑' : '↓'}
+                            {sortOrder === "asc" ? "↑" : "↓"}
                           </span>
                         )}
                       </div>
@@ -230,7 +241,7 @@ export default function CaregiverClients() {
                       ? Math.floor(
                           (new Date().getTime() -
                             new Date(patient.dateOfBirth).getTime()) /
-                            (365.25 * 24 * 60 * 60 * 1000)
+                            (365.25 * 24 * 60 * 60 * 1000),
                         )
                       : null;
 
@@ -247,17 +258,17 @@ export default function CaregiverClients() {
                           </div>
                         </TableCell>
                         <TableCell className="text-gray-600 text-sm">
-                          {patient.email || 'N/A'}
+                          {patient.email || "N/A"}
                         </TableCell>
                         <TableCell className="text-gray-600 text-sm">
-                          {patient.phone || 'N/A'}
+                          {patient.phone || "N/A"}
                         </TableCell>
                         <TableCell className="text-gray-600 text-sm capitalize">
-                          {patient.biologicalGender || 'N/A'}
+                          {patient.biologicalGender || "N/A"}
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                            {age !== null ? `${age} yrs` : 'N/A'}
+                            {age !== null ? `${age} yrs` : "N/A"}
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
@@ -279,16 +290,25 @@ export default function CaregiverClients() {
                         <TableCell className="text-gray-600 text-sm">
                           {assignmentDate
                             ? new Date(assignmentDate).toLocaleDateString()
-                            : 'N/A'}
+                            : "N/A"}
                         </TableCell>
                         <TableCell className="text-right">
-                          <button
-                            onClick={() => handleViewDetails(patient)}
-                            className="p-2 hover:bg-blue-50 rounded-lg transition text-blue-600 hover:text-blue-700"
-                            title="View Details"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
+                          <div className="w-full flex">
+                            <button
+                              onClick={() => handleViewDetails(patient)}
+                              className="p-2 hover:bg-blue-50 rounded-lg transition text-blue-600 hover:text-blue-700"
+                              title="View Details"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleEditPatient(patient)}
+                              className="p-2 hover:bg-blue-50 rounded-lg transition text-blue-600 hover:text-blue-700"
+                              title="Edit Patient"
+                            >
+                              <Edit2 className="w-5 h-5" />
+                            </button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -300,8 +320,8 @@ export default function CaregiverClients() {
             {/* Pagination */}
             <div className="border-t px-6 py-4 flex items-center justify-between bg-gray-50">
               <div className="text-sm text-gray-600">
-                Showing <span className="font-medium">{startIndex}</span> to{' '}
-                <span className="font-medium">{endIndex}</span> of{' '}
+                Showing <span className="font-medium">{startIndex}</span> to{" "}
+                <span className="font-medium">{endIndex}</span> of{" "}
                 <span className="font-medium">{totalItems}</span> patients
               </div>
 
@@ -309,7 +329,9 @@ export default function CaregiverClients() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
                   disabled={currentPage === 1 || loading}
                   className="flex items-center gap-2"
                 >
@@ -318,22 +340,24 @@ export default function CaregiverClients() {
                 </Button>
 
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(totalPages, 5) }).map((_, idx) => {
-                    const pageNum = idx + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 rounded-lg font-medium transition ${
-                          currentPage === pageNum
-                            ? 'bg-blue-600 text-white'
-                            : 'border border-gray-300 text-gray-700 hover:border-gray-400'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                  {Array.from({ length: Math.min(totalPages, 5) }).map(
+                    (_, idx) => {
+                      const pageNum = idx + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-8 h-8 rounded-lg font-medium transition ${
+                            currentPage === pageNum
+                              ? "bg-blue-600 text-white"
+                              : "border border-gray-300 text-gray-700 hover:border-gray-400"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    },
+                  )}
                   {totalPages > 5 && (
                     <>
                       <span className="text-gray-400">...</span>
@@ -341,8 +365,8 @@ export default function CaregiverClients() {
                         onClick={() => setCurrentPage(totalPages)}
                         className={`w-8 h-8 rounded-lg font-medium transition ${
                           currentPage === totalPages
-                            ? 'bg-blue-600 text-white'
-                            : 'border border-gray-300 text-gray-700 hover:border-gray-400'
+                            ? "bg-blue-600 text-white"
+                            : "border border-gray-300 text-gray-700 hover:border-gray-400"
                         }`}
                       >
                         {totalPages}
@@ -354,7 +378,9 @@ export default function CaregiverClients() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
                   disabled={currentPage === totalPages || loading}
                   className="flex items-center gap-2"
                 >
@@ -370,14 +396,29 @@ export default function CaregiverClients() {
       {/* Details Modal */}
       {showDetailsModal && selectedPatient && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-        <CaregiverPatientDetailsModal
-          
+          <CaregiverPatientDetailsModal
+            patientId={selectedPatient.id}
+            onClose={() => {
+              setShowDetailsModal(false);
+              setSelectedPatient(null);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Edit Patient Form Modal */}
+      {showEditModal && selectedPatient && (
+        <EditPatientFormModal
           patientId={selectedPatient.id}
+          patientName={`${selectedPatient.firstName} ${selectedPatient.lastName}`}
           onClose={() => {
-            setShowDetailsModal(false);
+            setShowEditModal(false);
             setSelectedPatient(null);
           }}
-        /></div>
+          onSuccess={() => {
+            fetchPatients(); // Refresh the table
+          }}
+        />
       )}
     </div>
   );

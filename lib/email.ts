@@ -141,3 +141,21 @@ export async function sendCancellationEmail(booking: Booking) {
 
   return await transporter.sendMail(mailOptions);
 }
+
+export async function sendPasswordResetEmail(email: string, resetLink: string) {
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: email,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Password Reset Request',
+    html: `
+      <h2>Password Reset Request</h2>
+      <p>We received a request to reset your password. Click the link below to set a new password:</p>
+      <p><a href="${resetLink}">Reset Your Password</a></p>
+      <p>If you did not request a password reset, please ignore this email.</p>
+    `,
+    text: `We received a request to reset your password. Use the following link to set a new password: ${resetLink}. If you did not request a password reset, please ignore this email.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}

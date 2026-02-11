@@ -34,6 +34,17 @@ model User {
   @@map("users")
 }
 
+model PasswordResetToken {
+ id                String   @id @default(cuid())
+ token             String   @unique
+ email             String
+ expiresAt         DateTime 
+ isUsed            Boolean  @default(false)
+ createdAt         DateTime @default(now())
+
+ @@map("password_reset_tokens")
+}
+
 // A caregiver can be a User with CAREGIVER role
 // This stores additional caregiver-specific information
 model CaregiverProfile {

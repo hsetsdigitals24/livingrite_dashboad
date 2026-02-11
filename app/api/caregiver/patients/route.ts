@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Fetch all patients assigned to the logged-in caregiver with pagination, search, and sorting
 export async function GET(req: Request) {
   try {

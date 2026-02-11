@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "payments" ADD COLUMN     "paidAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "providerRef" TEXT;

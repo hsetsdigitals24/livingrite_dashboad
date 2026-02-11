@@ -340,6 +340,7 @@ export default function SettingsSection() {
       setSuccessMessage('Popup updated successfully!');
     }
     setTimeout(() => setSuccessMessage(null), 3000);
+    handlePopupFormClose();
   };
 
   useEffect(() => {

@@ -12,6 +12,7 @@ interface Popup {
   actionButtonText: string;
   actionButtonUrl: string;
   isActive: boolean;
+  displayOrder: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +40,7 @@ export default function PopupForm({
     actionButtonText: popup?.actionButtonText || '',
     actionButtonUrl: popup?.actionButtonUrl || '',
     isActive: popup?.isActive ?? true,
+    displayOrder: popup?.displayOrder ?? 0,
   });
 
   const handleChange = (

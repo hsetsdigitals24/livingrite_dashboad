@@ -139,13 +139,13 @@ export function Header() {
               Testimonials
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link
+            {/* <Link
               href="/portal/booking"
               className="relative text-gray-700 hover:text-primary transition-colors font-medium group"
             >
               Book Consultation
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
-            </Link>
+            </Link> */}
             <Link
               href="/blogs"
               className="relative text-gray-700 hover:text-primary transition-colors font-medium group"

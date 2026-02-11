@@ -134,6 +134,15 @@ export async function GET() {
       amount: booking.payment?.amount,
     }));
 
+    // Pipeline metrics
+    const [totalInquiries, qualifiedInquiries, convertedInquiries, totalProposals, acceptedProposals] = await Promise.all([
+      prisma.inquiry.count(),
+      prisma.inquiry.count({ where: { status: "QUALIFIED" } }),
+      prisma.inquiry.count({ where: { status: "CONVERTED" } }),
+      prisma.proposal.count(),
+      prisma.proposal.count({ where: { status: "ACCEPTED" } }),
+    ]);
+
     return NextResponse.json({
       totalClients,
       totalPatients,
@@ -144,6 +153,12 @@ export async function GET() {
       bookingsTrend,
       topServices,
       recentBookings: formattedRecentBookings,
+      // Pipeline metrics
+      totalInquiries,
+      qualifiedInquiries,
+      convertedInquiries,
+      totalProposals,
+      acceptedProposals,
     });
   } catch (error) {
     console.error("Dashboard API error:", error);

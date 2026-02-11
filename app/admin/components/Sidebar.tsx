@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, DollarSign, MessageSquare, Settings, TrendingUp, Users } from "lucide-react";
+import { BarChart3, Calendar, DollarSign, MessageSquare, Settings, TrendingUp, Users, GitBranch } from "lucide-react";
 
 interface SidebarProps {
   activeSection: string;
@@ -11,6 +11,7 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
                  <nav className="p-6 space-y-2">
                    {[
                      { label: "Dashboard", icon: BarChart3, id: "overview" },
+                     { label: "Pipeline", icon: GitBranch, id: "pipeline" },
                      { label: "Consultations", icon: Calendar, id: "consultations" },
                      {label: "Patients", icon: Users, id: "patients"},
                      { label: "Clients", icon: Users, id: "clients" },

@@ -1,12 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import {
-  TrendingUp,
-  Users,
-  Calendar,
-  DollarSign
-} from "lucide-react";
+import { useState } from "react"; 
 import ConsultationsSection from "./sections/Consultations";
 import ClientsSection from "./sections/Clients";
 import Sidebar from "./components/Sidebar";
@@ -15,6 +9,7 @@ import CaregiversSection from "./sections/Caregivers";
 import MetricCard from "./components/MetricCard";
 import SettingsSection from "./sections/Settings"; 
 import Header from "./components/Header";
+import OverviewSection from "./sections/Overview";
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
@@ -39,7 +34,7 @@ export default function AdminDashboard() {
             {activeSection === "patients" && <PatientsSection />}
             {activeSection === "caregivers" && <CaregiversSection />}
             {activeSection === "settings" && <SettingsSection />}
-            {/* {activeSection === "overview" && <OverviewSection />} */}
+            {activeSection === "overview" && <OverviewSection />}
             {/* {activeSection === "revenue" && <RevenueSection />} */}
             {/* {activeSection === "analytics" && <AnalyticsSection />} */}
             {/* {activeSection === "tickets" && <TicketsSection />} */}

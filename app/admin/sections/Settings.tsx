@@ -4,6 +4,7 @@ import { Edit, Eye, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ServiceForm from '../components/ServiceForm';
 import ServiceView from '../components/ServiceView';
+import PopupForm from '../components/PopupForm';
 
 interface Service {
   id: string;
@@ -27,13 +28,28 @@ interface InvitationCode {
   usedAt: string | null;
 }
 
-type Tab = 'services' | 'codes';
+interface Popup {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  actionButtonText: string;
+  actionButtonUrl: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+type Tab = 'services' | 'codes' | 'popups';
 type ServiceModalMode = 'create' | 'edit' | 'view' | null;
 
 export default function SettingsSection() {
   const [activeTab, setActiveTab] = useState<Tab>('services');
   const [services, setServices] = useState<Service[]>([]);
   const [codes, setCodes] = useState<InvitationCode[]>([]);
+  const [popups, setPopups] = useState<Popup[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -43,6 +59,8 @@ export default function SettingsSection() {
   // Service modal states
   const [serviceModalMode, setServiceModalMode] = useState<ServiceModalMode>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [popupModalMode, setPopupModalMode] = useState<'create' | 'edit' | null>(null);
+  const [selectedPopup, setSelectedPopup] = useState<Popup | null>(null);
 
   // Fetch services
   const fetchServices = async () => {
@@ -76,6 +94,22 @@ export default function SettingsSection() {
     } catch (err) {
       console.error('Error fetching codes:', err);
       setError('An error occurred while fetching codes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch popups
+  const fetchPopups = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/popups');
+      const result = await response.json();
+      setPopups(result);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching popups:', err);
+      setError('An error occurred while fetching popups');
     } finally {
       setLoading(false);
     }
@@ -230,11 +264,91 @@ export default function SettingsSection() {
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
+  // Popup handlers
+  const handleCreatePopup = () => {
+    setSelectedPopup(null);
+    setPopupModalMode('create');
+  };
+
+  const handleEditPopup = (popupId: string) => {
+    const popup = popups.find((p) => p.id === popupId);
+    if (popup) {
+      setSelectedPopup(popup);
+      setPopupModalMode('edit');
+    }
+  };
+
+  const handleDeletePopup = async (popupId: string) => {
+    if (!confirm('Are you sure you want to delete this popup?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/popups/${popupId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete popup');
+      }
+
+      setPopups(popups.filter((p) => p.id !== popupId));
+      setSuccessMessage('Popup deleted successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Error deleting popup:', err);
+      setError('Failed to delete popup');
+    }
+  };
+
+  const handleTogglePopup = async (popup: Popup) => {
+    try {
+      const response = await fetch(`/api/admin/popups/${popup.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !popup.isActive }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update popup');
+      }
+
+      setPopups(
+        popups.map((p) =>
+          p.id === popup.id ? { ...p, isActive: !p.isActive } : p
+        )
+      );
+    } catch (err) {
+      console.error('Error updating popup:', err);
+      setError('Failed to update popup');
+    }
+  };
+
+  const handlePopupFormClose = () => {
+    setPopupModalMode(null);
+    setSelectedPopup(null);
+  };
+
+  const handlePopupFormSuccess = (updatedPopup: Popup) => {
+    if (popupModalMode === 'create') {
+      setPopups([updatedPopup, ...popups]);
+      setSuccessMessage('Popup created successfully!');
+    } else if (popupModalMode === 'edit') {
+      setPopups(
+        popups.map((p) => (p.id === updatedPopup.id ? updatedPopup : p))
+      );
+      setSuccessMessage('Popup updated successfully!');
+    }
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
   useEffect(() => {
     if (activeTab === 'services') {
       fetchServices();
-    } else {
+    } else if (activeTab === 'codes') {
       fetchCodes();
+    } else if (activeTab === 'popups') {
+      fetchPopups();
     }
   }, [activeTab]);
 
@@ -293,6 +407,16 @@ export default function SettingsSection() {
               }`}
             >
               Invitation Codes
+            </button>
+            <button
+              onClick={() => setActiveTab('popups')}
+              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                activeTab === 'popups'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Landing Page Popups
             </button>
           </div>
         </div>
@@ -558,7 +682,110 @@ export default function SettingsSection() {
         </div>
       )}
 
-      {/* Modals */}
+      {/* Popups Tab */}
+      {activeTab === 'popups' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Landing Page Popups</h2>
+            <button
+              onClick={handleCreatePopup}
+              className="bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              + Create Popup
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <p className="text-gray-500">Loading popups...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Title
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Button Text
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Order
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {popups.length > 0 ? (
+                    popups
+                      .sort((a, b) => a.displayOrder - b.displayOrder)
+                      .map((popup) => (
+                        <tr
+                          key={popup.id}
+                          className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                            {popup.title}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {popup.actionButtonText}
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            <button
+                              onClick={() => handleTogglePopup(popup)}
+                              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                popup.isActive
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                              }`}
+                            >
+                              {popup.isActive ? 'Active' : 'Inactive'}
+                            </button>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {popup.displayOrder}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {new Date(popup.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 text-sm flex gap-2">
+                            <button
+                              onClick={() => handleEditPopup(popup.id)}
+                              className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeletePopup(popup.id)}
+                              className="text-red-600 hover:text-red-800 font-medium transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                        No popups found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
       {(serviceModalMode === 'create' || serviceModalMode === 'edit') && (
         <ServiceForm
           service={selectedService}
@@ -569,6 +796,14 @@ export default function SettingsSection() {
 
       {serviceModalMode === 'view' && selectedService && (
         <ServiceView service={selectedService} onClose={handleServiceFormClose} />
+      )}
+
+      {(popupModalMode === 'create' || popupModalMode === 'edit') && (
+        <PopupForm
+          popup={selectedPopup}
+          onClose={handlePopupFormClose}
+          onSuccess={handlePopupFormSuccess}
+        />
       )}
     </div>
   );

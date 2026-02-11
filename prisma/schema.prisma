@@ -621,6 +621,22 @@ model AdminSignupCode {
   @@map("admin_signup_codes")
 }
 
+model LandingPagePopup {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  imageUrl        String?
+  imageAlt        String?
+  actionButtonText String
+  actionButtonUrl String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("landing_page_popups")
+}
+
 enum Role {
   ADMIN
   CAREGIVER

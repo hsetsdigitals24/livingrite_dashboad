@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 
 // GET: Fetch clients (users with CLIENT role) with pagination, search, and sorting
 export async function GET(req: Request) {
@@ -24,14 +25,14 @@ export async function GET(req: Request) {
 
     const skip = (page - 1) * limit;
 
-    // Build search filter
-    const searchFilter = {
-      role: 'CLIENT',
+    // Build search filter with proper Prisma typing
+    const searchFilter: Prisma.UserWhereInput = {
+      role: 'CLIENT' as const,
       ...(search
         ? {
             OR: [
-              { name: { contains: search, mode: 'insensitive' as const } },
-              { email: { contains: search, mode: 'insensitive' as const } }
+              { name: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } }
             ],
           }
         : {}),

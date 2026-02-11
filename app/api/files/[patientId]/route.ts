@@ -91,12 +91,12 @@ export async function DELETE(req: Request) {
 }
 
 // LIST ALL FILES IN R2 (FOR DEBUGGING)
-export async function LIST() {
-  const response = await r2.send(
-    new ListObjectsV2Command({
-      Bucket: process.env.R2_BUCKET_NAME!,
-    })
-  )
+// export async function GET() {
+//   const response = await r2.send(
+//     new ListObjectsV2Command({
+//       Bucket: process.env.R2_BUCKET_NAME!,
+//     })
+//   )
 
-  return NextResponse.json(response.Contents || [])
-}
+//   return NextResponse.json(response.Contents || [])
+// }

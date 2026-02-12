@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Header } from "@/components/header";
+import { FloatingContactWidget } from "@/components/FloatingContactWidget";
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -22,6 +23,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           <section>{children}</section>
+          <FloatingContactWidget />
         </Providers>
       </body>
     </html>

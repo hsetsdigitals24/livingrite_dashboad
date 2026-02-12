@@ -14,15 +14,7 @@ interface FloatingContactWidgetProps {
   whatsappMessage?: string;
   show?: boolean;
 }
-
-/**
- * Floating Contact Widget
- * Non-intrusive floating component (bottom-right) with:
- * - WhatsApp chat button
- * - Click-to-call button
- * - Business hours indicator
- * - Response time trust message
- */
+ 
 export function FloatingContactWidget({
   whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "+1234567890",
   callPhone = process.env.NEXT_PUBLIC_CALL_PHONE || "+1234567890",

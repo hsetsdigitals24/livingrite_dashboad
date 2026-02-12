@@ -41,6 +41,10 @@ model User {
   sentMessages Message[]
   clientConversations Conversation[] @relation("ConversationToClient")
   caregiverConversations Conversation[] @relation("ConversationToCaregiver")
+  
+  // Testimonial approvals
+  approvedTestimonials Testimonial[] @relation("TestimonialApprover")
+  approvedCaseStudies CaseStudy[] @relation("CaseStudyApprover")
 
   @@map("users")
 }
@@ -609,7 +613,10 @@ model Service {
   pricingConfig Json? // {discountPercentage, minPrice, maxPrice, pricingNotes, enableForPayments}
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
   bookings      Booking[]
+  testimonials  Testimonial[]
+  caseStudies   CaseStudy[]
 
   @@map("services")
 }
@@ -889,4 +896,86 @@ enum InvoiceStatus {
   PAID          // Invoice paid
   OVERDUE       // Payment overdue
   CANCELLED     // Invoice cancelled
+}
+
+enum TestimonialStatus {
+  PENDING       // Awaiting admin review
+  APPROVED      // Approved and visible
+  REJECTED      // Not approved
+  FEATURED      // Highlighted on page
+  ARCHIVED      // Hidden but kept
+}
+
+model Testimonial {
+  id            String              @id @default(cuid())
+  clientName    String
+  clientTitle   String?             // e.g., "Patient" or "Family Member"
+  clientImage   String?             // avatar/photo URL
+  rating        Int                 // 1-5 stars
+  content       String              // quote/review text
+  videoUrl      String?             // YouTube/Vimeo embed URL
+  serviceId     String?
+  featured      Boolean             @default(false)
+  status        TestimonialStatus   @default(PENDING)
+  approvedBy    String?
+  approvedAt    DateTime?
+  displayOrder  Int?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  service       Service?            @relation(fields: [serviceId], references: [id])
+  approver      User?               @relation("TestimonialApprover", fields: [approvedBy], references: [id])
+
+  @@index([status])
+  @@index([serviceId])
+  @@index([featured])
+  @@index([createdAt])
+  @@map("testimonials")
+}
+
+model CaseStudy {
+  id            String              @id @default(cuid())
+  slug          String              @unique
+  title         String
+  clientName    String
+  serviceId     String?
+  
+  // Content
+  challenge     String
+  solution      String
+  outcome       String
+  narrative     String              // Full story, 800-1500 words
+  
+  // Media
+  heroImage     String?
+  beforeImage   String?
+  afterImage    String?
+  images        String[]            // Array of image URLs for gallery
+  videoUrl      String?             // Testimonial video
+  
+  // Metrics
+  rating        Int?                // 1-5 stars
+  timeline      String?             // e.g., "6 months", "3 weeks"
+  keyResults    Json?               // Array of {metric, value}
+  
+  // Status & Workflow
+  status        TestimonialStatus   @default(PENDING)
+  featured      Boolean             @default(false)
+  displayOrder  Int?
+  publishedAt   DateTime?
+  approvedBy    String?
+  approvedAt    DateTime?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  service       Service?            @relation(fields: [serviceId], references: [id])
+  approver      User?               @relation("CaseStudyApprover", fields: [approvedBy], references: [id])
+
+  @@index([status])
+  @@index([serviceId])
+  @@index([featured])
+  @@index([slug])
+  @@index([createdAt])
+  @@map("case_studies")
 }

@@ -75,10 +75,14 @@ console.log("Booking Data:", bookingData);
   // 4️⃣ Create invoice
   await prisma.invoice.create({
     data: { 
-      bookingId: booking.id, 
+      bookingId: booking.id,
+      invoiceNumber: `INV-${booking.id.slice(0, 8)}-${Date.now()}`,
       amount: 0,
+      tax: 0,
+      discount: 0,
+      totalAmount: 0,
       currency: "USD",
-      status: "PENDING",
+      status: "DRAFT",
     },
   });
 

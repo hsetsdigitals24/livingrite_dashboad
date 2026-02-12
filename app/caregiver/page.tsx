@@ -48,10 +48,10 @@ export default function StaffDashboard() {
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Progress Reports</h2>
-            <p className="text-gray-600 mb-4">Upload client progress updates</p>
-            <Link href="/caregiver/reports" className="text-blue-600 hover:text-blue-800">
-              View Reports →
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">My Messages</h2>
+            <p className="text-gray-600 mb-4">View and manage your messages with clients</p>
+            <Link href="/caregiver/messages" className="text-blue-600 hover:text-blue-800">
+              View Messages →
             </Link>
           </div>
         </div>

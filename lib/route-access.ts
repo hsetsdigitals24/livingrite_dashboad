@@ -17,7 +17,7 @@ export const AUTH_ROUTES = [
 
 export const ROLE_PROTECTED_ROUTES: Record<string, string[]> = {
   ADMIN: ["/admin", "/api/admin"],
-  CAREGIVER: ["/caregiver", "/api/caregiver"],
-  CLIENT: ["/portal", "/api/portal", "/api/bookings"],
+  CAREGIVER: ["/caregiver", "/api/caregiver", "/api/messages"],
+  CLIENT: ["/portal", "/api/portal", "/api/bookings", "/api/messages"],
   SUPPORT: ["/support", "/api/support"],
 };

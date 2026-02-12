@@ -25,7 +25,7 @@ const Header = () => {
              <div className="flex items-center gap-8">
                <div>
                  <h1 className="text-xl font-bold text-gray-700">
-                   LivingRite Care Admin
+                   Admin Center
                  </h1>
                  <div
                    className="bg-contain bg-no-repeat w-full h-full"

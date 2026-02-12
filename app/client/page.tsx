@@ -88,12 +88,12 @@ const ClientDashboard = () => {
       {patients.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <p className="text-gray-600 mb-4">No family members added yet</p>
-          <button
+          {/* <button
             onClick={() => setShowAddPatientModal(true)}
             className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
           >
             Add Family Member
-          </button>
+          </button> */}
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

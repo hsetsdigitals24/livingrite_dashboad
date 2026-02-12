@@ -159,3 +159,132 @@ export async function sendPasswordResetEmail(email: string, resetLink: string) {
 
   return await transporter.sendMail(mailOptions);
 }
+
+// Payment-related emails
+
+export async function sendPaymentSuccessEmail(
+  clientEmail: string,
+  clientName: string,
+  amount: number,
+  currency: string,
+  invoiceNumber: string,
+  bookingId: string
+) {
+  if (!clientEmail) throw new Error('Client email is required');
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Payment Received - Your Invoice',
+    html: `
+      <h2>Payment Received</h2>
+      <p>Hi ${clientName},</p>
+      <p>Thank you! We've received your payment of <strong>${currency} ${amount.toFixed(2)}</strong>.</p>
+      <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/client/booking/manage?bookingId=${bookingId}">View Invoice & Booking Details</a></p>
+      <p>Your consultation is now confirmed. A joining link will be sent 24 hours before your scheduled appointment.</p>
+      <p>Thank you for choosing LivingRite!</p>
+    `,
+    text: `Payment received for ${currency} ${amount.toFixed(2)}. Invoice: ${invoiceNumber}. Your consultation is confirmed.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+export async function sendPaymentFailedEmail(
+  clientEmail: string,
+  clientName: string,
+  bookingId: string,
+  retryLink?: string
+) {
+  if (!clientEmail) throw new Error('Client email is required');
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Payment Failed - Please Retry',
+    html: `
+      <h2>Payment Failed</h2>
+      <p>Hi ${clientName},</p>
+      <p>Unfortunately, your payment was not successful.</p>
+      <p>Possible reasons:</p>
+      <ul>
+        <li>Insufficient funds</li>
+        <li>Card expired or blocked</li>
+        <li>Incorrect card details</li>
+        <li>Network timeout</li>
+      </ul>
+      ${
+        retryLink
+          ? `<p><a href="${retryLink}">Retry Payment</a></p>`
+          : `<p><a href="${process.env.NEXT_PUBLIC_APP_URL}/client/payment/${bookingId}">Try Again</a></p>`
+      }
+      <p>If you continue to have issues, please contact our support team.</p>
+    `,
+    text: 'Your payment was not successful. Please retry or contact support for assistance.',
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+export async function sendInvoiceEmail(
+  clientEmail: string,
+  clientName: string,
+  invoiceNumber: string,
+  amount: number,
+  currency: string,
+  invoiceLink: string
+) {
+  if (!clientEmail) throw new Error('Client email is required');
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: `Invoice ${invoiceNumber} - ${amount.toFixed(2)} ${currency}`,
+    html: `
+      <h2>Invoice</h2>
+      <p>Hi ${clientName},</p>
+      <p>Your invoice is ready:</p>
+      <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
+      <p><strong>Amount Due:</strong> ${currency} ${amount.toFixed(2)}</p>
+      <p><a href="${invoiceLink}">Download Invoice</a></p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/client/payment">Make Payment</a></p>
+      <p>Thank you!</p>
+    `,
+    text: `Invoice ${invoiceNumber} for ${currency} ${amount.toFixed(2)} is ready.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+export async function sendRefundProcessedEmail(
+  clientEmail: string,
+  clientName: string,
+  amount: number,
+  currency: string,
+  reason: string
+) {
+  if (!clientEmail) throw new Error('Client email is required');
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Refund Processed',
+    html: `
+      <h2>Refund Processed</h2>
+      <p>Hi ${clientName},</p>
+      <p>Your refund has been processed successfully.</p>
+      <p><strong>Refund Amount:</strong> ${currency} ${amount.toFixed(2)}</p>
+      <p><strong>Reason:</strong> ${reason}</p>
+      <p>The amount will be reflected in your account within 3-5 business days.</p>
+      <p>If you have any questions, please contact us.</p>
+    `,
+    text: `Your refund of ${currency} ${amount.toFixed(2)} has been processed.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}

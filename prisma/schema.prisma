@@ -37,6 +37,11 @@ model User {
   bookings Booking[]
   inquiries Inquiry[]
 
+  // Messaging
+  sentMessages Message[]
+  clientConversations Conversation[] @relation("ConversationToClient")
+  caregiverConversations Conversation[] @relation("ConversationToCaregiver")
+
   @@map("users")
 }
 
@@ -130,6 +135,9 @@ model Patient {
   medicalAppointments MedicalAppointment[]
   bookings            Booking[]
   files               File[]
+
+  // Messaging conversations
+  conversations Conversation[] @relation("ConversationToPatient")
 
   @@map("patients")
 }
@@ -634,29 +642,93 @@ model Proposal {
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  bookingId   String        @unique
-  amount      Float
-  status      PaymentStatus @default(PENDING)
-  providerRef String?       @unique
-  paidAt      DateTime      @default(now())
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id              String           @id @default(cuid())
+  bookingId       String           @unique
+  amount          Float
+  currency        String           @default("USD")
+  status          PaymentStatus    @default(PENDING)
+  providerRef     String?          @unique // Paystack reference
+  paidAt          DateTime?
+  refundedAt      DateTime?
+  refundedAmount  Float?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
+  booking         Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  attempts        PaymentAttempt[]
+  refundRequests  RefundRequest[]
+
+  @@index([status])
+  @@index([providerRef])
+  @@index([createdAt])
   @@map("payments")
 }
 
-model Invoice {
-  id        String   @id @default(cuid())
-  bookingId String   @unique
-  amount    Float
-  currency  String?
-  status    String   @default("PENDING")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+// Track payment attempts for retry logic
+model PaymentAttempt {
+  id          String   @id @default(cuid())
+  paymentId   String
+  reference   String?  // Paystack reference for this attempt
+  amount      Float
+  status      String   // "pending", "success", "failed"
+  errorCode   String?  // Paystack error code
+  errorMsg    String?  // Paystack error message
+  metadata    Json?    // Additional response data
+  createdAt   DateTime @default(now())
 
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([reference])
+  @@index([createdAt])
+  @@map("payment_attempts")
+}
+
+// Track refund requests
+model RefundRequest {
+  id            String   @id @default(cuid())
+  paymentId     String
+  amount        Float
+  reason        String
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED, PROCESSED
+  approvedBy    String?  // Admin user ID
+  approvedAt    DateTime?
+  processedAt   DateTime?
+  providerRef   String?  // Paystack refund reference
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  payment       Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("refund_requests")
+}
+
+model Invoice {
+  id            String          @id @default(cuid())
+  bookingId     String          @unique
+  invoiceNumber String          @unique
+  amount        Float
+  tax           Float           @default(0)
+  discount      Float           @default(0)
+  totalAmount   Float
+  currency      String          @default("USD")
+  status        InvoiceStatus   @default(DRAFT)
+  pdfUrl        String?
+  sentAt        DateTime?
+  paidAt        DateTime?
+  dueAt         DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  booking       Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([invoiceNumber])
+  @@index([createdAt])
   @@map("invoices")
 }
 
@@ -703,6 +775,48 @@ model LandingPagePopup {
 
   @@index([isActive])
   @@map("landing_page_popups")
+}
+
+// Conversation model - represents a messaging thread between a client and caregiver
+model Conversation {
+  id                String    @id @default(cuid())
+  patientId         String
+  clientId          String
+  caregiverId       String
+  lastMessageAt     DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  patient Patient   @relation("ConversationToPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  client  User      @relation("ConversationToClient", fields: [clientId], references: [id], onDelete: Cascade)
+  caregiver User    @relation("ConversationToCaregiver", fields: [caregiverId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([patientId, clientId, caregiverId])
+  @@index([patientId])
+  @@index([clientId])
+  @@index([caregiverId])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+// Message model - individual messages in a conversation
+model Message {
+  id              String    @id @default(cuid())
+  conversationId  String
+  senderId        String
+  content         String
+  isRead          Boolean   @default(false)
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
 }
 
 enum Role {
@@ -765,4 +879,14 @@ enum ProposalStatus {
   VIEWED        // Client has viewed the proposal
   ACCEPTED      // Client accepted the proposal
   REJECTED      // Client rejected the proposal
+}
+// Invoice status tracking
+enum InvoiceStatus {
+  DRAFT         // Invoice being prepared
+  GENERATED     // Invoice generated/ready
+  SENT          // Invoice sent to client
+  VIEWED        // Client has viewed the invoice
+  PAID          // Invoice paid
+  OVERDUE       // Payment overdue
+  CANCELLED     // Invoice cancelled
 }

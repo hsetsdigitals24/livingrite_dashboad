@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
   ComposedChart,
 } from "recharts";
+import { StartConversationModal } from "../../components/StartConversationModal";
 
 interface PatientData {
   id: string;
@@ -49,6 +50,9 @@ const PatientDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+
+   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -213,7 +217,22 @@ const PatientDetailPage = () => {
             </div>
           </div>
         )}
+        <div className="mt-6">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+          >
+            Start Conversation
+          </button>
+        </div>
       </div>
+
+      {/* Start Conversation Modal */}
+         <StartConversationModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          patientId={patient.id}
+        />
 
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow">

@@ -1,53 +1,19 @@
-"use client";
+import { HeroSection } from "@/components/hero-section"
+import { TrustIndicators } from "@/components/trust-indicators"
+import { ServicesSection } from "@/components/services-section"
+import { AboutSection } from "@/components/about-section"
+import { TestimonialsSection } from "@/components/testimonials-section"
+import { CTABanner } from "@/components/cta-banner"
 
-import Cal, { getCalApi } from "@calcom/embed-react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-
-export default function MyApp() {
-  const router = useRouter();
-  const [isChecking, setIsChecking] = useState(false);
-
-  useEffect(() => {
-    (async function () {
-      const cal = await getCalApi({ namespace: "30min" });
-      cal("ui", {
-        cssVarsPerTheme: {
-          light: { "cal-brand": "#00b2ec" },
-          dark: { "cal-brand": "#00b2ec" },
-        },
-        hideEventTypeDetails: false,
-        layout: "month_view",
-      });
-
-      // Listen for successful booking
-      cal("on", {
-        action: "bookingSuccessful",
-        callback: async (data: any) => {
-          console.log("Booking successful:", data);
-
-          // Get email from data or from form
-          const bookingId = data?.detail?.data?.booking.uid;
-          
-          if (bookingId) {
-            router.push(`client/booking/intake?bookingId=${bookingId}`); 
-          }
-        },
-      });
-    })();
-  }, []); 
-
+export default function HomePage() {
   return (
-    <div className="flex w-full h-screen flex-col justify-center items-center">
-      <Cal
-        namespace="30min"
-        calLink="circle-of-three-technologies-obtkkx/30min"
-        style={{ width: "100%", height: "100%", overflow: "scroll" }}
-        config={{
-          layout: "month_view",
-          useSlotsViewOnSmallScreen: "true",
-        }}
-      />
-    </div>
-  );
+    <main className="min-h-screen"> 
+      <HeroSection />
+      <TrustIndicators />
+      <ServicesSection />
+      <AboutSection />
+      <TestimonialsSection />
+      <CTABanner /> 
+    </main>
+  )
 }

@@ -5,8 +5,8 @@ import {
   LayoutDashboard,
   Users,
   Calendar,
-  MessageSquare,
-  Plus,
+  MessageSquare, 
+  LibraryBig,
 } from "lucide-react";
 
 /**
@@ -15,6 +15,11 @@ import {
  */
 export function ClientNav() {
   const navItems = [
+    {
+      label: "Blog",
+      href: "/blog",
+      icon: LibraryBig,
+    },
     {
       label: "Dashboard",
       href: "/client",

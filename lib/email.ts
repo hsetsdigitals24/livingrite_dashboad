@@ -11,6 +11,66 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+/**
+ * Generic sendEmail function for flexible email sending
+ */
+interface SendEmailOptions {
+  to: string;
+  subject: string;
+  template: string;
+  data: Record<string, any>;
+}
+
+export async function sendEmail(options: SendEmailOptions) {
+  const { to, subject, template, data } = options;
+
+  let html = '';
+  let text = '';
+
+  // Generate email content based on template
+  switch (template) {
+    case 'new-comment':
+      html = `
+        <h2>New Blog Comment Awaiting Approval</h2>
+        <p><strong>From:</strong> ${data.author} (${data.email})</p>
+        <p><strong>Comment:</strong></p>
+        <p>${data.content}</p>
+        <p>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/comments?postId=${data.postId}&commentId=${data.commentId}">
+            Review in Admin Panel
+          </a>
+        </p>
+      `;
+      text = `New comment from ${data.author}: ${data.content}`;
+      break;
+
+    case 'comment-approved':
+      html = `
+        <h2>Your Comment Has Been Approved!</h2>
+        <p>Hi ${data.author},</p>
+        <p>Thank you for leaving a comment on our blog. Your comment has been approved and is now visible to other readers:</p>
+        <p><em>"${data.content}"</em></p>
+        <p>We appreciate your thoughtful feedback!</p>
+      `;
+      text = `Your comment has been approved: "${data.content}"`;
+      break;
+
+    default:
+      throw new Error(`Unknown email template: ${template}`);
+  }
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite'} <${process.env.SMTP_FROM}>`,
+    to,
+    replyTo: process.env.SMTP_FROM,
+    subject,
+    html,
+    text,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
 export async function sendConfirmationEmail(booking: Booking) {
   if (!booking.clientEmail) throw new Error('Client email is required');
   

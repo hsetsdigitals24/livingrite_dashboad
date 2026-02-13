@@ -31,7 +31,7 @@ export function PublicNav() {
       icon: BookOpen,
     },
     {
-      label: "Resources",
+      label: "Blog",
       href: "/blog",
       icon: BookOpen,
     },

@@ -55,7 +55,7 @@ export default async function PostPage({ params }: { params: PageParams }) {
           </p>
           <a
             href="/blog"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+            className="inline-block rounded-lg bg-primary px-6 py-3 font-medium text-white hover:bg-blue-700"
           >
             Back to Blog
           </a>
@@ -69,7 +69,7 @@ export default async function PostPage({ params }: { params: PageParams }) {
       <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <a
           href="/blog"
-          className="mb-8 inline-flex items-center text-blue-600 hover:text-blue-700"
+          className="mb-8 inline-flex items-center text-primary hover:text-blue-700"
         >
           ← Back to Blog
         </a>

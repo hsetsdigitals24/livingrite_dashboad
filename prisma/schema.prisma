@@ -782,10 +782,12 @@ model LandingPagePopup {
   actionButtonText String
   actionButtonUrl String
   isActive        Boolean  @default(true)
+  displayOrder    Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([isActive])
+  @@index([displayOrder])
   @@map("landing_page_popups")
 }
 

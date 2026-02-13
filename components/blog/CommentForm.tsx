@@ -98,7 +98,7 @@ export function CommentForm({ postId, onCommentSubmitted }: CommentFormProps) {
               required
               minLength={2}
               maxLength={100}
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="Your name"
             />
           </div>
@@ -116,7 +116,7 @@ export function CommentForm({ postId, onCommentSubmitted }: CommentFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="your@email.com"
             />
           </div>
@@ -137,7 +137,7 @@ export function CommentForm({ postId, onCommentSubmitted }: CommentFormProps) {
             minLength={10}
             maxLength={5000}
             rows={4}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             placeholder="Share your thoughts..."
           />
           <p className="mt-1 text-xs text-gray-500">
@@ -148,7 +148,7 @@ export function CommentForm({ postId, onCommentSubmitted }: CommentFormProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-primary px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? 'Submitting...' : 'Submit Comment'}
         </button>

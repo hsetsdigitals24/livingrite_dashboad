@@ -4,6 +4,7 @@ import { ServicesSection } from "@/components/services-section"
 import { AboutSection } from "@/components/about-section"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { CTABanner } from "@/components/cta-banner"
+import PopupDisplay from "@/components/PopupDisplay"
 
 export default function HomePage() {
   return (
@@ -13,7 +14,8 @@ export default function HomePage() {
       <ServicesSection />
       <AboutSection />
       <TestimonialsSection />
-      <CTABanner /> 
+      <CTABanner />
+      <PopupDisplay />
     </main>
   )
 }

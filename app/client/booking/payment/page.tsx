@@ -9,6 +9,7 @@ function PaymentContent() {
   const bookingId = searchParams.get("bookingId");
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState<any>(null);
+  const [invoice, setInvoice] = useState<any>(null);
   const [error, setError] = useState("");
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -16,7 +17,7 @@ function PaymentContent() {
   const [rescheduleDate, setRescheduleDate] = useState("");
 
   useEffect(() => {
-    // Fetch booking details
+    // Fetch booking and invoice details
     if (bookingId) {
       fetchBooking();
     }
@@ -24,46 +25,48 @@ function PaymentContent() {
 
   const fetchBooking = async () => {
     try {
-      const response = await fetch(`/api/bookings/${bookingId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setBooking(data);
-        
-        // Set payment amount based on service pricing
-        const price = data.service?.basePrice || data.amount || 50000;
-        const currency = data.service?.currency || data.currency || "NGN";
-        
-        setPaymentAmount(price);
-        // Store currency if needed
-        console.log(`Pricing: ${price} ${currency}`);
-      } else {
+      // Fetch booking details
+      const bookingResponse = await fetch(`/api/bookings/${bookingId}`);
+      if (!bookingResponse.ok) {
         setError("Booking not found");
+        return;
+      }
+      const bookingData = await bookingResponse.json();
+      setBooking(bookingData);
+
+      // Fetch invoice for this booking
+      const invoiceResponse = await fetch(`/api/invoices/by-booking/${bookingId}`);
+      if (invoiceResponse.ok) {
+        const invoiceData = await invoiceResponse.json();
+        setInvoice(invoiceData);
+        // Set payment amount from invoice (source of truth)
+        setPaymentAmount(invoiceData.totalAmount || 0);
+        console.log(`Invoice: ${invoiceData.invoiceNumber}, Amount: ${invoiceData.totalAmount} ${invoiceData.currency}`);
+      } else {
+        setError("Invoice not found for this booking");
       }
     } catch (err) {
-      setError("Failed to fetch booking details");
+      setError("Failed to fetch booking or invoice details");
     }
   };
 
  
 
   const handlePayment = async () => {
-    if (!booking) {
-      setError("Booking information is missing");
+    if (!booking || !invoice) {
+      setError("Booking or invoice information is missing");
       return;
     }
     setLoading(true);
     setError("");
 
     try {
-      // Initialize payment
-      const response = await fetch("/api/payments/initialize", {
+      // Initialize payment - now uses bookingId and API fetches invoice
+      const response = await fetch("/api/payments/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: booking.clientEmail,
-          amount: paymentAmount,
           bookingId: booking.id,
-          clientName: booking.clientName,
         }),
       });
 
@@ -168,6 +171,30 @@ function PaymentContent() {
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold mb-6 text-center">Complete Payment</h1>
 
+      {/* Invoice Summary */}
+      {invoice && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6 space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Invoice Number:</span>
+            <span className="font-bold text-blue-600">{invoice.invoiceNumber}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Invoice Status:</span>
+            <span className={`font-medium px-2 py-1 rounded text-xs ${
+              invoice.status === "PAID" ? "bg-green-100 text-green-800" :
+              invoice.status === "SENT" ? "bg-orange-100 text-orange-800" :
+              invoice.status === "DRAFT" ? "bg-gray-100 text-gray-800" :
+              invoice.status === "OVERDUE" ? "bg-red-100 text-red-800" :
+              "bg-gray-100 text-gray-800"
+            }`}>{invoice.status}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Due Date:</span>
+            <span className="font-medium">{invoice.dueAt ? new Date(invoice.dueAt).toLocaleDateString() : "N/A"}</span>
+          </div>
+        </div>
+      )}
+
       {/* Booking Summary */}
       <div className="bg-gray-50 p-4 rounded-md mb-6 space-y-3">
         <div className="flex justify-between text-sm">
@@ -197,9 +224,9 @@ function PaymentContent() {
           <span className="font-medium">{booking.clientTimezone}</span>
         </div>
         <div className="border-t pt-3 mt-3 flex justify-between font-semibold text-lg">
-          <span>Total Amount:</span>
+          <span>Invoice Amount:</span>
           <span className="text-green-600">
-            ₦{paymentAmount.toLocaleString()}
+            {invoice?.currency || "NGN"} {paymentAmount.toLocaleString()}
           </span>
         </div>
       </div>
@@ -230,7 +257,7 @@ function PaymentContent() {
             Processing...
           </>
         ) : (
-          <>💳 Pay with Paystack (₦{paymentAmount.toLocaleString()})</>
+          <>💳 Pay with Paystack ({invoice?.currency || "NGN"} {paymentAmount.toLocaleString()})</>
         )}
       </button>
 

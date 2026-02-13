@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { custom } from "zod";
 
 interface IntakeForm {
   healthHistory: string;
@@ -122,13 +123,36 @@ function IntakeFormContent() {
         }),
       });
 
-      if (response.ok) {
-        // Redirect to payment page
-        router.push(`/portal/booking/payment?bookingId=${bookingId}`);
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.error || "Failed to save intake form");
+        setLoading(false);
+        return;
       }
+
+      // Generate invoice if service selected
+      if (selectedService && bookingId) {
+        try {
+          const invoiceResponse = await fetch("/api/invoices/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bookingId,
+              serviceId: selectedService.id,
+              customAmount: selectedService.basePrice || 0,
+            }),
+          });
+
+          if (!invoiceResponse.ok) {
+            console.warn("Failed to generate invoice, proceeding anyway");
+          }
+        } catch (invoiceError) {
+          console.warn("Invoice generation error:", invoiceError);
+        }
+      }
+
+      // Redirect to bookings page
+      router.push(`/client/invoices`);
     } catch (err) {
       setError("Error saving intake form");
     } finally {
@@ -351,7 +375,7 @@ function IntakeFormContent() {
             disabled={loading}
             className="flex-1 bg-primary text-white py-3 px-4 rounded-md font-semibold hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {loading ? "Saving..." : "Continue to Payment"}
+            {loading ? "Saving..." : "Save and Continue"}
           </button>
           <button
             type="button"

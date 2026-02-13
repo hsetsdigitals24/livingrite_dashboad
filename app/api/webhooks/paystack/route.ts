@@ -47,20 +47,42 @@ export async function POST(req: Request) {
               id: true,
               clientEmail: true,
               clientName: true,
+              invoice: {
+                select: {
+                  id: true,
+                  invoiceNumber: true,
+                },
+              },
             },
           },
         },
       });
 
       if (payment) {
+        const paidDate = new Date(data.paid_at || new Date());
+
         // Update payment status
         await prisma.payment.update({
           where: { id: payment.id },
           data: {
             status: "PAID",
-            paidAt: new Date(data.paid_at || new Date()),
+            paidAt: paidDate,
           },
         });
+
+        // Mark invoice as PAID (source of truth for payment status)
+        if (payment.booking.invoice) {
+          await prisma.invoice.update({
+            where: { id: payment.booking.invoice.id },
+            data: {
+              status: "PAID",
+              paidAt: paidDate,
+            },
+          });
+          console.log(
+            `[Paystack Webhook] Invoice ${payment.booking.invoice.invoiceNumber} marked as PAID`
+          );
+        }
 
         // Create payment attempt record
         await prisma.paymentAttempt.create({
@@ -81,8 +103,6 @@ export async function POST(req: Request) {
         console.log(
           `[Paystack Webhook] Payment successful for booking: ${payment.booking.id}`
         );
-
-        // TODO: Trigger invoice generation
       }
     }
 

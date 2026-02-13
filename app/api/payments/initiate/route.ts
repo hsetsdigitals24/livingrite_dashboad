@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fetch booking with service details
+    // Fetch booking with invoice details (source of truth for payment amount)
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        invoice: true,
         payment: true,
         user: {
           select: {
@@ -63,10 +63,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify service has pricing
-    if (!booking.service?.basePrice) {
+    // Verify invoice exists and has amount
+    if (!booking.invoice) {
       return NextResponse.json(
-        { error: 'Service pricing not configured' },
+        { error: 'Invoice not found for this booking' },
+        { status: 400 }
+      );
+    }
+
+    if (!booking.invoice.totalAmount) {
+      return NextResponse.json(
+        { error: 'Invoice amount not configured' },
         { status: 400 }
       );
     }
@@ -84,8 +91,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Calculate amount (service base price)
-    const amount = booking.service.basePrice;
+    // Use invoice amount as source of truth
+    const amount = booking.invoice.totalAmount;
+    const currency = booking.invoice.currency || 'NGN';
     const amountInKobo = Math.round(amount * 100); // Paystack expects amount in kobo (100 kobo = 1 unit)
 
     // Generate unique payment reference
@@ -99,7 +107,7 @@ export async function POST(req: NextRequest) {
         data: {
           bookingId,
           amount,
-          currency: 'NGN', // Default to NGN for Nigerian currency (common with Paystack)
+          currency: currency,
           status: 'PENDING',
           providerRef: paymentReference,
         },
@@ -108,6 +116,8 @@ export async function POST(req: NextRequest) {
       payment = await prisma.payment.update({
         where: { id: payment.id },
         data: {
+          amount,
+          currency: currency,
           status: 'PENDING',
           providerRef: paymentReference,
         },
@@ -134,7 +144,7 @@ export async function POST(req: NextRequest) {
         payment: {
           id: payment.id,
           amount,
-          currency: payment.currency,
+          currency: currency,
           reference: paymentReference,
         },
         paystackConfig: {
@@ -144,7 +154,7 @@ export async function POST(req: NextRequest) {
           reference: paymentReference,
           metadata: {
             bookingId,
-            serviceName: booking.service?.title,
+            invoiceNumber: booking.invoice.invoiceNumber,
             clientName: booking.clientName,
           },
         },

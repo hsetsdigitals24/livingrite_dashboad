@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AddFamilyMemberForm from "@/app/client/components/AddFamilyMemberForm";
+import BookingModal from "@/app/client/components/BookingModal";
+import { Calendar } from "lucide-react";
 
 interface Patient {
   patient: {
@@ -23,6 +25,7 @@ const ClientDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   useEffect(() => {
     fetchPatients();
@@ -71,12 +74,27 @@ const ClientDashboard = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Family Dashboard</h1>
           <p className="text-gray-600">View and manage your family members' health records</p>
         </div>
-        <button
-          onClick={() => setShowAddPatientModal(true)}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-medium"
-        >
-          + Add Family Member
-        </button>
+        <div className="flex gap-3">
+          <Link
+            href="/client/invoices"
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 font-medium"
+          >
+            📄 My Invoices
+          </Link>
+          <button
+            onClick={() => setShowBookingModal(true)}
+            className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 font-medium flex items-center gap-2"
+          >
+            <Calendar className="w-5 h-5" />
+            Book Consultation
+          </button>
+          <button
+            onClick={() => setShowAddPatientModal(true)}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-medium"
+          >
+            + Add Family Member
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -158,6 +176,18 @@ const ClientDashboard = () => {
           onSuccess={handleAddPatientSuccess}
         />
       )}
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        patients={patients.map((item) => ({
+          id: item.patient.id,
+          firstName: item.patient.firstName,
+          lastName: item.patient.lastName,
+          email: item.patient.email,
+        }))}
+      />
     </div>
   );
 };

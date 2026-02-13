@@ -30,7 +30,7 @@ export default function Booking() {
           const bookingId = data?.detail?.data?.booking.uid;
           
           if (bookingId) {
-            router.push(`/portal/booking/intake?bookingId=${bookingId}`); 
+            router.push(`/client/booking/intake?bookingId=${bookingId}`); 
           }
         },
       });

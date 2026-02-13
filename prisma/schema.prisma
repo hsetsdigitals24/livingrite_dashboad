@@ -45,6 +45,11 @@ model User {
   // Testimonial approvals
   approvedTestimonials Testimonial[] @relation("TestimonialApprover")
   approvedCaseStudies CaseStudy[] @relation("CaseStudyApprover")
+  
+  // Support tickets
+  createdTickets Ticket[] @relation("TicketCreator")
+  assignedTickets Ticket[] @relation("TicketAssignee")
+  ticketComments TicketComment[]
 
   @@map("users")
 }
@@ -904,6 +909,110 @@ enum TestimonialStatus {
   REJECTED      // Not approved
   FEATURED      // Highlighted on page
   ARCHIVED      // Hidden but kept
+}
+
+enum TicketCategory {
+  BILLING       // Payment and invoice related
+  TECHNICAL     // Technical issues
+  GENERAL       // General inquiry
+  FEATURE       // Feature request
+  OTHER         // Other issues
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN          // New ticket
+  ASSIGNED      // Assigned to staff
+  IN_PROGRESS   // Being worked on
+  WAITING       // Waiting for customer response
+  RESOLVED      // Issue resolved
+  CLOSED        // Ticket closed
+  REOPENED      // Customer reopened resolved ticket
+}
+
+model Ticket {
+  id            String          @id @default(cuid())
+  number        Int             @unique @default(autoincrement())
+  title         String
+  description   String
+  category      TicketCategory  @default(GENERAL)
+  priority      TicketPriority  @default(NORMAL)
+  status        TicketStatus    @default(OPEN)
+  
+  // Relationships
+  customerId    String
+  customer      User            @relation("TicketCreator", fields: [customerId], references: [id], onDelete: Cascade)
+  assignedToId  String?
+  assignedTo    User?           @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  
+  // Tracking
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  assignedAt    DateTime?
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+  resolutionNotes String?
+  
+  // Comments and attachments
+  comments      TicketComment[]
+  attachments   TicketAttachment[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([category])
+  @@index([customerId])
+  @@index([assignedToId])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+model TicketComment {
+  id            String          @id @default(cuid())
+  ticketId      String
+  ticket        Ticket          @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  authorId      String
+  author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  content       String
+  isInternal    Boolean         @default(false) // Only visible to staff
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  attachments   TicketAttachment[]
+
+  @@index([ticketId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("ticket_comments")
+}
+
+model TicketAttachment {
+  id            String          @id @default(cuid())
+  ticketId      String?
+  ticket        Ticket?         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  commentId     String?
+  comment       TicketComment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  fileName      String
+  fileUrl       String
+  fileSize      Int             // in bytes
+  mimeType      String
+  uploadedBy    String
+  
+  createdAt     DateTime        @default(now())
+
+  @@index([ticketId])
+  @@index([commentId])
+  @@map("ticket_attachments")
 }
 
 model Testimonial {

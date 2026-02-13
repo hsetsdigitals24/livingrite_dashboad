@@ -253,12 +253,21 @@ export default function SignUp() {
               Already have an account?{' '}
               <Link
                 href="/auth/signin"
-                className="font-semibold text-blue-600 hover:text-blue-700 transition hover:underline"
+                className="font-semibold text-primary hover:text-blue-700 transition hover:underline"
               >
                 Sign in here
               </Link>
             </p>
           </div>
+
+          <p>
+              <Link
+                href="/auth/admin"
+                className="font-semibold text-gray-600 hover:text-blue-700 transition hover:underline"
+              >
+                Admin Signup
+              </Link>
+          </p>
         </div>
       </div>
 

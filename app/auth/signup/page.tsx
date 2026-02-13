@@ -260,7 +260,7 @@ export default function SignUp() {
             </p>
           </div>
 
-          <p>
+          <p className="mt-4 text-center text-gray-500 text-xs animate-fade-in" style={{ animationDelay: '0.7s' }}>
               <Link
                 href="/auth/admin"
                 className="font-semibold text-gray-600 hover:text-blue-700 transition hover:underline"

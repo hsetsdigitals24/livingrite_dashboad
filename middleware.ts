@@ -7,7 +7,7 @@ export const middleware = withAuth(
     const pathname = request.nextUrl.pathname
 
     // Auth pages that should only be accessible by unauthenticated users
-    const authPages = ["/auth/signin", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "auth/admin"]
+    const authPages = ["/auth/signin", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "/auth/admin"]
     const isAuthPage = authPages.some((page) => pathname === page || pathname.startsWith(page + "/"))
 
     // Special check for reset-password with token
@@ -58,7 +58,7 @@ export const middleware = withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname
-        const authPages = ["/auth/signin", "/auth/signup", "/auth/forgot-password", "/auth/reset-password"]
+        const authPages = ["/auth/signin", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "/auth/admin"]
         const isAuthPage = authPages.some((page) => pathname === page || pathname.startsWith(page + "/"))
         const isResetPasswordWithToken = pathname.match(/^\/auth\/reset-password\/[^/]+$/)
 

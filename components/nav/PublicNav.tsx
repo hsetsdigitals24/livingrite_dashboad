@@ -17,27 +17,27 @@ export function PublicNav() {
   const navItems = [
     {
       label: "Services",
-      href: "#services",
+      href: "/services",
       icon: Stethoscope,
     },
     {
       label: "About",
-      href: "#about",
+      href: "/about",
       icon: Users,
     },
     {
       label: "Testimonials",
-      href: "#testimonials",
+      href: "/testimonials",
       icon: BookOpen,
     },
     {
-      label: "Blog",
+      label: "Blogs",
       href: "/blog",
       icon: BookOpen,
     },
     {
       label: "FAQs",
-      href: "#faqs",
+      href: "/faqs",
       icon: HelpCircle,
     },
   ];

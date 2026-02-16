@@ -9,28 +9,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Menu,
-  X,
-  ChevronDown,
-  Search,
-  User2,
-} from "lucide-react";
+import { Menu, X, ChevronDown, Search, User2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import logo from "@/public/logo.png";
 import Image from "next/image";
 import { useUserRole } from "@/hooks/useUserRole";
 import { RoleAwareUserMenu } from "./RoleAwareUserMenu";
 import { AdminNav } from "./nav/AdminNav";
-import { CaregiverNav } from "./nav/CaregiverNav";
-import { ClientNav } from "./nav/ClientNav";
-import { PublicNav } from "./nav/PublicNav";
+import { CombinedNav } from "./nav/CombinedNav";
+import { MobileCombinedNav } from "./nav/MobileCombinedNav";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { role, isAuthenticated, isLoading } = useUserRole();
   const pathname = usePathname();
+
+  const publicLinks = [
+    {
+      label: "Services",
+      href: "/services",
+      // icon: Stethoscope,
+    },
+    {
+      label: "About",
+      href: "/about",
+      // icon: Users,
+    },
+    {
+      label: "Testimonials",
+      href: "/testimonials",
+      // icon: BookOpen,
+    },
+    {
+      label: "Blogs",
+      href: "/blog",
+      // icon: BookOpen,
+    },
+    {
+      label: "FAQs",
+      href: "/faqs",
+      // icon: HelpCircle,
+    },
+  ];
 
   // Hide header on admin dashboard routes
   if (pathname.startsWith("/admin")) {
@@ -67,14 +88,24 @@ export function Header() {
 
           {/* Desktop Navigation - Role Aware */}
           <div className="hidden md:flex items-center gap-8">
-            {isAuthenticated && !isLoading ? (
-              <>
-                {role === "ADMIN" && <AdminNav />}
-                {role === "CAREGIVER" && <CaregiverNav />}
-                {role === "CLIENT" && <ClientNav />}
-              </>
+            {role === "ADMIN" && isAuthenticated && !isLoading ? (
+              <AdminNav />
             ) : (
-              <PublicNav />
+              publicLinks.map((item, index) => {
+                return (
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      role && role !== "ADMIN"
+                        ? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        : "text-gray-700 relative hover:text-gray-900 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-teal-500 after:to-cyan-500 after:transition-all after:duration-300 hover:after:w-full"
+                    }`}
+                  >
+                    {/* {role && role !== "ADMIN" && <Icon className="h-4 w-4" />} */}
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })
             )}
           </div>
 
@@ -116,186 +147,216 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden animate-slide-up bg-white/98 backdrop-blur-sm border-t border-gray-200 py-4">
-            <div className="flex flex-col gap-2">
-              {isAuthenticated && !isLoading ? (
-                <>
-                  {/* Role-specific mobile nav items */}
-                  <div className="px-4 py-2">
-                    {role === "ADMIN" && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Admin Dashboard</p>
-                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Dashboard</Link>
-                        <Link href="/admin?section=patients" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Patients</Link>
-                        <Link href="/admin?section=caregivers" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Caregivers</Link>
-                        <Link href="/admin?section=clients" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Clients</Link>
-                        <Link href="/admin?section=revenue" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Revenue</Link>
-                      </div>
-                    )}
-                    {role === "CAREGIVER" && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Caregiver</p>
-                        <Link href="/caregiver" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Dashboard</Link>
-                        <Link href="/caregiver/patients" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">My Patients</Link>
-                        <Link href="/caregiver/schedule" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Schedule</Link>
-                        <Link href="/caregiver/messages" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Messages</Link>
-                      </div>
-                    )}
-                    {role === "CLIENT" && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Family Portal</p>
-                        <Link href="/client" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Dashboard</Link>
-                        <Link href="/client/patients" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">My Family</Link>
-                        <Link href="/client/booking" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Book Service</Link>
-                        <Link href="/client/messages" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700">Messages</Link>
-                      </div>
-                    )}
-                  </div>
-                  <div className="border-t border-gray-200 pt-4">
-                    <RoleAwareUserMenu />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="w-full flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5">
-                      Services
-                      <ChevronDown className="h-4 w-4 ml-auto" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48 ml-4">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/neurorehabilitation"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Neurorehabilitation Care
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/post-icu-care"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Post-ICU Care
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/post-surgical-care"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Post-Surgical Care
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/end-of-life-care"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          End-of-Life & Palliative Care
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/geriatric-care"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Geriatric Care
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/chronic-wound-care"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Chronic Wound Care
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/home-medical-consultations"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Home Medical Consultations
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/routine-laboratory-services"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Routine Laboratory Services
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/physiotherapy-services"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Physiotherapy Services
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/services/postpartum-care"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Postpartum Care
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Link
-                    href="/about"
-                    className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    About
-                  </Link>
-                  <Link
-                    href="/blogs"
-                    className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Blogs
-                  </Link>
-                  <Link
-                    href="/search"
-                    className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5 flex items-center gap-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Search className="w-4 h-4" />
-                    Search
-                  </Link>
-
-                  <div className="pt-4 border-t border-gray-200 space-y-2">
-                    <Link
-                      href="/portal/booking"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block"
-                    >
-                      <Button className="w-full rounded-full font-semibold bg-primary hover:bg-primary/90">
-                        Book Consultation
-                      </Button>
-                    </Link>
-                    <Link
-                      href="/auth/signin"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block"
-                    >
-                      <Button
-                        variant="outline"
-                        className="w-full rounded-full border-primary text-primary hover:bg-primary hover:text-white"
+            {isAuthenticated && !isLoading ? (
+              <>
+                {role === "ADMIN" ? (
+                  // Admin-only mobile menu
+                  <div className="flex flex-col gap-2">
+                    <div className="px-4 py-2">
+                      <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                        Admin Dashboard
+                      </p>
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
                       >
-                        Sign In
-                      </Button>
-                    </Link>
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/admin?section=patients"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
+                      >
+                        Patients
+                      </Link>
+                      <Link
+                        href="/admin?section=caregivers"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
+                      >
+                        Caregivers
+                      </Link>
+                      <Link
+                        href="/admin?section=clients"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
+                      >
+                        Clients
+                      </Link>
+                      <Link
+                        href="/admin?section=revenue"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
+                      >
+                        Revenue
+                      </Link>
+                    </div>
+                    <div className="border-t border-gray-200 pt-4 px-4">
+                      <RoleAwareUserMenu />
+                    </div>
                   </div>
-                </>
-              )}
-            </div>
+                ) : (
+                  // Caregiver and Client combined mobile menu
+                  <>
+                    <MobileCombinedNav
+                      role={role}
+                      onLinkClick={() => setMobileMenuOpen(false)}
+                    />
+                    <div className="border-t border-gray-200 pt-4 px-4">
+                      <RoleAwareUserMenu />
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              // Public mobile menu for unauthenticated users
+              <div className="flex flex-col gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="w-full flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5">
+                    Services
+                    <ChevronDown className="h-4 w-4 ml-auto" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 ml-4">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/neurorehabilitation"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Neurorehabilitation Care
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/post-icu-care"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Post-ICU Care
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/post-surgical-care"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Post-Surgical Care
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/end-of-life-care"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        End-of-Life & Palliative Care
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/geriatric-care"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Geriatric Care
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/chronic-wound-care"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Chronic Wound Care
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/home-medical-consultations"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Home Medical Consultations
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/routine-laboratory-services"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Routine Laboratory Services
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/physiotherapy-services"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Physiotherapy Services
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/services/postpartum-care"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Postpartum Care
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Link
+                  href="/about"
+                  className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  About
+                </Link>
+                <Link
+                  href="/blogs"
+                  className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Blogs
+                </Link>
+                <Link
+                  href="/search"
+                  className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5 flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Search className="w-4 h-4" />
+                  Search
+                </Link>
+
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <Link
+                    href="/portal/booking"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block"
+                  >
+                    <Button className="w-full rounded-full font-semibold bg-primary hover:bg-primary/90">
+                      Book Consultation
+                    </Button>
+                  </Link>
+                  <Link
+                    href="/auth/signin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block"
+                  >
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-full border-primary text-primary hover:bg-primary hover:text-white"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </nav>
+      <div className="bg-primary w-full">
+        {/* inner wrapper */}
+        <div className="text-white">
+          <CombinedNav role={role} />
+        </div>
+      </div>
     </header>
   );
 }

@@ -18,8 +18,7 @@ export const metadata: Metadata = {
 async function fetchTestimonials() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/testimonials?featured=true&limit=6`, {
-      cache: 'revalidate',
+    const res = await fetch(`${baseUrl}/api/testimonials?featured=true&limit=6`, { 
       next: { revalidate: 3600 }, // Revalidate every hour
     })
     if (!res.ok) return []
@@ -34,8 +33,7 @@ async function fetchTestimonials() {
 async function fetchCaseStudies() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/case-studies?featured=true&limit=3`, {
-      cache: 'revalidate',
+    const res = await fetch(`${baseUrl}/api/case-studies?featured=true&limit=3`, { 
       next: { revalidate: 3600 },
     })
     if (!res.ok) return []
@@ -50,8 +48,7 @@ async function fetchCaseStudies() {
 async function fetchServices() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/services`, {
-      cache: 'revalidate',
+    const res = await fetch(`${baseUrl}/api/services`, { 
       next: { revalidate: 86400 }, // Revalidate every day
     })
     if (!res.ok) return []
@@ -128,7 +125,7 @@ export default async function TestimonialsPage() {
               </p>
             </div>
             <div className="grid gap-8 md:grid-cols-3">
-              {caseStudies.slice(0, 3).map((study) => (
+              {caseStudies.slice(0, 3).map((study: any) => (
                 <a
                   key={study.id}
                   href={`/testimonials/${study.slug}`}

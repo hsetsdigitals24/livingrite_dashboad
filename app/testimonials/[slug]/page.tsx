@@ -37,7 +37,6 @@ export async function generateMetadata(
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     const res = await fetch(`${baseUrl}/api/case-studies/${params.slug}`, {
-      cache: 'revalidate',
       next: { revalidate: 3600 },
     })
 
@@ -65,7 +64,6 @@ async function getCaseStudy(slug: string): Promise<CaseStudyDetail | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     const res = await fetch(`${baseUrl}/api/case-studies/${slug}`, {
-      cache: 'revalidate',
       next: { revalidate: 3600 },
     })
 
@@ -90,7 +88,6 @@ async function getRelatedCaseStudies(
     const res = await fetch(
       `${baseUrl}/api/case-studies?service=${serviceType}&limit=${limit}`,
       {
-        cache: 'revalidate',
         next: { revalidate: 3600 },
       }
     )

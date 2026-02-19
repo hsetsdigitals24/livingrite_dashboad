@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 async function fetchTestimonials() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXTAUTH_URL || ''
     const res = await fetch(`${baseUrl}/api/testimonials?featured=true&limit=6`, { 
       next: { revalidate: 3600 }, // Revalidate every hour
     })
@@ -32,7 +32,7 @@ async function fetchTestimonials() {
 
 async function fetchCaseStudies() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXTAUTH_URL || ""
     const res = await fetch(`${baseUrl}/api/case-studies?featured=true&limit=3`, { 
       next: { revalidate: 3600 },
     })
@@ -47,7 +47,7 @@ async function fetchCaseStudies() {
 
 async function fetchServices() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXTAUTH_URL || ''
     const res = await fetch(`${baseUrl}/api/services`, { 
       next: { revalidate: 86400 }, // Revalidate every day
     })

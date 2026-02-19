@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { BlogList } from '@/components/blog/BlogList'
 import { BlogCategoryFilter } from '@/components/blog/BlogCategoryFilter'
@@ -27,7 +27,7 @@ interface PaginationData {
   pages: number
 }
 
-export default function BlogPage() {
+function BlogPageContent() {
   const searchParams = useSearchParams()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [pagination, setPagination] = useState<PaginationData>({
@@ -173,5 +173,13 @@ export default function BlogPage() {
         )}
       </div>
     </main>
+  )
+}
+
+export default function BlogPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 py-12" />}>
+      <BlogPageContent />
+    </Suspense>
   )
 }

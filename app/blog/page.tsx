@@ -28,6 +28,7 @@ interface PaginationData {
 }
 
 function BlogPageContent() {
+  // Wrap useSearchParams() in a client component within Suspense boundary
   const searchParams = useSearchParams()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [pagination, setPagination] = useState<PaginationData>({

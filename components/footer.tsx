@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Facebook, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 const footerLinks = {
   services: [
@@ -29,6 +32,14 @@ const footerLinks = {
 }
 
 export function Footer() {
+    const pathname = usePathname();
+
+    if (pathname.startsWith("/admin") || pathname.startsWith("/client") || pathname.startsWith("/caregiver")) {
+    return null;
+  }
+
+
+
   return (
     <footer className="bg-linear-to-b from-gray-100 to-gray-200 text-gray-900 relative overflow-hidden">
       {/* Background Elements */}

@@ -4,6 +4,7 @@ import { ServicesSection } from "@/components/services-section"
 import { AboutSection } from "@/components/about-section"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { CTABanner } from "@/components/cta-banner"
+import { TrainingSection } from "@/components/training-section"
 import PopupDisplay from "@/components/PopupDisplay"
 
 export default function HomePage() {
@@ -12,6 +13,7 @@ export default function HomePage() {
       <HeroSection />
       <TrustIndicators />
       <ServicesSection />
+      <TrainingSection />
       <AboutSection />
       <TestimonialsSection />
       <CTABanner />

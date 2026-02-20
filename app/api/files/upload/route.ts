@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads');
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Initialize S3 client for Cloudflare R2
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: process.env.R2_PUBLIC_URL,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,26 +53,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create directory if it doesn't exist
-    const uploadPath = folder ? join(UPLOAD_DIR, folder) : UPLOAD_DIR;
-    if (!existsSync(uploadPath)) {
-      await mkdir(uploadPath, { recursive: true });
-    }
-
     // Generate unique filename
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '');
     const filename = `${timestamp}-${randomString}-${originalName}`;
-    const filepath = join(uploadPath, filename);
 
-    // Convert file to buffer and save
+    // Create key with folder if provided
+    const key = folder ? `${folder}/${filename}` : filename;
+
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
+
+    // Upload to R2
+    const command = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type,
+    });
+
+    await s3Client.send(command);
 
     // Generate accessible URL
-    const url = `/uploads/${folder ? `${folder}/` : ''}${filename}`;
+    const url = `${process.env.NEXTAUTH_URL}/${key}`;
 
     return NextResponse.json(
       {

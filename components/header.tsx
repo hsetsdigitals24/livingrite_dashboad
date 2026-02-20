@@ -94,6 +94,7 @@ export function Header() {
               publicLinks.map((item, index) => {
                 return (
                   <Link
+                  key={index}
                     href={item.href}
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                       role && role !== "ADMIN"

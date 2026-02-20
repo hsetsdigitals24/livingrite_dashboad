@@ -14,9 +14,14 @@ export async function GET() {
       );
     }
 
-    const popup = await prisma.landingPagePopup.findFirst();
+    // Fetch all popups, not just the first one
+    const popups = await prisma.landingPagePopup.findMany({
+      orderBy: {
+        displayOrder: 'asc',
+      },
+    });
 
-    return NextResponse.json(popup);
+    return NextResponse.json(popups);
   } catch (error) {
     console.error("Fetch popup error:", error);
     return NextResponse.json(
@@ -46,6 +51,7 @@ export async function POST(request: Request) {
       actionButtonText,
       actionButtonUrl,
       isActive,
+      displayOrder,
     } = body;
 
     // Validate required fields
@@ -56,23 +62,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if popup already exists and delete it
-    const existingPopup = await prisma.landingPagePopup.findFirst();
-    if (existingPopup) {
-      await prisma.landingPagePopup.delete({
-        where: { id: existingPopup.id },
-      });
-    }
-
     const popup = await prisma.landingPagePopup.create({
       data: {
         title,
-        description,
-        imageUrl,
-        imageAlt,
+        description: description || null,
+        imageUrl: imageUrl || null,
+        imageAlt: imageAlt || null,
         actionButtonText,
         actionButtonUrl,
         isActive: isActive ?? true,
+        displayOrder: displayOrder ?? 0,
       },
     });
 

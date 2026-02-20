@@ -43,6 +43,11 @@ export default function PopupDisplay() {
           const data = await response.json();
           if (data.popup) {
             setPopup(data.popup);
+            // Increment popup count
+            await fetch(`/api/popups/${data.popup.id}/increment`, {
+              method: 'PATCH',
+            }).catch(err => console.error('Failed to increment popup count:', err));
+            
             // Only auto-show if first visit this session
             if (!hasShown) {
               setIsVisible(true);
@@ -86,12 +91,12 @@ export default function PopupDisplay() {
       />
 
       {/* Popup Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
-        <div className="bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden animate-slideUp">
+      <div className="fixed inset-0 z-50 w-[100vw] flex items-center justify-center p-4 animate-fadeIn">
+        <div className="relative bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden animate-slideUp">
           {/* Close Button */}
           <button
             onClick={handleDismiss}
-            className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full transition-colors z-10"
+            className="absolute cursor-pointer top-4 right-4 p-1 hover:bg-gray-100 rounded-full transition-colors z-10"
             aria-label="Close popup"
           >
             <X className="w-6 h-6 text-gray-600" />
@@ -99,12 +104,12 @@ export default function PopupDisplay() {
 
           {/* Image */}
           {popup.imageUrl && (
-            <div className="relative w-full h-48 overflow-hidden bg-gray-100">
+            <div className="relative w-full h-[50vh] overflow-hidden bg-gray-100">
               <Image
                 src={popup.imageUrl}
                 alt={popup.imageAlt || popup.title}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
           )}
@@ -118,16 +123,16 @@ export default function PopupDisplay() {
             )}
 
             {/* CTA Button */}
-            <Link href={popup.actionButtonUrl}>
-              <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+            <Link href={popup.actionButtonUrl} target='_blank'>
+              <button className="w-full bg-primary hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
                 {popup.actionButtonText}
               </button>
             </Link>
 
             {/* Dismiss hint */}
-            <p className="text-xs text-gray-400 text-center mt-4">
-              You won't see this again for 30 days
-            </p>
+            {/* <p className="text-xs text-gray-400 text-center mt-4">
+              You won't see this after you dismiss it. It will reappear after 30 days.
+            </p> */}
           </div>
         </div>
       </div>

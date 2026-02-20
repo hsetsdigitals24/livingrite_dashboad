@@ -781,6 +781,7 @@ model LandingPagePopup {
   imageAlt        String?
   actionButtonText String
   actionButtonUrl String
+  popupCount      Int      @default(0)
   isActive        Boolean  @default(true)
   displayOrder    Int      @default(0)
   createdAt       DateTime @default(now())

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/testimonials
- * Fetch approved testimonials, optionally filtered by service
+ * Fetch approved testimonials, optionally filtered by service or featured status
+ * Query params:
+ *  - service: Filter by service ID
+ *  - featured: true/false - only featured testimonials
  */
 export async function GET(req: NextRequest) {
   try {
@@ -37,81 +38,34 @@ export async function GET(req: NextRequest) {
       ],
     });
 
+    // Calculate aggregated ratings
+    const ratings = testimonials.map(t => t.rating);
+    const averageRating = ratings.length > 0 
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+      : 0;
+    
+    const ratingDistribution = {
+      5: ratings.filter(r => r === 5).length,
+      4: ratings.filter(r => r === 4).length,
+      3: ratings.filter(r => r === 3).length,
+      2: ratings.filter(r => r === 2).length,
+      1: ratings.filter(r => r === 1).length,
+    };
+
     return NextResponse.json({
       success: true,
       data: testimonials,
       count: testimonials.length,
+      stats: {
+        averageRating,
+        totalReviews: testimonials.length,
+        ratingDistribution,
+      },
     });
   } catch (error) {
     console.error("Error fetching testimonials:", error);
     return NextResponse.json(
       { error: "Failed to fetch testimonials" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * POST /api/testimonials
- * Create a new testimonial (public submission or admin)
- */
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const session = await getServerSession(authOptions);
-
-    // Validate required fields
-    if (!body.clientName || !body.content) {
-      return NextResponse.json(
-        { error: "Client name and content are required" },
-        { status: 400 }
-      );
-    }
-
-    // Rating validation
-    if (body.rating && (body.rating < 1 || body.rating > 5)) {
-      return NextResponse.json(
-        { error: "Rating must be between 1 and 5" },
-        { status: 400 }
-      );
-    }
-
-    // Auto-approve for admin, pending for public submissions
-    const status = session?.user?.role === "ADMIN" ? "APPROVED" : "PENDING";
-    const approvedAt = session?.user?.role === "ADMIN" ? new Date() : null;
-    const approvedBy = session?.user?.id;
-
-    const testimonial = await prisma.testimonial.create({
-      data: {
-        clientName: body.clientName,
-        clientTitle: body.clientTitle || null,
-        clientImage: body.clientImage || null,
-        rating: body.rating || 5,
-        content: body.content,
-        videoUrl: body.videoUrl || null,
-        serviceId: body.serviceId || null,
-        status,
-        approvedAt: status === "APPROVED" ? new Date() : null,
-        approvedBy: status === "APPROVED" ? approvedBy : null,
-        featured: false,
-      },
-      include: {
-        service: true,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: testimonial,
-        message: status === "PENDING" ? "Testimonial submitted for review" : "Testimonial created",
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Error creating testimonial:", error);
-    return NextResponse.json(
-      { error: "Failed to create testimonial" },
       { status: 500 }
     );
   }

@@ -1,276 +1,274 @@
-      import { Metadata } from 'next'
-import { prisma } from '@/lib/prisma'
-import { TestimonialCarousel } from '@/components/testimonials/TestimonialCarousel'
-import { TestimonialGrid } from '@/components/testimonials/TestimonialGrid'
-import { RatingAggregation } from '@/components/testimonials/RatingAggregation'
-import { GoogleReviewsWidget } from '@/components/testimonials/GoogleReviewsWidget'
-import { PhotoGalleryCarousel } from '@/components/testimonials/PhotoGalleryCarousel'
+"use client"
 
-export const metadata: Metadata = {
-  title: 'Testimonials & Case Studies | LivingRite',
-  description: 'Read authentic testimonials from families and case studies showcasing our care expertise across stroke recovery, ICU care, palliative support, and family wellness.',
-  openGraph: {
-    title: 'Testimonials & Case Studies | LivingRite',
-    description: 'Real stories from families we\'ve helped. See how LivingRite made a difference.',
-    images: [{ url: '/og-testimonials.jpg' }],
-  },
+import { useState, useEffect } from "react" 
+import { Loader } from "lucide-react"
+import { TestimonialCard } from "@/components/testimonials/testimonial-card"
+import { VideoTestimonialCard } from "@/components/testimonials/video-testimonial-card"
+import { CaseStudyCard } from "@/components/testimonials/case-study-card"
+import { RatingAggregation } from "@/components/testimonials/rating-aggregation"
+import { ServiceFilter } from "@/components/testimonials/service-filter"
+import { CTABanner } from "@/components/cta-banner"
+
+interface Testimonial {
+  id: string
+  clientName: string
+  clientTitle?: string
+  clientImage?: string
+  rating: number
+  content: string
+  videoUrl?: string
+  featured?: boolean
+  service?: { id: string; title: string; slug: string }
 }
 
-async function fetchTestimonials() {
-  try {
-    const testimonials = await prisma.testimonial.findMany({
-      where: {
-        status: 'APPROVED',
-        featured: true,
-      },
-      include: {
-        service: true,
-      },
-      orderBy: [
-        { featured: 'desc' },
-        { displayOrder: 'asc' },
-        { createdAt: 'desc' },
-      ],
-      take: 6,
-    })
-    // Transform null values to undefined for component compatibility
-    return testimonials.map(t => ({
-      id: t.id,
-      clientName: t.clientName,
-      clientTitle: t.clientTitle ?? undefined,
-      clientImage: t.clientImage ?? undefined,
-      rating: t.rating,
-      content: t.content,
-      videoUrl: t.videoUrl ?? undefined,
-      serviceId: t.serviceId ?? undefined,
-      service: t.service ? { id: t.service.id, title: t.service.title } : undefined,
-    }))
-  } catch (error) {
-    console.error('Failed to fetch testimonials:', error)
-    return []
-  }
+interface CaseStudy {
+  id: string
+  slug: string
+  title: string
+  clientName: string
+  challenge: string
+  outcome: string
+  heroImage?: string
+  rating?: number
+  featured?: boolean
+  service?: { id: string; title: string }
 }
 
-async function fetchCaseStudies() {
-  try {
-    const caseStudies = await prisma.caseStudy.findMany({
-      where: {
-        status: 'APPROVED',
-        featured: true,
-      },
-      include: {
-        service: true,
-      },
-      orderBy: [
-        { featured: 'desc' },
-        { displayOrder: 'asc' },
-        { createdAt: 'desc' },
-      ],
-      take: 3,
-    })
-    // Transform null values to undefined for component compatibility
-    return caseStudies.map(cs => ({
-      id: cs.id,
-      slug: cs.slug,
-      title: cs.title,
-      clientName: cs.clientName,
-      heroImage: cs.heroImage ?? undefined,
-      challenge: cs.challenge,
-      outcome: cs.outcome,
-      serviceId: cs.serviceId ?? undefined,
-      service: cs.service ? { id: cs.service.id, title: cs.service.title } : undefined,
-      timeline: cs.timeline ?? undefined,
-    }))
-  } catch (error) {
-    console.error('Failed to fetch case studies:', error)
-    return []
-  }
+interface Service {
+  id: string
+  title: string
 }
 
-async function fetchServices() {
-  try {
-    const services = await prisma.service.findMany({
-      where: {
-        isActive: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    })
-    return services
-  } catch (error) {
-    console.error('Failed to fetch services:', error)
-    return []
-  }
-}
+export default function TestimonialsPage() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedService, setSelectedService] = useState<string | null>(null)
+  const [stats, setStats] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+  })
 
-  export default async function TestimonialsPage() {
-    const [testimonials, caseStudies, services] = await Promise.all([
-      fetchTestimonials(),
-      fetchCaseStudies(),
-      fetchServices(),
-    ])
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true)
 
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
-        {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 py-20 text-white sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h1 className="mb-4 text-4xl font-bold sm:text-5xl lg:text-6xl">
-              Real Stories, Real Impact
+        // Fetch services
+        const servicesRes = await fetch("/api/services")
+        if (servicesRes.ok) {
+          const servicesData = await servicesRes.json()
+          setServices(servicesData.data || [])
+        }
+
+        // Fetch testimonials
+        const testimonialsRes = await fetch("/api/testimonials")
+        if (testimonialsRes.ok) {
+          const testimonialsData = await testimonialsRes.json()
+          setTestimonials(testimonialsData.data || [])
+          setStats(testimonialsData.stats)
+        }
+
+        // Fetch case studies
+        const caseStudiesRes = await fetch("/api/case-studies")
+        if (caseStudiesRes.ok) {
+          const caseStudiesData = await caseStudiesRes.json()
+          setCaseStudies(caseStudiesData.data || [])
+        }
+      } catch (error) {
+        console.error("Error loading testimonials data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // Filter testimonials and case studies by selected service
+  const filteredTestimonials = selectedService
+    ? testimonials.filter((t) => t.service?.id === selectedService)
+    : testimonials
+
+  const filteredCaseStudies = selectedService
+    ? caseStudies.filter((c) => c.service?.id === selectedService)
+    : caseStudies
+
+  // Separate video testimonials from text testimonials
+  const videoTestimonials = filteredTestimonials.filter((t) => t.videoUrl)
+  const textTestimonials = filteredTestimonials.filter((t) => !t.videoUrl)
+
+  // Get featured case studies
+  const featuredCaseStudies = filteredCaseStudies.filter((c) => c.featured).slice(0, 3)
+  const otherCaseStudies = filteredCaseStudies.filter((c) => !c.featured)
+
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* Hero Section */}
+      <section className="pt-20 pb-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+              ✓ Trusted by 500+ Families
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
+              Real Stories from Real Families
             </h1>
-            <p className="text-lg text-blue-100 sm:text-xl">
-              Discover how LivingRite has made a meaningful difference in the lives of families across the country
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Discover how LivingRite Care has transformed lives and brought peace of mind to families across Nigeria and beyond.
             </p>
           </div>
-        </section>
 
-        {/* Rating & Reviews Section */}
-        <section className="border-b border-gray-200 bg-white px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="grid gap-8 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <RatingAggregation />
-              </div>
-              <div className="lg:col-span-1">
-                <GoogleReviewsWidget />
-              </div>
+          {/* Rating Widget */}
+          {!loading && (
+            <RatingAggregation
+              averageRating={stats.averageRating}
+              totalReviews={stats.totalReviews}
+              ratingDistribution={stats.ratingDistribution}
+            />
+          )}
+        </div>
+      </section>
+
+      {/* Video Testimonials Hero Section */}
+      {!loading && videoTestimonials.length > 0 && (
+        <section className="py-16 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <div className="mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Video Testimonials</h2>
+              <p className="text-gray-600">Hear directly from our clients about their experiences</p>
             </div>
-          </div>
-        </section>
 
-        {/* Featured Video Testimonials */}
-        {testimonials.length > 0 && (
-          <section className="border-b border-gray-200 bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl">
-              <div className="mb-12 text-center">
-                <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
-                  ✨ Voices of Care
-                </h2>
-                <p className="text-lg text-gray-600">
-                  Hear directly from the families we serve about their experience
-                </p>
+            {/* Featured Video */}
+            {videoTestimonials.length > 0 && (
+              <div className="mb-12">
+                <VideoTestimonialCard
+                  title={videoTestimonials[0].clientName}
+                  clientName={videoTestimonials[0].clientName}
+                  clientTitle={videoTestimonials[0].clientTitle}
+                  rating={videoTestimonials[0].rating}
+                  videoUrl={videoTestimonials[0].videoUrl!}
+                  isHero
+                />
               </div>
-              <TestimonialCarousel testimonials={testimonials} />
-            </div>
-          </section>
-        )}
+            )}
 
-        {/* Featured Case Studies */}
-        {caseStudies.length > 0 && (
-          <section className="border-b border-gray-200 bg-white px-4 py-16 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl">
-              <div className="mb-12 text-center">
-                <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
-                  📖 Featured Case Studies
-                </h2>
-                <p className="text-lg text-gray-600">
-                  Detailed narratives of transformation and care excellence
-                </p>
-              </div>
-              <div className="grid gap-8 md:grid-cols-3">
-                {caseStudies.slice(0, 3).map((study: any) => (
-                  <a
-                    key={study.id}
-                    href={`/testimonials/${study.slug}`}
-                    className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-blue-300"
-                  >
-                    <div className="mb-4 aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100">
-                      {study.heroImage && (
-                        <img
-                          src={study.heroImage}
-                          alt={study.title}
-                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                        />
-                      )}
-                    </div>
-                    <h3 className="mb-2 text-xl font-bold text-gray-900 group-hover:text-blue-600">
-                      {study.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      <span className="font-medium">{study.clientName}</span>
-                      {study.timeline && <span className="text-gray-500"> • {study.timeline}</span>}
-                    </p>
-                    <p className="line-clamp-3 text-gray-700 mb-4">
-                      {study.challenge}
-                    </p>
-                    <div className="inline-flex items-center text-sm font-semibold text-blue-600 group-hover:text-blue-700">
-                      Read Full Story →
-                    </div>
-                  </a>
+            {/* Additional Videos Grid */}
+            {videoTestimonials.length > 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {videoTestimonials.slice(1, 3).map((testimonial) => (
+                  <VideoTestimonialCard
+                    key={testimonial.id}
+                    title={testimonial.clientName}
+                    clientName={testimonial.clientName}
+                    clientTitle={testimonial.clientTitle}
+                    rating={testimonial.rating}
+                    videoUrl={testimonial.videoUrl!}
+                  />
                 ))}
               </div>
-              {caseStudies.length > 3 && (
-                <div className="mt-8 text-center">
-                  <a
-                    href="#all-case-studies"
-                    className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 transition-colors"
-                  >
-                    View All Case Studies
-                  </a>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Photo Gallery */}
-        <section className="border-b border-gray-200 bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-12 text-center">
-              <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
-                📸 Care Moments
-              </h2>
-              <p className="text-lg text-gray-600">
-                Visual snapshots of compassion, support, and recovery in action
-              </p>
-            </div>
-            <PhotoGalleryCarousel />
+            )}
           </div>
         </section>
+      )}
 
-        {/* Filterable Grid - All Testimonials & Case Studies */}
-        <section className="bg-white px-4 py-16 sm:px-6 lg:px-8" id="all-case-studies">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-12 text-center">
-              <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
-                🎯 All Stories & Testimonials
-              </h2>
-              <p className="text-lg text-gray-600">
-                Explore by service type to find stories relevant to your needs
-              </p>
-            </div>
-            <TestimonialGrid
-              testimonials={testimonials}
-              caseStudies={caseStudies}
-              services={services}
+      {/* Service Filter */}
+      {!loading && services.length > 0 && (
+        <section className="py-8 px-4 border-t border-gray-200">
+          <div className="container mx-auto max-w-6xl">
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Filter by Service</p>
+            <ServiceFilter
+              services={services.map((s) => ({ id: s.id, title: s.title }))}
+              onFilterChange={setSelectedService}
+              activeFilter={selectedService}
             />
           </div>
         </section>
+      )}
 
-        {/* CTA Section */}
-        <section className="bg-gradient-to-r from-blue-600 to-indigo-700 px-4 py-16 text-white sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              Ready to Begin Your Care Journey?
-            </h2>
-            <p className="mb-8 text-lg text-blue-100">
-              Join hundreds of families who trust LivingRite for expert, compassionate care
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <a
-                href="/client/booking"
-                className="rounded-lg bg-white px-8 py-3 font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
-              >
-                Schedule a Consultation
-              </a>
-              <a
-                href="/contact"
-                className="rounded-lg border-2 border-white px-8 py-3 font-semibold text-white hover:bg-white/10 transition-colors"
-              >
-                Contact Us
-              </a>
+      {/* Case Studies Section */}
+      {!loading && (filteredCaseStudies.length > 0 || selectedService === null) && (
+        <section className="py-16 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <div className="mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Case Studies</h2>
+              <p className="text-gray-600">Detailed success stories with measurable outcomes</p>
+            </div>
+
+            {filteredCaseStudies.length > 0 ? (
+              <>
+                {/* Featured Case Studies */}
+                {featuredCaseStudies.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    {featuredCaseStudies.map((caseStudy) => (
+                      <CaseStudyCard key={caseStudy.id} {...caseStudy} />
+                    ))}
+                  </div>
+                )}
+
+                {/* Other Case Studies */}
+                {otherCaseStudies.length > 0 && (
+                  <div>
+                    {featuredCaseStudies.length > 0 && (
+                      <h3 className="text-xl font-semibold text-gray-900 mb-6">More Success Stories</h3>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {otherCaseStudies.map((caseStudy) => (
+                        <CaseStudyCard key={caseStudy.id} {...caseStudy} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No case studies available for this service yet.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Text Testimonials Section */}
+      {!loading && textTestimonials.length > 0 && (
+        <section className="py-16 px-4 bg-white border-t border-gray-200">
+          <div className="container mx-auto max-w-6xl">
+            <div className="mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Client Reviews</h2>
+              <p className="text-gray-600">Feedback from satisfied clients and family members</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {textTestimonials.map((testimonial) => (
+                <TestimonialCard key={testimonial.id} {...testimonial} />
+              ))}
             </div>
           </div>
         </section>
-      </main>
-    )
-  }
+      )}
+
+      {/* No Data State */}
+      {!loading && filteredTestimonials.length === 0 && filteredCaseStudies.length === 0 && (
+        <section className="py-16 px-4">
+          <div className="container mx-auto max-w-6xl text-center">
+            <p className="text-gray-500 text-lg">No testimonials or case studies available for the selected filter.</p>
+          </div>
+        </section>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <section className="py-16 px-4">
+          <div className="container mx-auto max-w-6xl flex justify-center">
+            <Loader className="w-8 h-8 text-blue-600 animate-spin" />
+          </div>
+        </section>
+      )}
+
+      {/* CTA Section */}
+      <CTABanner />
+    </main>
+  )
+}

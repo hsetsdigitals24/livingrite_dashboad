@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import { ChevronDown, Search, Share2, FileText, Lightbulb, Clock, Users, TrendingUp } from "lucide-react"
+import { useState, useMemo, useEffect, ReactElement } from "react"
+import { ChevronDown, Search, Share2, FileText, Lightbulb, Clock, Users, TrendingUp, Calendar, Cross, CreditCard, Ambulance, ScreenShare, Handshake, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 // FAQ Schema for SEO
@@ -47,7 +47,7 @@ interface FaqItem {
 
 interface FaqCategory {
   name: string
-  icon: string
+  icon: ReactElement
   color: string
   description: string
   faqs: FaqItem[]
@@ -56,7 +56,7 @@ interface FaqCategory {
 const faqCategories: FaqCategory[] = [
   {
     name: "Booking and First Steps",
-    icon: "📅",
+    icon: <Calendar className="w-6 h-6" />,
     color: "from-blue-50 to-cyan-50",
     description: "Learn how to start your care journey with LivingRite Care",
     faqs: [
@@ -79,7 +79,7 @@ const faqCategories: FaqCategory[] = [
   },
   {
     name: "Services and Care Plans",
-    icon: "🏥",
+    icon: <Cross className="w-6 h-6" />,
     color: "from-emerald-50 to-teal-50",
     description: "Discover our comprehensive care services and personalized care plans",
     faqs: [
@@ -112,7 +112,7 @@ const faqCategories: FaqCategory[] = [
   },
   {
     name: "Costs, Payments, and Policies",
-    icon: "💳",
+    icon: <CreditCard className="w-6 h-6" /> ,
     color: "from-amber-50 to-orange-50",
     description: "Understand our transparent pricing and flexible payment options",
     faqs: [
@@ -135,7 +135,7 @@ const faqCategories: FaqCategory[] = [
   },
   {
     name: "Clinical Safety and Emergency Handling",
-    icon: "🚑",
+    icon: <Ambulance className="w-6 h-6" />,
     color: "from-red-50 to-rose-50",
     description: "Safety protocols and emergency procedures for patient care",
     faqs: [
@@ -158,7 +158,7 @@ const faqCategories: FaqCategory[] = [
   },
   {
     name: "Client Portal and Communication",
-    icon: "💬",
+    icon: <ScreenShare className="w-6 h-6"/>,
     color: "from-purple-50 to-pink-50",
     description: "Stay informed with our communication tools and client portal",
     faqs: [
@@ -176,7 +176,7 @@ const faqCategories: FaqCategory[] = [
   },
   {
     name: "Recovery Expectations",
-    icon: "📈",
+    icon: <TrendingUp className="w-6 h-6" />,
     color: "from-green-50 to-emerald-50",
     description: "Realistic recovery timelines and measurable health goals",
     faqs: [
@@ -199,7 +199,7 @@ const faqCategories: FaqCategory[] = [
   },
   {
     name: "Corporate and Community",
-    icon: "🤝",
+    icon: <Handshake className="w-6 h-6" />,
     color: "from-indigo-50 to-blue-50",
     description: "Community programs and corporate partnerships",
     faqs: [
@@ -217,7 +217,7 @@ const faqCategories: FaqCategory[] = [
   },
   {
     name: "Location and Coverage",
-    icon: "📍",
+    icon: <MapPin className="w-6 h-6" />,
     color: "from-cyan-50 to-blue-50",
     description: "Our service areas and coverage across Nigeria",
     faqs: [

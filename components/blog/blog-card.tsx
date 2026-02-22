@@ -4,7 +4,7 @@
 // import React from "react"
 
 // export default function BlogCard({ post }: { post: { slug: string; title: string; excerpt: string; date: string; image?: string } }) {
-//   console.log("Rendering BlogCard with post:", post) // Debug log to check post data
+ 
 //   return (
 //     <article className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
 //       <Link href={`/blog/${post.slug}`} className="block">

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
 import { CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -112,7 +112,7 @@ export function CarePackagesSection() {
       <div className="container mx-auto px-4 md:px-6">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-poppins mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold font-poppins mb-4 text-accent">
             Care Packages and Service Tiers
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -127,7 +127,7 @@ export function CarePackagesSection() {
               <TabsTrigger
                 key={category.id}
                 value={category.id}
-                className="py-3 text-sm md:text-base"
+                className={`py-3 text-sm md:text-base`}
               >
                 {category.name}
               </TabsTrigger>
@@ -185,7 +185,7 @@ export function CarePackagesSection() {
         </Tabs>
 
         {/* Additional Info */}
-        <div className="mt-12 p-6 md:p-8 bg-primary/5 rounded-lg border border-primary/10">
+        <div className="mt-12 p-6 md:p-8 bg-accent/10 rounded-lg border border-primary/10">
           <h3 className="font-poppins text-lg font-semibold mb-3">
             ✓ Available Care Options
           </h3>

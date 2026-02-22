@@ -8,7 +8,7 @@ import Link from "next/link"
 export function PostICUHero() {
   return (
     <section
-      className="relative min-h-screen flex items-center pt-32 overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-slate-900 bg-cover bg-center"
+      className="relative max-h-[100vh] flex items-center py-32 overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-slate-900 bg-cover bg-center"
       style={{ backgroundImage: `url('${heroImage.src}')` }}
     >
       {/* Animated Background Blobs */}
@@ -32,7 +32,7 @@ export function PostICUHero() {
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-700 mb-6 leading-tight animate-slide-up animation-delay-300">
-            Expert <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Post-ICU Care</span> at Home
+            Expert Post-ICU Care<br/><span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent"> at Home</span>
           </h1>
 
           <p className="text-lg md:text-xl text-gray-500 mb-10 leading-relaxed max-w-3xl mx-auto animate-slide-up animation-delay-400">
@@ -41,12 +41,12 @@ export function PostICUHero() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animation-delay-500">
             <Link
-              href="https://calendly.com/clientservices-livingritecare/30min"
+              href="/client/booking"
               target="_blank"
               rel="noreferrer"
               className="inline-block"
             >
-              <Button size="lg" className="text-base font-semibold bg-accent hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group">
+              <Button size="lg" className="text-base rounded-br-2xl rounded-tl-xl font-semibold bg-accent hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group">
                 Start Recovery Today
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>

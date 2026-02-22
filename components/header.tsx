@@ -27,24 +27,19 @@ export function Header() {
 
   const publicLinks = [
     {
-      label: "Services",
-      href: "/services",
-      // icon: Stethoscope,
-    },
-    {
-      label: "About",
-      href: "/about",
-      // icon: Users,
-    },
-    {
       label: "Testimonials",
       href: "/testimonials",
       // icon: BookOpen,
     },
     {
       label: "Blogs",
-      href: "/blog",
+      href: "/blogs",
       // icon: BookOpen,
+    },
+    {
+      label: "About",
+      href: "/about",
+      // icon: Users,
     },
     {
       label: "FAQs",
@@ -88,6 +83,61 @@ export function Header() {
 
           {/* Desktop Navigation - Role Aware */}
           <div className="hidden md:flex items-center gap-8">
+             <DropdownMenu>
+              <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium group">
+                Services
+                <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link href="/services">All Services</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/neurorehabilitation">
+                    Neurorehabilitation Care
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/post-icu-care">Post-ICU Care</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/post-surgical-care">
+                    Post-Surgical Care
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/end-of-life-care">
+                    End-of-Life & Palliative Care
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/geriatric-care">Geriatric Care</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/chronic-wound-care">
+                    Chronic Wound Care
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/home-medical-consultations">
+                    Home Medical Consultations
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/routine-laboratory-services">
+                    Routine Laboratory Services
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/physiotherapy-services">
+                    Physiotherapy Services
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/services/postpartum-care">Postpartum Care</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {role === "ADMIN" && isAuthenticated && !isLoading ? (
               <AdminNav />
             ) : (

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, ArrowUpRightFromCircle, CheckCircle, PhoneIcon } from "lucide-react";
 import Link from "next/link";
 
 export function CTABanner() {
@@ -38,10 +38,10 @@ export function CTABanner() {
           </p>
 
           {/* Benefits Grid */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-2xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-3 mb-12 max-w-2xl mx-auto">
             {[
               { icon: "✓", text: "No Commitment" },
-              { icon: "✓", text: "2,000+ Families Served" },
+              { icon: "✓", text: "20+ Families Served" },
               { icon: "✓", text: "Satisfaction Guaranteed" },
             ].map((benefit, index) => (
               <div
@@ -59,28 +59,21 @@ export function CTABanner() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animation-delay-600">
-            <Link href="/booking" className="flex items-center">
+            <Link href="/client/booking" className="flex items-center">
               <Button
                 size="lg"
-                className="cursor-pointer text-base font-semibold bg-primary hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group"
+                className="cursor-pointer text-base font-semibold bg-primary hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group rounded-[2rem]"
               >
                 Book Free Consultation
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowUpRightFromCircle className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link href="tel:+18001234567" className="flex items-center">
               <Button
-                size="lg"
-                variant="outline"
-                className="cursor-pointer text-base font-semibold border-2 border-white/30 text-black hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
+                size="lg" 
+                className="rounded-[2rem] bg-white border-1 border-primary text-primary cursor-pointer text-base font-semibold border-2 border-white/30 hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
               >
-                <svg
-                  className="mr-2 h-5 w-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773c-.346.173-.577.608-.58 1.07.007.324.038.649.1.97.141.627.713 1.776 2.752 3.815C8.88 15.236 10.119 15.863 10.77 15.972c.46.003.895-.231 1.07-.577l.773-1.548a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986v2.153a1 1 0 01-1 1h-2C7.82 20 2 14.18 2 7V3z" />
-                </svg>
+                <PhoneIcon className="mr-2 h-5 w-5" />
                 Call Now
               </Button>
             </Link>
@@ -89,7 +82,7 @@ export function CTABanner() {
 
         {/* Bottom Trust Message */}
         <div className="text-center mt-12 text-gray-400 text-sm animate-slide-up animation-delay-700">
-          <p>✓ No commitment • 2,000+ families • Satisfaction guaranteed</p>
+          <p>✓ No commitment • 10+ families • Satisfaction guaranteed</p>
         </div>
       </div>
     </section>

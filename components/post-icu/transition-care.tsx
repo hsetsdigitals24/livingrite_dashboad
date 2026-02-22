@@ -41,7 +41,7 @@ export function TransitionCare() {
                 className="bg-white/10 backdrop-blur-sm border border-blue-500/20 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300 animate-slide-up"
                 style={{ animationDelay: `${index * 75}ms` }}
               >
-                <h3 className="text-lg font-semibold text-secondary mb-3">{aspect.title}</h3>
+                <h3 className="text-lg font-semibold text-primary mb-3">{aspect.title}</h3>
                 <p className="text-gray-300 leading-relaxed">{aspect.description}</p>
               </div>
             ))}

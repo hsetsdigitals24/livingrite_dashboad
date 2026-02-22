@@ -40,16 +40,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   const descriptions: Record<string, string> = {
-    "neurorehabilitation": "Specialized neurorehabilitation care with neurocritical doctors, nurses, physiotherapists, and specialists. Comprehensive support for stroke and brain injury recovery.",
-    "post-icu-care": "Intensive post-ICU home care with continuous monitoring. Safe hospital-to-home transition with specialized professional support.",
-    "post-surgical-care": "Professional post-surgical recovery support with doctors, nurses, and physiotherapists. Comprehensive care tailored to surgical complexity.",
-    "end-of-life-care": "Compassionate palliative and hospice care focusing on comfort, dignity, and quality of life. Support for patients and families.",
-    "geriatric-care": "Professional elderly care with doctors and trained caregivers. Specialized support for seniors' unique medical and daily living needs.",
-    "chronic-wound-care": "Expert chronic wound management and treatment at home. Professional care to promote healing and prevent complications.",
-    "home-medical-consultations": "Convenient doctor consultations in the comfort of your home. Professional medical advice without hospital visits.",
-    "routine-laboratory-services": "Laboratory blood tests and routine services conducted at home. Professional and convenient healthcare diagnostics.",
-    "physiotherapy-services": "Professional physical therapy at home. Restore mobility, strength, and independence with certified physiotherapists.",
-    "postpartum-care": "Comprehensive postpartum support for new mothers. Professional guidance for recovery and newborn care.",
+    "neurorehabilitation": `Our flagship service focuses on the science of nurturing your brain back to health. When the brain or nervous system is damaged by a Stroke, Traumatic Brain Injury (TBI), or conditions like Parkinson’s, the "map" of the brain is disrupted. Our specialists use tailored health care plans to help the brain relearn how to lead your body back to independence.`,
+    "post-icu-care": `Leaving the Intensive Care Unit is a victory, but the road ahead is often marked by Post-Intensive Care Syndrome (PICS)—a combination of physical weakness, cognitive "fog," and emotional trauma. Our Out-of-Hospital team acts as the bridge, providing the high-level monitoring and respiratory/physical support needed to ensure you don’t return to the hospital, but instead, return to life.`,
+    "post-surgical-care": `The success of a surgery is often determined by the quality of the recovery. Our post-surgical team manages everything from orthopedic rehabilitation to cardiac recovery. We focus on advanced pain management, specialized wound care, and safe mobilization protocols to prevent complications like infections or blood clots, ensuring your surgical outcome is optimized.`,
+    "end-of-life-care":  `We believe every life deserves a dignified, peaceful, and comfortable transition. Our palliative care is a holistic approach focused on symptom relief and emotional support. We work closely with families to manage pain and provide a serene environment, ensuring the patient’s final chapter is defined by grace and expert clinical comfort.`,
+    "geriatric-care": `Aging is a natural process that deserves specialized attention. Our Geriatric care is designed for "Aging gracefully"—allowing our elders to stay in their homes while receiving management for chronic conditions, medication reconciliation, and mobility support. We focus on safety, nutrition, and mental engagement to preserve the quality of life for our seniors.`,
+    "chronic-wound-care": `Non-healing wounds require more than just a bandage; they require a personalized treatment plan. We treat diabetic ulcers, pressure sores, and complex post-op wounds using advanced dressing techniques and infection control. Our goal is to promote deep-tissue healing and prevent the progression of wounds that could lead to more serious complications.`,
+    "home-medical-consultations": `We can help you skip the hospital wait time and our qualified physicians can provide comprehensive check-ups and medical reviews in the privacy of your home.`,
+    "routine-laboratory-services": `We bring the lab to you with professional sample collection for blood work, urinalysis, and screenings, with digital results delivered straight to your inbox.`,
+    "physiotherapy-services": `Targeted physical therapy for musculoskeletal issues, back pain, and sports injuries to keep you moving pain-free.`,
+    "postpartum-care": `We provide specialized support for the mothers in their "Fourth Trimester." We assist new mothers with wound healing, breastfeeding guidance, and newborn monitoring during those vital first weeks.`,
   }
 
   return {

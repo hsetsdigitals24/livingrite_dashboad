@@ -8,7 +8,7 @@ import Link from "next/link";
 export function PhysiotherapyHero() {
   return (
     <section
-      className="relative min-h-screen flex items-center pt-32 overflow-hidden bg-gradient-to-br from-accent/20 via-accent/10 to-slate-900 bg-cover bg-center"
+      className="relative max-h-[100vh] flex items-center py-32 overflow-hidden bg-gradient-to-br from-accent/20 via-accent/10 to-slate-900 bg-cover bg-center"
       style={{ backgroundImage: `url('${heroImage.src}')` }}
     >
       {/* Animated Background Blobs */}
@@ -32,7 +32,7 @@ export function PhysiotherapyHero() {
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-700 mb-6 leading-tight animate-slide-up animation-delay-300">
-            Restore Mobility with{" "}
+            Restore Mobility with{" "} <br/>
             <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
               Expert Physiotherapy
             </span>
@@ -45,14 +45,14 @@ export function PhysiotherapyHero() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animation-delay-500">
             <Link
-              href="https://calendly.com/clientservices-livingritecare/30min"
+              href="/client/booking"
               target="_blank"
               rel="noreferrer"
               className="inline-block"
             >
               <Button
                 size="lg"
-                className="text-base font-semibold bg-accent hover:shadow-2xl hover:shadow-accent/30 hover:scale-105 transition-all duration-300 group"
+                className="text-base rounded-br-2xl rounded-tl-xl font-semibold bg-accent hover:shadow-2xl hover:shadow-accent/30 hover:scale-105 transition-all duration-300 group"
               >
                 Book Your Session
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

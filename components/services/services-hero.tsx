@@ -9,56 +9,68 @@ import heroImage from "@/public/service-hero.jpg";
 
 const services = [
   {
-    id: "live-in-nursing",
-    title: "Live-In Nursing",
-    subtitle: "Comprehensive 24/7 nursing care in the comfort of your home",
-    href: "/live-in-nursing",
+    id: "Neurorehabilitation",
+    title: "Neurorehabilitation",
+    subtitle: "Specialized care for neurological conditions and recovery",
+    href: "/neurorehabilitation",
   },
   {
     id: "post-icu",
-    title: "Post-ICU Care",
+    title: "Post-ICU Recovery Care",
     subtitle: "Transition support and monitoring after discharge",
     href: "/post-icu-care",
   },
   {
-    id: "physio",
-    title: "Physiotherapy Sessions",
+    id: "post-surgical-care",
+    title: "Post-Surgical Care ",
     subtitle: "Targeted sessions to restore movement and strength",
     href: "/physiotherapy-sessions",
   },
   {
-    id: "rehabilitation-support",
-    title: "Rehabilitation Support",
-    subtitle:
-      "Comprehensive rehabilitation programs for post-surgery and injury recovery.",
-    href: "/rehabilitation-support",
-  },
-  {
-    id: "post-stroke-care",
-    title: "Post-Stroke Care",
-    subtitle:
-      "Specialized recovery support with experienced nurses trained in stroke rehabilitation and physical therapy.",
-    href: "/post-stroke-care",
-  },
-  {
-    id: "family-support",
-    title: "Family Support",
-    subtitle: "Guidance and assistance for families caring for loved ones.",
-    href: "/family-support",
-  },
-  {
     id: "end-of-life-care",
-    title: "End-of-Life Care",
+    title: "End-of-Life Care and Palliative Care",
     subtitle:
-      "Compassionate care and support for patients and families during the final stages of life.",
+      "Our palliative care is a holistic approach focused on symptom relief and emotional support.",
     href: "/end-of-life-care",
   },
   {
-    id: "corporate-wellness",
-    title: "Corporate Wellness",
-    subtitle: "Comprehensive wellness programs for businesses and employees.",
-    href: "/corporate-wellness",
+    id: "geriatric-care",
+    title: "Geriatric Care",
+    subtitle:
+      "We focus on safety, nutrition, and mental engagement to preserve the quality of life for our seniors.",
+    href: "/geriatric-care",
   },
+  {
+    id: "chronic-wound-care",
+    title: "Chronic Wound Care",
+    subtitle: "",
+    href: "/chronic-wound-care",
+  },
+  {
+    id: "home-medical-consultations",
+    title: "Home Medical Consultations",
+    subtitle:
+      "We can help you skip the hospital wait time and our qualified physicians can provide comprehensive check-ups and medical reviews in the privacy of your home.",
+    href: "/home-medical-consultations",
+  },
+  {
+    id: "routine-laboratory-services",
+    title: "Routine Laboratory Services",
+    subtitle: "Professional sample collection for blood work, urinalysis, and screenings with digital results delivered straight to your inbox.",
+    href: "/routine-laboratory-services",
+  },
+  {
+    id: "physiotherapy-services",
+    title: "Physiotherapy Services",
+    subtitle: "Targeted physical therapy for musculoskeletal issues, back pain, and sports injuries to keep you moving pain-free.",
+    href: "/physiotherapy-services",
+  },
+  {
+    id: "postpartum-care",
+    title: "Postpartum Care",
+    subtitle: "Specialized care for new mothers during the post-delivery recovery period.",
+    href: "/postpartum-care",
+  }
 ];
 
 export function ServicesHero() {
@@ -153,12 +165,12 @@ export function ServicesHero() {
 
                       <div className="mt-6 flex gap-4">
                         <Link href={s.href} className="inline-block">
-                          <Button size="lg" className="bg-white text-slate-900">
+                          <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90 cursor-pointer rounded-[2rem]">
                             Learn more
                           </Button>
                         </Link>
                         <Link
-                          href="https://calendly.com/clientservices-livingritecare/30min"
+                          href="/client/booking"
                           target="_blank"
                           rel="noreferrer"
                           className="inline-block"
@@ -166,7 +178,7 @@ export function ServicesHero() {
                           <Button
                             size="lg"
                             variant="outline"
-                            className="bg-accent text-white border-none"
+                            className="bg-accent text-white border-none cursor-pointer hover:text-white rounded-[2rem]"
                           >
                             Book consultation
                           </Button>
@@ -174,7 +186,7 @@ export function ServicesHero() {
                       </div>
                     </div>
 
-                    <div className="w-full md:w-1/2 flex items-center justify-center">
+                    {/* <div className="w-full md:w-1/2 flex items-center justify-center">
                       <div className="w-full max-w-sm rounded-xl overflow-hidden shadow-2xl">
                         <div
                           className={`h-56 bg-gradient-to-br from-slate-500 to-slate-400 flex items-center justify-center text-white`}
@@ -189,7 +201,7 @@ export function ServicesHero() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </article>
               ))}

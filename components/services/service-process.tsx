@@ -124,7 +124,7 @@ export function ServiceProcess({ serviceType }: { serviceType: string }) {
 
   return (
     <section className="py-20 lg:py-28 bg-slate-900/70 relative overflow-hidden">
-      {/* Background Elements */}
+      {/* Background Elements */} 
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/2 right-0 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-3xl"></div>
       </div>

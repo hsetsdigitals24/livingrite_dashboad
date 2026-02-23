@@ -8,7 +8,7 @@ interface AuthorCardProps {
   author: {
     name: string
     slug: string
-    bio: string
+    bio?: string
     image?: string
     credentials?: string[]
     yearsOfExperience?: number
@@ -43,7 +43,7 @@ export default function AuthorCard({
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-xl font-bold text-gray-900">{author.name}</h3>
               {author.credentials && author.credentials.length > 0 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="primary" className="text-xs">
                   {author.credentials[0]}
                 </Badge>
               )}

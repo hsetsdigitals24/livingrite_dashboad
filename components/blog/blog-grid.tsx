@@ -18,7 +18,7 @@ interface BlogPost {
     slug?: string
     image?: string
   }
-  image?: string
+  image?: string | null
   featured?: boolean
 }
 
@@ -74,7 +74,7 @@ export default function BlogGrid({ posts, loading }: BlogGridProps) {
             )}
             <CardContent className="p-6 flex flex-col h-full">
               <div className="mb-3">
-                <Badge variant="secondary" className="mb-2">
+                <Badge variant="primary" className="mb-2">
                   {post.category}
                 </Badge>
                 <div className="flex items-center gap-4 text-xs text-gray-500">

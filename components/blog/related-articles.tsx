@@ -5,17 +5,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight } from 'lucide-react'
 
-interface RelatedArticlesProps {
+export interface RelatedArticlesProps {
   articles: Array<{
     id: string
     slug: string
     title: string
     excerpt: string
     category: string
-    publishedAt: string
     author: {
       name: string
-      slug: string
     }
   }>
   title?: string
@@ -38,7 +36,7 @@ export default function RelatedArticles({
               <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer group">
                 <CardContent className="p-6">
                   <div className="mb-3">
-                    <Badge variant="secondary" className="mb-2">
+                    <Badge variant="primary" className="mb-2">
                       {article.category}
                     </Badge>
                   </div>

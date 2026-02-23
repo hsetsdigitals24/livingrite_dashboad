@@ -15,11 +15,11 @@ interface FeaturedArticlesProps {
     category: string
     publishedAt: string
     readingTime: number
-    author: {
+    author?: {
       name: string
       image?: string
     }
-    image?: string
+    image?: string | null
   }>
 }
 

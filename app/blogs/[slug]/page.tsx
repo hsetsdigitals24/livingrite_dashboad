@@ -246,7 +246,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 author={{
                   name: post.author.name,
                   slug: post.author.slug?.current || '',
-                  bio: post.author.bio,
+                  bio: post.author?.bio,
                   image: post.author.image ? urlFor(post.author.image).url() : undefined,
                   credentials: [],
                   yearsOfExperience: 0,
@@ -267,11 +267,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <AnimatedBlogContent delay={0.55}>
           <RelatedArticles 
             articles={post.relatedArticles.map((article: any) => ({
-              id: article._id,
+              id: article?._id,
               slug: article.slug?.current,
-              title: article.title,
-              excerpt: article.excerpt,
-              category: article.category,
+              title: article?.title,
+              excerpt: article?.excerpt,
+              category: article?.category,
               author: { name: article.author?.name },
             }))} 
           />

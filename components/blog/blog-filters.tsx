@@ -32,7 +32,7 @@ export default function BlogFilters({ activeFilter }: BlogFiltersProps) {
                   className="group"
                 >
                   {category.label}
-                  <Badge variant="secondary" className="ml-2 group-hover:bg-primary/20">
+                  <Badge variant="primary" className="ml-2 group-hover:bg-primary/20">
                     {category.count}
                   </Badge>
                 </Button>

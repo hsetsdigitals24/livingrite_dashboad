@@ -13,6 +13,7 @@ interface Popup {
   actionButtonUrl: string;
   isActive: boolean;
   displayOrder: number;
+  popupCount: number;
   createdAt: string;
   updatedAt: string;
 }

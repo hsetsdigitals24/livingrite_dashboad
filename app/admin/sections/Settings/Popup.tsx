@@ -10,6 +10,7 @@ interface Popup {
   actionButtonText: string;
   actionButtonUrl: string;
   isActive: boolean;
+  popupCount: number;
   displayOrder: number;
   createdAt: string;
   updatedAt: string;

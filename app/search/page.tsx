@@ -115,7 +115,7 @@ export default function SearchPage() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: 'easeOut' },
+      transition: { duration: 0.5 },
     },
     exit: {
       opacity: 0,

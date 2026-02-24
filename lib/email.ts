@@ -348,3 +348,79 @@ export async function sendRefundProcessedEmail(
 
   return await transporter.sendMail(mailOptions);
 }
+
+export async function sendSignupAcknowledgementEmail(
+  email: string,
+  name: string,
+  role: string
+) {
+  if (!email) throw new Error('Email is required');
+
+  const roleLabel = role === 'ADMIN' ? 'Administrator' : role === 'CAREGIVER' ? 'Caregiver' : 'Client';
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: email,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Welcome to LivingRite - Account Created Successfully',
+    html: `
+      <h2>Welcome to LivingRite, ${name}!</h2>
+      <p>Your account has been created successfully.</p>
+      
+      <p><strong>Account Details:</strong></p>
+      <ul>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Role:</strong> ${roleLabel}</li>
+        <li><strong>Account Created:</strong> ${new Date().toLocaleDateString()}</li>
+      </ul>
+
+      <p>You can now log in to your account and start using our services.</p>
+      
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/signin" style="background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Login to Your Account</a></p>
+      
+      <p>If you have any questions or need assistance, please don't hesitate to contact us.</p>
+      
+      <p>Best regards,<br/>The LivingRite Team</p>
+    `,
+    text: `Welcome to LivingRite! Your account has been created successfully. You can now log in using your email: ${email}. Your role is: ${roleLabel}.`,
+  };
+  return await transporter.sendMail(mailOptions);
+}
+
+export async function sendVerificationEmail(
+  email: string,
+  name: string,
+  verificationToken: string
+) {
+  if (!email) throw new Error('Email is required');
+  if (!verificationToken) throw new Error('Verification token is required');
+
+  const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email?token=${verificationToken}`;
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: email,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Verify Your Email Address',
+    html: `
+      <h2>Welcome to LivingRite, ${name}!</h2>
+      <p>Thank you for signing up. Please verify your email address to complete your account setup.</p>
+      
+      <p>Click the button below to verify your email:</p>
+      <p><a href="${verificationLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Verify Email Address</a></p>
+      
+      <p>Or copy and paste this link into your browser:</p>
+      <p><code>${verificationLink}</code></p>
+      
+      <p>This verification link will expire in 24 hours.</p>
+      
+      <p>If you didn't create this account, you can safely ignore this email.</p>
+      
+      <p>Best regards,<br/>The LivingRite Team</p>
+    `,
+    text: `Welcome to LivingRite! Please verify your email address by visiting this link: ${verificationLink}. This link will expire in 24 hours.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+

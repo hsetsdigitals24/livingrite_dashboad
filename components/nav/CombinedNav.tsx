@@ -54,12 +54,7 @@ export function CombinedNav({ role }: CombinedNavProps) {
       label: "Dashboard",
       href: "/client",
       icon: LayoutDashboard,
-    },
-    {
-      label: "My Family",
-      href: "/client/patients",
-      icon: Users,
-    },
+    }, 
     {
       label: "Book Service",
       href: "/client/booking",
@@ -82,7 +77,7 @@ export function CombinedNav({ role }: CombinedNavProps) {
   }
 
   return (
-    <nav className="hidden items-center gap-1 md:flex mx-auto w-fit">
+    <nav className="hidden items-center gap-1 md:flex mx-auto w-fit py-2">
       {itemsToShow.map((item, index) => {
         const Icon = item.icon;
         // Add visual separator between public and role-specific items
@@ -94,7 +89,7 @@ export function CombinedNav({ role }: CombinedNavProps) {
               href={item.href}
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 role && role !== "ADMIN"
-                  ? "text-white hover:bg-gray-100 hover:text-gray-900"
+                  ? "text-white hover:text-slate-200"
                   : "text-white relative hover:text-gray-900 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-teal-500 after:to-cyan-500 after:transition-all after:duration-300 hover:after:w-full"
               }`}
             >

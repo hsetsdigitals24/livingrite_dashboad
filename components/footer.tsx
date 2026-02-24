@@ -37,7 +37,8 @@ export function Footer() {
   if (
     pathname.startsWith("/admin") ||
     pathname.startsWith("/client") ||
-    pathname.startsWith("/caregiver")
+    pathname.startsWith("/caregiver") ||
+    pathname.startsWith("/auth")
   ) {
     return null;
   }

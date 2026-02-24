@@ -1,4 +1,4 @@
-import { TrustIndicators } from "@/components/trust-indicators"
+// import { TrustIndicators } from "@/components/trust-indicators"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { CTABanner } from "@/components/cta-banner"
 import Link from "next/link"
@@ -218,7 +218,7 @@ export default function AboutPage() {
 			</section>
 
 			{/* Impact Metrics */}
-			<TrustIndicators />
+			{/* <TrustIndicators /> */}
 
 			{/* Client Testimonials */}
 			<TestimonialsSection />

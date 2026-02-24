@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
@@ -98,6 +98,71 @@ export async function GET(
     console.error("Error fetching patient details:", error);
     return NextResponse.json(
       { error: "Failed to fetch patient details" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { patientId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const { patientId } = params;
+
+    // Verify user has access to this patient
+    const familyMember = await prisma.familyMemberAssignment.findUnique({
+      where: {
+        patientId_clientId: {
+          patientId,
+          clientId: session.user.id,
+        },
+      },
+    });
+
+    if (!familyMember) {
+      return NextResponse.json(
+        { error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    const data = await req.json();
+
+    // Update patient
+    const patient = await prisma.patient.update({
+      where: { id: patientId },
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+        biologicalGender: data.biologicalGender,
+        heightCm: data.heightCm,
+        weightKg: data.weightKg,
+        timezone: data.timezone,
+        medicalConditions: data.medicalConditions,
+        medications: data.medications,
+        emergencyContact: data.emergencyContact,
+        emergencyPhone: data.emergencyPhone,
+      },
+    });
+
+    return NextResponse.json(patient, { status: 200 });
+  } catch (error) {
+    console.error('Error updating patient:', error);
+    return NextResponse.json(
+      { error: 'Failed to update patient' },
       { status: 500 }
     );
   }

@@ -27,9 +27,11 @@ export async function POST(request: NextRequest) {
 
     // Fetch booking
     const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
+      where: { calcomId: bookingId },
       include: { service: true, user: true },
     });
+
+    console.log({"Booking Details:": booking})
 
     if (!booking) {
       return NextResponse.json(
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     // Check if invoice already exists
     const existingInvoice = await prisma.invoice.findUnique({
-      where: { bookingId },
+      where: { bookingId: booking.id },  // Use booking.id instead of bookingId
     });
 
     if (existingInvoice) {
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
     // Create invoice
     const invoice = await prisma.invoice.create({
       data: {
-        bookingId,
+        bookingId: booking.id,  // Use booking.id (primary key) not calcomId
         invoiceNumber,
         amount,
         totalAmount: amount,

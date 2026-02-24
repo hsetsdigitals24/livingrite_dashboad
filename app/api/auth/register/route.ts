@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { hash } from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { sendSignupAcknowledgementEmail, sendVerificationEmail } from "@/lib/email"
 import { z } from "zod"
+import crypto from "crypto"
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -70,7 +72,8 @@ export async function POST(request: NextRequest) {
         email,
         name,
         password: hashedPassword,
-        role
+        role,
+        emailVerificaion: false,
       },
     })
     
@@ -84,6 +87,27 @@ export async function POST(request: NextRequest) {
           usedAt: new Date(),
         },
       })
+    }
+    
+    // Create verification token (24 hour expiry)
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    
+    let vr = await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token: verificationToken,
+        expires: expiresAt,
+      },
+    })
+    console.log('Created verification token:', vr)
+    
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, name, verificationToken)
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError)
+      // Continue with signup even if email fails
     }
     
     const { password: _, ...userWithoutPassword } = user

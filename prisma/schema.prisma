@@ -21,6 +21,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
+  emailVerificaion  Boolean @default(false)
   // Pipeline tracking
   conversionStage ClientConversionStage @default(PROSPECT)
   inquiryDate     DateTime?
@@ -99,6 +100,7 @@ model CaregiverProfile {
   id                String   @id @default(cuid())
   userId            String   @unique
   licenseNumber     String?
+  title             CaregiverTitle  @default(RN)
   specialization    String[] // e.g., ["elderly care", "pediatric"]
   yearsOfExperience Int?
   bio               String?
@@ -904,6 +906,10 @@ enum InvoiceStatus {
   PAID          // Invoice paid
   OVERDUE       // Payment overdue
   CANCELLED     // Invoice cancelled
+}
+enum CaregiverTitle {
+  DR
+  RN
 }
 
 enum TestimonialStatus {

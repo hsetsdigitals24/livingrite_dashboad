@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, ReactElement } from "react"
 import { ChevronDown, Search, Share2, FileText, Lightbulb, Clock, Users, TrendingUp, Calendar, Cross, CreditCard, Ambulance, ScreenShare, Handshake, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 // FAQ Schema for SEO
 const generateFaqSchema = (categories: FaqCategory[]) => {
@@ -288,131 +289,73 @@ function FaqAccordionItem({
 }
 
 // Stats Section Component
-function StatsSection() {
-  const totalFaqs = faqCategories.reduce((sum, cat) => sum + cat.faqs.length, 0)
-  const totalCategories = faqCategories.length
+// function StatsSection() {
+//   const totalFaqs = faqCategories.reduce((sum, cat) => sum + cat.faqs.length, 0)
+//   const totalCategories = faqCategories.length
 
-  return (
-    <section className="py-12 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border-y border-gray-200">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-              <Lightbulb className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-900">{totalFaqs}+</div>
-              <div className="text-xs md:text-sm text-gray-600">Questions Answered</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-              <Users className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-900">{totalCategories}</div>
-              <div className="text-xs md:text-sm text-gray-600">Topics Covered</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-pink-600" />
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-900">24/7</div>
-              <div className="text-xs md:text-sm text-gray-600">Support Ready</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-900">500+</div>
-              <div className="text-xs md:text-sm text-gray-600">Families Served</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// Search and Filter Component
-function SearchAndFilter({
-  searchTerm,
-  onSearchChange,
-  activeCategory,
-  onCategoryChange,
-}: {
-  searchTerm: string
-  onSearchChange: (term: string) => void
-  activeCategory: string | null
-  onCategoryChange: (category: string | null) => void
-}) {
-  return (
-    <section className="sticky top-20 z-40 bg-white border-b border-gray-200 py-4 md:py-6 shadow-sm">
-      <div className="max-w-6xl mx-auto px-6 space-y-4">
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search FAQs by keyword..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
-            aria-label="Search FAQs"
-          />
-        </div>
-
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => onCategoryChange(null)}
-            className={`px-4 py-2 rounded-full font-medium transition-all text-sm ${
-              activeCategory === null
-                ? "bg-blue-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            All Categories
-          </button>
-          {faqCategories.map((category) => (
-            <button
-              key={category.name}
-              onClick={() => onCategoryChange(category.name)}
-              className={`px-4 py-2 rounded-full font-medium transition-all text-sm whitespace-nowrap ${
-                activeCategory === category.name
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {category.icon} {category.name}
-            </button>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
+//   return (
+//     <section className="py-12 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border-y border-gray-200">
+//       <div className="max-w-6xl mx-auto px-6">
+//         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+//           <div className="flex items-center gap-3">
+//             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+//               <Lightbulb className="w-5 h-5 text-blue-600" />
+//             </div>
+//             <div>
+//               <div className="text-2xl md:text-3xl font-bold text-gray-900">{totalFaqs}+</div>
+//               <div className="text-xs md:text-sm text-gray-600">Questions Answered</div>
+//             </div>
+//           </div>
+//           <div className="flex items-center gap-3">
+//             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+//               <Users className="w-5 h-5 text-purple-600" />
+//             </div>
+//             <div>
+//               <div className="text-2xl md:text-3xl font-bold text-gray-900">{totalCategories}</div>
+//               <div className="text-xs md:text-sm text-gray-600">Topics Covered</div>
+//             </div>
+//           </div>
+//           <div className="flex items-center gap-3">
+//             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center">
+//               <Clock className="w-5 h-5 text-pink-600" />
+//             </div>
+//             <div>
+//               <div className="text-2xl md:text-3xl font-bold text-gray-900">24/7</div>
+//               <div className="text-xs md:text-sm text-gray-600">Support Ready</div>
+//             </div>
+//           </div>
+//           <div className="flex items-center gap-3">
+//             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+//               <TrendingUp className="w-5 h-5 text-green-600" />
+//             </div>
+//             <div>
+//               <div className="text-2xl md:text-3xl font-bold text-gray-900">500+</div>
+//               <div className="text-xs md:text-sm text-gray-600">Families Served</div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </section>
+//   )
+// }
+ 
 
 // CTA Between Categories
 function CategoryCta() {
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-8 rounded-xl text-center my-12">
+    <div className="bg-white text-slate-600 p-8 rounded-xl text-center my-12">
       <h3 className="text-2xl font-bold mb-3">Didn't find your answer?</h3>
-      <p className="mb-6 text-blue-50">Our team is here to help. Get in touch for personalized support.</p>
+      <p className="mb-6">Our team is here to help. Get in touch for personalized support.</p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <a
           href="https://wa.me/+2347035932851"
-          className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
+          className="inline-block bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-500 transition"
         >
           WhatsApp Us
         </a>
         <a
           href="mailto:livingritecare@gmail.com"
-          className="inline-block bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition"
+          className="inline-block bg-transparent border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition"
         >
           Send Email
         </a>
@@ -493,7 +436,7 @@ export default function FAQsPage() {
       {/* Hero Section */}
       <section className="pt-24 pb-16 bg-gradient-to-b from-white via-blue-50 to-white">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
             ✓ Answers You Need
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -506,27 +449,16 @@ export default function FAQsPage() {
 
           {/* Quick CTA */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            <a href="#consultation" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition inline-block">
+            <Link href="/client/booking" className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition inline-block">
               Schedule Free Consultation
-            </a>
-            <button className="border border-blue-200 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition inline-flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Print Guide
-            </button>
+            </Link>
+            
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <StatsSection />
-
-      {/* Search and Filter */}
-      <SearchAndFilter
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-      />
+      {/* <StatsSection /> */}
 
       {/* Main FAQ Section */}
       <section className="py-16">
@@ -543,7 +475,7 @@ export default function FAQsPage() {
                   setSearchTerm("")
                   setActiveCategory(null)
                 }}
-                className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+                className="inline-block bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
               >
                 Clear Filters
               </button>
@@ -595,15 +527,15 @@ export default function FAQsPage() {
       </section>
 
       {/* Contact CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <section className="py-16 bg-primary text-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-white/20 hover:border-white/40 transition">
               <h3 className="font-bold text-lg text-white mb-2">Still have questions?</h3>
-              <p className="text-sm text-blue-50 mb-4">Our team is ready to help with any additional questions or concerns.</p>
+              <p className="text-sm text-white mb-4">Our team is ready to help with any additional questions or concerns.</p>
               <a
                 href="https://wa.me/+2347035932851"
-                className="inline-block text-sm bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium"
+                className="inline-block text-sm bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium"
               >
                 Contact via WhatsApp
               </a>
@@ -614,7 +546,7 @@ export default function FAQsPage() {
               <p className="text-sm text-blue-50 mb-4">Get detailed information tailored to your specific needs.</p>
               <a
                 href="mailto:livingritecare@gmail.com"
-                className="inline-block text-sm bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium"
+                className="inline-block text-sm bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium"
               >
                 Send an Email
               </a>
@@ -623,7 +555,7 @@ export default function FAQsPage() {
             <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-white/20 hover:border-white/40 transition">
               <h3 className="font-bold text-lg text-white mb-2">Book a consultation</h3>
               <p className="text-sm text-blue-50 mb-4">Get a free 30-minute assessment from our qualified experts.</p>
-              <button className="inline-block text-sm bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium">
+              <button className="inline-block text-sm bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium">
                 Book Now
               </button>
             </div>

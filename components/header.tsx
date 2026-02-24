@@ -73,16 +73,23 @@ export function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-35 h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="w-50 h-15 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Image src={logo} alt="LivingRite Care Logo" />
-            </div>
-            {/* <span className="font-bold text-xl bg-primary bg-clip-text text-transparent">
-              LivingRite<span className="text-primary">Care</span>
-            </span> */}
+            </div> 
           </Link>
 
           {/* Desktop Navigation - Role Aware */}
           <div className="hidden md:flex items-center gap-8">
+              <Link 
+                    href='/'
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      role && role !== "ADMIN"
+                        ? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        : "text-gray-700 relative hover:text-gray-900 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-teal-500 after:to-cyan-500 after:transition-all after:duration-300 hover:after:w-full"
+                    }`}
+                  > 
+                    <span>Home</span>
+                  </Link>
              <DropdownMenu>
               <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium group">
                 Services
@@ -404,9 +411,11 @@ export function Header() {
       </nav>
       <div className="bg-primary w-full">
         {/* inner wrapper */}
+        {role &&
         <div className="text-white">
           <CombinedNav role={role} />
         </div>
+        }
       </div>
     </header>
   );

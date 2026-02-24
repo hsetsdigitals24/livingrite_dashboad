@@ -22,32 +22,44 @@ interface Invoice {
 export default function InvoicesSection() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filter, setFilter] = useState<"all" | "sent" | "paid" | "draft">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   useEffect(() => {
-    fetchInvoices();
+    setCurrentPage(1);
+    fetchInvoices(1);
   }, [filter]);
 
-  const fetchInvoices = async () => {
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchInvoices(page);
+  };
+
+  const fetchInvoices = async (page: number = 1) => {
     try {
       setIsLoading(true);
       const url =
         filter === "all"
-          ? "/api/invoices"
-          : `/api/invoices?status=${filter.toUpperCase()}`;
+          ? `/api/invoices?page=${page}`
+          : `/api/invoices?status=${filter.toUpperCase()}&page=${page}`;
 
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch invoices");
 
       const data = await response.json();
-      setInvoices(data.data || data);
+
+      const invoiceList = Array.isArray(data.invoices) ? data.invoices : [];
+      setInvoices(invoiceList);
+      setTotalPages(data.pagination?.pages || 1);
       setError("");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch invoices"
       );
+      setInvoices([]);
     } finally {
       setIsLoading(false);
     }
@@ -217,6 +229,43 @@ export default function InvoicesSection() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Page <span className="font-semibold">{currentPage}</span> of{" "}
+              <span className="font-semibold">{totalPages}</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded border ${
+                    currentPage === page
+                      ? "bg-teal-600 text-white border-teal-600"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       )}

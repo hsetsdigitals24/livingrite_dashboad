@@ -5,6 +5,9 @@ import { sendSignupAcknowledgementEmail, sendVerificationEmail } from "@/lib/ema
 import { z } from "zod"
 import crypto from "crypto"
 
+
+export const dynamic = 'force-dynamic'
+
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
@@ -101,7 +104,7 @@ export async function POST(request: NextRequest) {
       },
     })
     console.log('Created verification token:', vr)
-    
+
     // Send verification email
     try {
       await sendVerificationEmail(email, name, verificationToken)

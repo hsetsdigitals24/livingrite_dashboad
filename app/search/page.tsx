@@ -35,6 +35,8 @@ interface BlogPost {
 
 const POSTS_PER_PAGE = 6
 
+export const dynamic = 'force-dynamic'; 
+
 export default function SearchPage() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<BlogPost[]>([])

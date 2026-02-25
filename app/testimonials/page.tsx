@@ -39,6 +39,8 @@ interface Service {
   title: string
 }
 
+export const dynamic = 'force-dynamic';
+
 export default function TestimonialsPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([])

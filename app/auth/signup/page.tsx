@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
+import { signIn } from 'next-auth/react'
 import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 interface SignUpFormData {
@@ -23,6 +24,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [requiresInvitation, setRequiresInvitation] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<SignUpFormData>()
 
@@ -245,10 +247,66 @@ export default function SignUp() {
                 'Create Account'
               )}
             </button>
+
+            {/* Divider */}
+            <div className="relative my-6 animate-scale-in" style={{ animationDelay: '0.55s' }}>
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or sign up with</span>
+              </div>
+            </div>
+
+            {/* Google Sign Up Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsGoogleLoading(true)
+                signIn('google', { callbackUrl: '/dashboard' })
+              }}
+              disabled={isGoogleLoading}
+              className="w-full py-3 bg-white border-2 border-gray-300 text-gray-900 font-semibold rounded-lg hover:border-gray-400 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 flex items-center justify-center gap-2 animate-scale-in"
+              style={{ animationDelay: '0.6s' }}
+            >
+              {isGoogleLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Connecting...
+                </>
+              ) : (
+                <>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 256 262"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill="#4285F4"
+                        d="M255.68 133.5c0-10.74-.96-21.06-2.74-30.98H130.5v58.66h70.24c-3.02 16.24-12.2 29.98-25.98 39.18v32.5h41.98c24.58-22.64 38.94-56 38.94-99.36z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M130.5 261.1c35.1 0 64.56-11.62 86.08-31.5l-41.98-32.5c-11.66 7.82-26.6 12.42-44.1 12.42-33.92 0-62.68-22.9-72.98-53.72H14.82v33.76C36.24 231.96 80.14 261.1 130.5 261.1z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M57.52 155.8c-2.62-7.82-4.12-16.16-4.12-24.8s1.5-16.98 4.12-24.8V72.44H14.82C5.32 91.28 0 112.3 0 131s5.32 39.72 14.82 58.56l42.7-33.76z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M130.5 51.48c19.1 0 36.24 6.58 49.74 19.52l37.3-37.3C195.02 12.06 165.56 0 130.5 0 80.14 0 36.24 29.14 14.82 72.44l42.7 33.76c10.3-30.82 39.06-53.72 72.98-53.72z"
+                      />
+                    </svg>
+                  Continue with Google
+                </>
+              )}
+            </button>
           </form>
 
           {/* Footer */}
-          <div className="mt-6 text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="mt-6 text-center animate-fade-in" style={{ animationDelay: '0.7s' }}>
             <p className="text-gray-600 text-sm">
               Already have an account?{' '}
               <Link
@@ -260,7 +318,7 @@ export default function SignUp() {
             </p>
           </div>
 
-          <p className="mt-4 text-center text-gray-500 text-xs animate-fade-in" style={{ animationDelay: '0.7s' }}>
+          <p className="mt-4 text-center text-gray-500 text-xs animate-fade-in" style={{ animationDelay: '0.8s' }}>
               <Link
                 href="/auth/admin"
                 className="font-semibold text-gray-600 hover:text-blue-700 transition hover:underline"

@@ -8,10 +8,37 @@ CREATE TYPE "AccessLevel" AS ENUM ('VIEW', 'EDIT', 'FULL_ACCESS');
 CREATE TYPE "PaymentStatus" AS ENUM ('FREE', 'PENDING', 'PAID', 'FAILED', 'REFUNDED');
 
 -- CreateEnum
-CREATE TYPE "BookingStatus" AS ENUM ('SCHEDULED', 'RESCHEDULED', 'CANCELLED', 'COMPLETED', 'NO_SHOW');
+CREATE TYPE "BookingStatus" AS ENUM ('SCHEDULED', 'PROPOSAL', 'RESCHEDULED', 'CANCELLED', 'COMPLETED', 'NO_SHOW');
 
 -- CreateEnum
 CREATE TYPE "ReminderStatus" AS ENUM ('PENDING', 'SENT', 'FAILED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "ClientConversionStage" AS ENUM ('PROSPECT', 'INQUIRY', 'CONSULTATION_BOOKED', 'PROPOSAL_SENT', 'CLIENT');
+
+-- CreateEnum
+CREATE TYPE "InquiryStatus" AS ENUM ('NEW', 'QUALIFIED', 'DISQUALIFIED', 'CONVERTED');
+
+-- CreateEnum
+CREATE TYPE "ProposalStatus" AS ENUM ('DRAFT', 'SENT', 'VIEWED', 'ACCEPTED', 'REJECTED');
+
+-- CreateEnum
+CREATE TYPE "InvoiceStatus" AS ENUM ('DRAFT', 'GENERATED', 'SENT', 'VIEWED', 'PAID', 'OVERDUE', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "CaregiverTitle" AS ENUM ('DR', 'RN');
+
+-- CreateEnum
+CREATE TYPE "TestimonialStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'FEATURED', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "TicketCategory" AS ENUM ('BILLING', 'TECHNICAL', 'GENERAL', 'FEATURE', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "TicketPriority" AS ENUM ('LOW', 'NORMAL', 'HIGH', 'URGENT');
+
+-- CreateEnum
+CREATE TYPE "TicketStatus" AS ENUM ('OPEN', 'ASSIGNED', 'IN_PROGRESS', 'WAITING', 'RESOLVED', 'CLOSED', 'REOPENED');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -25,6 +52,10 @@ CREATE TABLE "users" (
     "role" "Role" NOT NULL DEFAULT 'CLIENT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "emailVerificaion" BOOLEAN NOT NULL DEFAULT false,
+    "conversionStage" "ClientConversionStage" NOT NULL DEFAULT 'PROSPECT',
+    "inquiryDate" TIMESTAMP(3),
+    "clientConvertedAt" TIMESTAMP(3),
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -42,10 +73,34 @@ CREATE TABLE "password_reset_tokens" (
 );
 
 -- CreateTable
+CREATE TABLE "inquiries" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "inquirySource" TEXT,
+    "subject" TEXT,
+    "message" TEXT,
+    "status" "InquiryStatus" NOT NULL DEFAULT 'NEW',
+    "qualifiedAt" TIMESTAMP(3),
+    "disqualifiedAt" TIMESTAMP(3),
+    "disqualificationReason" TEXT,
+    "convertedToBookingAt" TIMESTAMP(3),
+    "convertedToBookingId" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "inquiries_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "caregiver_profiles" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "licenseNumber" TEXT,
+    "title" "CaregiverTitle" NOT NULL DEFAULT 'RN',
     "specialization" TEXT[],
     "yearsOfExperience" INTEGER,
     "bio" TEXT,
@@ -169,6 +224,9 @@ CREATE TABLE "bookings" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "cancelledAt" TIMESTAMP(3),
     "rescheduledFrom" TEXT,
+    "inquirySource" TEXT,
+    "proposalSentAt" TIMESTAMP(3),
+    "pipelineStageHistory" JSONB,
 
     CONSTRAINT "bookings_pkey" PRIMARY KEY ("id")
 );
@@ -475,13 +533,39 @@ CREATE TABLE "services" (
 );
 
 -- CreateTable
+CREATE TABLE "proposals" (
+    "id" TEXT NOT NULL,
+    "bookingId" TEXT NOT NULL,
+    "status" "ProposalStatus" NOT NULL DEFAULT 'DRAFT',
+    "title" TEXT,
+    "description" TEXT,
+    "servicesOffered" JSONB,
+    "totalAmount" DOUBLE PRECISION,
+    "currency" TEXT NOT NULL DEFAULT 'NGN',
+    "validUntil" TIMESTAMP(3),
+    "sentAt" TIMESTAMP(3),
+    "viewedAt" TIMESTAMP(3),
+    "acceptedAt" TIMESTAMP(3),
+    "rejectedAt" TIMESTAMP(3),
+    "rejectionReason" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "proposals_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "payments" (
     "id" TEXT NOT NULL,
     "bookingId" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
     "status" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
     "providerRef" TEXT,
-    "paidAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "paidAt" TIMESTAMP(3),
+    "refundedAt" TIMESTAMP(3),
+    "refundedAmount" DOUBLE PRECISION,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -489,12 +573,53 @@ CREATE TABLE "payments" (
 );
 
 -- CreateTable
+CREATE TABLE "payment_attempts" (
+    "id" TEXT NOT NULL,
+    "paymentId" TEXT NOT NULL,
+    "reference" TEXT,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "status" TEXT NOT NULL,
+    "errorCode" TEXT,
+    "errorMsg" TEXT,
+    "metadata" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "payment_attempts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "refund_requests" (
+    "id" TEXT NOT NULL,
+    "paymentId" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "reason" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "approvedBy" TEXT,
+    "approvedAt" TIMESTAMP(3),
+    "processedAt" TIMESTAMP(3),
+    "providerRef" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "refund_requests_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "invoices" (
     "id" TEXT NOT NULL,
     "bookingId" TEXT NOT NULL,
+    "invoiceNumber" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
-    "currency" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "tax" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "discount" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "totalAmount" DOUBLE PRECISION NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "status" "InvoiceStatus" NOT NULL DEFAULT 'DRAFT',
+    "pdfUrl" TEXT,
+    "sentAt" TIMESTAMP(3),
+    "paidAt" TIMESTAMP(3),
+    "dueAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -537,11 +662,140 @@ CREATE TABLE "landing_page_popups" (
     "imageAlt" TEXT,
     "actionButtonText" TEXT NOT NULL,
     "actionButtonUrl" TEXT NOT NULL,
+    "popupCount" INTEGER NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "displayOrder" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "landing_page_popups_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "conversations" (
+    "id" TEXT NOT NULL,
+    "patientId" TEXT NOT NULL,
+    "clientId" TEXT NOT NULL,
+    "caregiverId" TEXT NOT NULL,
+    "lastMessageAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "conversations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "messages" (
+    "id" TEXT NOT NULL,
+    "conversationId" TEXT NOT NULL,
+    "senderId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "readAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "messages_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "tickets" (
+    "id" TEXT NOT NULL,
+    "number" SERIAL NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "category" "TicketCategory" NOT NULL DEFAULT 'GENERAL',
+    "priority" "TicketPriority" NOT NULL DEFAULT 'NORMAL',
+    "status" "TicketStatus" NOT NULL DEFAULT 'OPEN',
+    "customerId" TEXT NOT NULL,
+    "assignedToId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "assignedAt" TIMESTAMP(3),
+    "resolvedAt" TIMESTAMP(3),
+    "closedAt" TIMESTAMP(3),
+    "resolutionNotes" TEXT,
+
+    CONSTRAINT "tickets_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ticket_comments" (
+    "id" TEXT NOT NULL,
+    "ticketId" TEXT NOT NULL,
+    "authorId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "isInternal" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ticket_comments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ticket_attachments" (
+    "id" TEXT NOT NULL,
+    "ticketId" TEXT,
+    "commentId" TEXT,
+    "fileName" TEXT NOT NULL,
+    "fileUrl" TEXT NOT NULL,
+    "fileSize" INTEGER NOT NULL,
+    "mimeType" TEXT NOT NULL,
+    "uploadedBy" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ticket_attachments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "testimonials" (
+    "id" TEXT NOT NULL,
+    "clientName" TEXT NOT NULL,
+    "clientTitle" TEXT,
+    "clientImage" TEXT,
+    "rating" INTEGER NOT NULL,
+    "content" TEXT NOT NULL,
+    "videoUrl" TEXT,
+    "serviceId" TEXT,
+    "featured" BOOLEAN NOT NULL DEFAULT false,
+    "status" "TestimonialStatus" NOT NULL DEFAULT 'PENDING',
+    "approvedBy" TEXT,
+    "approvedAt" TIMESTAMP(3),
+    "displayOrder" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "testimonials_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "case_studies" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "clientName" TEXT NOT NULL,
+    "serviceId" TEXT,
+    "challenge" TEXT NOT NULL,
+    "solution" TEXT NOT NULL,
+    "outcome" TEXT NOT NULL,
+    "narrative" TEXT NOT NULL,
+    "heroImage" TEXT,
+    "beforeImage" TEXT,
+    "afterImage" TEXT,
+    "images" TEXT[],
+    "videoUrl" TEXT,
+    "rating" INTEGER,
+    "timeline" TEXT,
+    "keyResults" JSONB,
+    "status" "TestimonialStatus" NOT NULL DEFAULT 'PENDING',
+    "featured" BOOLEAN NOT NULL DEFAULT false,
+    "displayOrder" INTEGER,
+    "publishedAt" TIMESTAMP(3),
+    "approvedBy" TEXT,
+    "approvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "case_studies_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -549,6 +803,18 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "password_reset_tokens_token_key" ON "password_reset_tokens"("token");
+
+-- CreateIndex
+CREATE INDEX "inquiries_userId_idx" ON "inquiries"("userId");
+
+-- CreateIndex
+CREATE INDEX "inquiries_email_idx" ON "inquiries"("email");
+
+-- CreateIndex
+CREATE INDEX "inquiries_status_idx" ON "inquiries"("status");
+
+-- CreateIndex
+CREATE INDEX "inquiries_createdAt_idx" ON "inquiries"("createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "caregiver_profiles_userId_key" ON "caregiver_profiles"("userId");
@@ -594,6 +860,9 @@ CREATE INDEX "bookings_clientEmail_idx" ON "bookings"("clientEmail");
 
 -- CreateIndex
 CREATE INDEX "bookings_scheduledAt_idx" ON "bookings"("scheduledAt");
+
+-- CreateIndex
+CREATE INDEX "bookings_status_idx" ON "bookings"("status");
 
 -- CreateIndex
 CREATE INDEX "vitals_patientId_idx" ON "vitals"("patientId");
@@ -659,13 +928,64 @@ CREATE INDEX "lab_results_date_idx" ON "lab_results"("date");
 CREATE UNIQUE INDEX "services_slug_key" ON "services"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "proposals_bookingId_key" ON "proposals"("bookingId");
+
+-- CreateIndex
+CREATE INDEX "proposals_bookingId_idx" ON "proposals"("bookingId");
+
+-- CreateIndex
+CREATE INDEX "proposals_status_idx" ON "proposals"("status");
+
+-- CreateIndex
+CREATE INDEX "proposals_sentAt_idx" ON "proposals"("sentAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "payments_bookingId_key" ON "payments"("bookingId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "payments_providerRef_key" ON "payments"("providerRef");
 
 -- CreateIndex
+CREATE INDEX "payments_status_idx" ON "payments"("status");
+
+-- CreateIndex
+CREATE INDEX "payments_providerRef_idx" ON "payments"("providerRef");
+
+-- CreateIndex
+CREATE INDEX "payments_createdAt_idx" ON "payments"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "payment_attempts_paymentId_idx" ON "payment_attempts"("paymentId");
+
+-- CreateIndex
+CREATE INDEX "payment_attempts_reference_idx" ON "payment_attempts"("reference");
+
+-- CreateIndex
+CREATE INDEX "payment_attempts_createdAt_idx" ON "payment_attempts"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "refund_requests_paymentId_idx" ON "refund_requests"("paymentId");
+
+-- CreateIndex
+CREATE INDEX "refund_requests_status_idx" ON "refund_requests"("status");
+
+-- CreateIndex
+CREATE INDEX "refund_requests_createdAt_idx" ON "refund_requests"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "invoices_bookingId_key" ON "invoices"("bookingId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "invoices_invoiceNumber_key" ON "invoices"("invoiceNumber");
+
+-- CreateIndex
+CREATE INDEX "invoices_status_idx" ON "invoices"("status");
+
+-- CreateIndex
+CREATE INDEX "invoices_invoiceNumber_idx" ON "invoices"("invoiceNumber");
+
+-- CreateIndex
+CREATE INDEX "invoices_createdAt_idx" ON "invoices"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "reminders_bookingId_idx" ON "reminders"("bookingId");
@@ -681,6 +1001,102 @@ CREATE INDEX "admin_signup_codes_expiresAt_idx" ON "admin_signup_codes"("expires
 
 -- CreateIndex
 CREATE INDEX "landing_page_popups_isActive_idx" ON "landing_page_popups"("isActive");
+
+-- CreateIndex
+CREATE INDEX "landing_page_popups_displayOrder_idx" ON "landing_page_popups"("displayOrder");
+
+-- CreateIndex
+CREATE INDEX "conversations_patientId_idx" ON "conversations"("patientId");
+
+-- CreateIndex
+CREATE INDEX "conversations_clientId_idx" ON "conversations"("clientId");
+
+-- CreateIndex
+CREATE INDEX "conversations_caregiverId_idx" ON "conversations"("caregiverId");
+
+-- CreateIndex
+CREATE INDEX "conversations_lastMessageAt_idx" ON "conversations"("lastMessageAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "conversations_patientId_clientId_caregiverId_key" ON "conversations"("patientId", "clientId", "caregiverId");
+
+-- CreateIndex
+CREATE INDEX "messages_conversationId_idx" ON "messages"("conversationId");
+
+-- CreateIndex
+CREATE INDEX "messages_senderId_idx" ON "messages"("senderId");
+
+-- CreateIndex
+CREATE INDEX "messages_createdAt_idx" ON "messages"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "tickets_number_key" ON "tickets"("number");
+
+-- CreateIndex
+CREATE INDEX "tickets_status_idx" ON "tickets"("status");
+
+-- CreateIndex
+CREATE INDEX "tickets_priority_idx" ON "tickets"("priority");
+
+-- CreateIndex
+CREATE INDEX "tickets_category_idx" ON "tickets"("category");
+
+-- CreateIndex
+CREATE INDEX "tickets_customerId_idx" ON "tickets"("customerId");
+
+-- CreateIndex
+CREATE INDEX "tickets_assignedToId_idx" ON "tickets"("assignedToId");
+
+-- CreateIndex
+CREATE INDEX "tickets_createdAt_idx" ON "tickets"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "ticket_comments_ticketId_idx" ON "ticket_comments"("ticketId");
+
+-- CreateIndex
+CREATE INDEX "ticket_comments_authorId_idx" ON "ticket_comments"("authorId");
+
+-- CreateIndex
+CREATE INDEX "ticket_comments_createdAt_idx" ON "ticket_comments"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "ticket_attachments_ticketId_idx" ON "ticket_attachments"("ticketId");
+
+-- CreateIndex
+CREATE INDEX "ticket_attachments_commentId_idx" ON "ticket_attachments"("commentId");
+
+-- CreateIndex
+CREATE INDEX "testimonials_status_idx" ON "testimonials"("status");
+
+-- CreateIndex
+CREATE INDEX "testimonials_serviceId_idx" ON "testimonials"("serviceId");
+
+-- CreateIndex
+CREATE INDEX "testimonials_featured_idx" ON "testimonials"("featured");
+
+-- CreateIndex
+CREATE INDEX "testimonials_createdAt_idx" ON "testimonials"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "case_studies_slug_key" ON "case_studies"("slug");
+
+-- CreateIndex
+CREATE INDEX "case_studies_status_idx" ON "case_studies"("status");
+
+-- CreateIndex
+CREATE INDEX "case_studies_serviceId_idx" ON "case_studies"("serviceId");
+
+-- CreateIndex
+CREATE INDEX "case_studies_featured_idx" ON "case_studies"("featured");
+
+-- CreateIndex
+CREATE INDEX "case_studies_slug_idx" ON "case_studies"("slug");
+
+-- CreateIndex
+CREATE INDEX "case_studies_createdAt_idx" ON "case_studies"("createdAt");
+
+-- AddForeignKey
+ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "caregiver_profiles" ADD CONSTRAINT "caregiver_profiles_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -764,10 +1180,64 @@ ALTER TABLE "medical_appointments" ADD CONSTRAINT "medical_appointments_patientI
 ALTER TABLE "lab_results" ADD CONSTRAINT "lab_results_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "proposals" ADD CONSTRAINT "proposals_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "payments" ADD CONSTRAINT "payments_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payment_attempts" ADD CONSTRAINT "payment_attempts_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "payments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "refund_requests" ADD CONSTRAINT "refund_requests_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "payments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "invoices" ADD CONSTRAINT "invoices_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "reminders" ADD CONSTRAINT "reminders_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "conversations" ADD CONSTRAINT "conversations_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "conversations" ADD CONSTRAINT "conversations_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "conversations" ADD CONSTRAINT "conversations_caregiverId_fkey" FOREIGN KEY ("caregiverId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "messages" ADD CONSTRAINT "messages_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "conversations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "messages" ADD CONSTRAINT "messages_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tickets" ADD CONSTRAINT "tickets_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tickets" ADD CONSTRAINT "tickets_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ticket_comments" ADD CONSTRAINT "ticket_comments_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "tickets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ticket_comments" ADD CONSTRAINT "ticket_comments_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ticket_attachments" ADD CONSTRAINT "ticket_attachments_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "tickets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ticket_attachments" ADD CONSTRAINT "ticket_attachments_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "ticket_comments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "testimonials" ADD CONSTRAINT "testimonials_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "services"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "testimonials" ADD CONSTRAINT "testimonials_approvedBy_fkey" FOREIGN KEY ("approvedBy") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "case_studies" ADD CONSTRAINT "case_studies_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "services"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "case_studies" ADD CONSTRAINT "case_studies_approvedBy_fkey" FOREIGN KEY ("approvedBy") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

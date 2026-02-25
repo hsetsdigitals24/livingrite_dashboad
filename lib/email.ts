@@ -424,3 +424,151 @@ export async function sendVerificationEmail(
   return await transporter.sendMail(mailOptions);
 }
 
+/**
+ * Send 12-hour pre-consultation reminder (SMS + Email combined)
+ */
+export async function send12HourPreConsultationReminder(booking: Booking) {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const consultationTime = booking.scheduledAt.toLocaleString('en-US', { 
+    timeZone: booking.timezone || 'UTC',
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: booking.clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Reminder: Your Consultation is in 12 Hours',
+    html: `
+      <h2>Hi ${booking.clientName},</h2>
+      <p>This is a friendly reminder that your consultation is coming up soon!</p>
+      <p><strong>Scheduled for:</strong> ${consultationTime}</p>
+      <p><strong>Timezone:</strong> ${booking.timezone || 'UTC'}</p>
+      
+      <p><strong>To prepare:</strong></p>
+      <ul>
+        <li>Join 5-10 minutes early</li>
+        <li>Have your questions ready</li>
+        <li>Ensure a stable internet connection</li>
+        <li>Find a quiet, comfortable space</li>
+      </ul>
+      
+      <p>Your meeting link will be sent to you 1 hour before the consultation.</p>
+      <p>If you need to reschedule, please let us know as soon as possible.</p>
+      
+      <p>We look forward to speaking with you!</p>
+    `,
+    text: `Reminder: Your consultation with LivingRite is scheduled for ${consultationTime}. Please join 5-10 minutes early.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+/**
+ * Send post-consultation thank you with feedback request
+ */
+export async function sendPostConsultationThankYou(booking: Booking) {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: booking.clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Thank You for Your Consultation - We\'d Love Your Feedback',
+    html: `
+      <h2>Thank You, ${booking.clientName}!</h2>
+      <p>We truly appreciated our time with you today. We hope you found the consultation valuable and that it provided some helpful insights.</p>
+      
+      <h3>Your Feedback Matters</h3>
+      <p>We're constantly striving to improve our services. Would you mind sharing your experience with us?</p>
+      
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/feedback?booking=${booking.id}" 
+           style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">
+          Share Your Feedback
+        </a>
+      </p>
+      
+      <h3>Next Steps</h3>
+      <p>If we discussed any recommendations or action items, you can find them in your booking details:</p>
+      <p>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/client/booking/manage?bookingId=${booking.id}">View Your Booking Details</a>
+      </p>
+      
+      <h3>Have Questions?</h3>
+      <p>If you have any follow-up questions or need additional support, please don't hesitate to reach out. We're here to help!</p>
+      
+      <p>Best regards,<br/>The LivingRite Team</p>
+    `,
+    text: `Thank you for your consultation! We'd love to hear your feedback. Please visit our feedback page to share your experience.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+/**
+ * Send 48-hour follow-up if no feedback received
+ */
+export async function send48HourFollowUp(booking: Booking) {
+  if (!booking.clientEmail) throw new Error('Client email is required');
+  
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Consultations'} <${process.env.SMTP_FROM}>`,
+    to: booking.clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: 'Following Up - We\'re Here to Help',
+    html: `
+      <h2>Hi ${booking.clientName},</h2>
+      <p>We're following up on your recent consultation to ensure everything is going well.</p>
+      
+      <p>If you have any questions, concerns, or need clarification on anything discussed, please don't hesitate to reach out. Our team is always happy to help.</p>
+      
+      <h3>Still Haven't Shared Feedback?</h3>
+      <p>We value your insights! Your feedback helps us continuously improve our services.</p>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/feedback?booking=${booking.id}" 
+           style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">
+          Share Your Feedback Now
+        </a>
+      </p>
+      
+      <h3>Ready for Your Next Step?</h3>
+      <p>If you'd like to schedule another consultation or explore additional services, we're ready to assist.</p>
+      <p>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/portal/booking">Schedule Another Consultation</a>
+      </p>
+      
+      <p>Best regards,<br/>The LivingRite Team</p>
+    `,
+    text: `Following up on your consultation. We're here to help with any questions. Feel free to share your feedback or schedule another consultation.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+/**
+ * SMS version: 12-hour pre-consultation reminder
+ */
+export function get12HourPreConsultationSMS(clientName: string, consultationTime: string): string {
+  return `Hi ${clientName}, your LivingRite consultation is in 12 hours (${consultationTime}). Please join 5-10 minutes early. Reply with any questions!`;
+}
+
+/**
+ * SMS version: Post-consultation thank you
+ */
+export function getPostConsultationThankYouSMS(clientName: string, feedbackLink: string): string {
+  return `Hi ${clientName}, thank you for your consultation! We'd love your feedback: ${feedbackLink}. Reply if you have any questions!`;
+}
+
+/**
+ * SMS version: 48-hour follow-up
+ */
+export function get48HourFollowUpSMS(clientName: string): string {
+  return `Hi ${clientName}, following up from your consultation. How are you doing? Let us know if you have any questions. We're here to help!`;
+}
+

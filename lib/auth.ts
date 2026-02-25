@@ -48,10 +48,15 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
       allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          prompt: "consent",
+        },
+      },
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
         try {
           // Check if user exists
@@ -64,10 +69,16 @@ export const authOptions: NextAuthOptions = {
             dbUser = await prisma.user.create({
               data: {
                 email: user.email!,
-                name: user.name || "Google User",
+                name: user.name || profile?.name || "Google User",
                 role: "CLIENT", // Default role for Google signups
                 emailVerificaion: true, // Google email is pre-verified
               },
+            })
+          } else if (!dbUser.emailVerificaion) {
+            // Mark existing user's email as verified if they use Google
+            await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { emailVerificaion: true },
             })
           }
 
@@ -79,10 +90,13 @@ export const authOptions: NextAuthOptions = {
       }
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.role = user.role
         token.id = user.id
+      }
+      if (account) {
+        token.provider = account.provider
       }
       return token
     },
@@ -96,9 +110,12 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/auth/signin",
+    error: "/auth/signin",
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 }

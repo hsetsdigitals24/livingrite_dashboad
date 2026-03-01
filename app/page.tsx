@@ -6,12 +6,14 @@ import { TestimonialsSection } from "@/components/testimonials-section"
 import { CTABanner } from "@/components/cta-banner"
 import { TrainingSection } from "@/components/training-section"
 import PopupDisplay from "@/components/PopupDisplay"
+import Youtube from "@/components/Youtube"
 
 export default function HomePage() {
   return (
     <main className="min-h-screen"> 
       <HeroSection />
       {/* <TrustIndicators /> */}
+      <Youtube />
       <ServicesSection />
       <TrainingSection />
       <AboutSection />

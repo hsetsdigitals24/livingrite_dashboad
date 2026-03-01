@@ -572,3 +572,240 @@ export function get48HourFollowUpSMS(clientName: string): string {
   return `Hi ${clientName}, following up from your consultation. How are you doing? Let us know if you have any questions. We're here to help!`;
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * Support Ticket Notification Emails
+ */
+
+/**
+ * Send ticket creation confirmation email to customer
+ */
+export async function sendTicketCreationEmail(
+  customerEmail: string,
+  customerName: string,
+  ticketNumber: number,
+  ticketTitle: string,
+  ticketCategory: string,
+  ticketPriority: string,
+  ticketId: string
+) {
+  if (!customerEmail) throw new Error('Customer email is required');
+
+  const ticketLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/support/tickets/${ticketId}`;
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Support'} <${process.env.SMTP_FROM}>`,
+    to: customerEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: `Support Ticket #${ticketNumber} Created Successfully`,
+    html: `
+      <h2>Support Ticket Received</h2>
+      <p>Hi ${customerName},</p>
+      <p>Thank you for contacting us. Your support ticket has been created successfully.</p>
+      
+      <p><strong>Ticket Details:</strong></p>
+      <ul>
+        <li><strong>Ticket Number:</strong> #${ticketNumber}</li>
+        <li><strong>Title:</strong> ${ticketTitle}</li>
+        <li><strong>Category:</strong> ${ticketCategory}</li>
+        <li><strong>Priority:</strong> ${ticketPriority}</li>
+        <li><strong>Status:</strong> Open</li>
+        <li><strong>Created:</strong> ${new Date().toLocaleString()}</li>
+      </ul>
+      
+      <p><strong>What Happens Next:</strong></p>
+      <ul>
+        <li>Our support team will review your ticket shortly</li>
+        <li>You'll receive email updates as your ticket progresses</li>
+        <li>You can track the status anytime by logging into your account</li>
+        <li>Response time typically within 24 hours for standard priority tickets</li>
+      </ul>
+      
+      <p><strong>View Your Ticket:</strong></p>
+      <p><a href="${ticketLink}" style="background-color: #14b8a6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View Ticket #${ticketNumber}</a></p>
+      
+      <p><strong>Need Help Right Away?</strong></p>
+      <p>If your issue is urgent, you can contact our support team directly:</p>
+      <ul>
+        <li>Email: support@livingrite.com</li>
+        <li>Phone: +234-XXX-XXXX</li>
+        <li>Hours: 24/7 Support Available</li>
+      </ul>
+      
+      <p>Best regards,<br/>The LivingRite Support Team</p>
+    `,
+    text: `Your support ticket #${ticketNumber} has been created successfully. Title: ${ticketTitle}. Category: ${ticketCategory}. Priority: ${ticketPriority}. You can track its status here: ${ticketLink}. Our team will respond within 24 hours.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+/**
+ * Send ticket status update email to customer
+ */
+export async function sendTicketStatusUpdateEmail(
+  customerEmail: string,
+  customerName: string,
+  ticketNumber: number,
+  ticketTitle: string,
+  oldStatus: string,
+  newStatus: string,
+  message: string,
+  ticketId: string
+) {
+  if (!customerEmail) throw new Error('Customer email is required');
+
+  const ticketLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/support/tickets/${ticketId}`;
+
+  const statusDescriptions: Record<string, string> = {
+    OPEN: 'Your ticket is open and waiting for review',
+    ASSIGNED: 'Your ticket has been assigned to our support team',
+    IN_PROGRESS: 'Our team is actively working on your issue',
+    WAITING: 'We are waiting for additional information from you',
+    RESOLVED: 'Your issue has been resolved',
+    CLOSED: 'Your ticket has been closed',
+    REOPENED: 'Your ticket has been reopened',
+  };
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Support'} <${process.env.SMTP_FROM}>`,
+    to: customerEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: `Ticket #${ticketNumber} Status Update: ${newStatus}`,
+    html: `
+      <h2>Ticket Status Update</h2>
+      <p>Hi ${customerName},</p>
+      <p>There's been an update on your support ticket:</p>
+      
+      <p><strong>Ticket #${ticketNumber}</strong></p>
+      <p><strong>Title:</strong> ${ticketTitle}</p>
+      
+      <p><strong>Status Changed:</strong></p>
+      <ul>
+        <li><strong>From:</strong> ${oldStatus}</li>
+        <li><strong>To:</strong> ${newStatus}</li>
+      </ul>
+      
+      <p><strong>Details:</strong></p>
+      <p>${message}</p>
+      
+      <p><strong>Next Steps:</strong></p>
+      <p>${statusDescriptions[newStatus] || 'Check your ticket for more details'}</p>
+      
+      <p><strong>View Your Ticket:</strong></p>
+      <p><a href="${ticketLink}" style="background-color: #14b8a6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View Ticket #${ticketNumber}</a></p>
+      
+      <p>If you have any questions, please reply to this email or add a comment on your ticket.</p>
+      
+      <p>Best regards,<br/>The LivingRite Support Team</p>
+    `,
+    text: `Your support ticket #${ticketNumber} status has changed from ${oldStatus} to ${newStatus}. Message: ${message}. View your ticket: ${ticketLink}`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+/**
+ * Send ticket resolved/closure email to customer
+ */
+export async function sendTicketResolvedEmail(
+  customerEmail: string,
+  customerName: string,
+  ticketNumber: number,
+  ticketTitle: string,
+  resolutionNotes: string,
+  ticketId: string
+) {
+  if (!customerEmail) throw new Error('Customer email is required');
+
+  const ticketLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/support/tickets/${ticketId}`;
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Support'} <${process.env.SMTP_FROM}>`,
+    to: customerEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: `Ticket #${ticketNumber} Resolved - Your Issue is Fixed`,
+    html: `
+      <h2>Your Support Ticket Has Been Resolved</h2>
+      <p>Hi ${customerName},</p>
+      <p>Great news! Your support ticket has been resolved.</p>
+      
+      <p><strong>Ticket #${ticketNumber}</strong></p>
+      <p><strong>Title:</strong> ${ticketTitle}</p>
+      
+      <p><strong>Resolution:</strong></p>
+      <p>${resolutionNotes}</p>
+      
+      <p><strong>What Happens Next:</strong></p>
+      <ul>
+        <li>Your ticket will remain open for 7 days in case you have follow-up questions</li>
+        <li>After 7 days, your ticket will be automatically closed</li>
+        <li>If your issue persists, you can reopen this ticket anytime</li>
+      </ul>
+      
+      <p><strong>Your Feedback Matters</strong></p>
+      <p>We'd love to hear about your support experience. Your feedback helps us improve our services.</p>
+      <p><a href="${ticketLink}?feedback=true" style="background-color: #14b8a6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Share Your Feedback</a></p>
+      
+      <p><strong>View Your Ticket:</strong></p>
+      <p><a href="${ticketLink}" style="background-color: #14b8a6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View Ticket #${ticketNumber}</a></p>
+      
+      <p>Thank you for choosing LivingRite!</p>
+      <p>Best regards,<br/>The LivingRite Support Team</p>
+    `,
+    text: `Your support ticket #${ticketNumber} has been resolved. Resolution: ${resolutionNotes}. View your ticket: ${ticketLink}. Thank you for choosing LivingRite!`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+/**
+ * Send new comment notification email to customer (only for staff comments)
+ */
+export async function sendTicketCommentNotificationEmail(
+  customerEmail: string,
+  customerName: string,
+  ticketNumber: number,
+  ticketTitle: string,
+  authorName: string,
+  comment: string,
+  ticketId: string
+) {
+  if (!customerEmail) throw new Error('Customer email is required');
+
+  const ticketLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/support/tickets/${ticketId}`;
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Support'} <${process.env.SMTP_FROM}>`,
+    to: customerEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: `New Update on Ticket #${ticketNumber}`,
+    html: `
+      <h2>New Update on Your Support Ticket</h2>
+      <p>Hi ${customerName},</p>
+      <p>Our support team has added a new comment to your ticket:</p>
+      
+      <p><strong>Ticket #${ticketNumber}</strong></p>
+      <p><strong>Title:</strong> ${ticketTitle}</p>
+      
+      <p><strong>Comment from ${authorName}:</strong></p>
+      <blockquote style="border-left: 4px solid #14b8a6; padding-left: 16px; margin: 16px 0; color: #555;">
+        ${comment}
+      </blockquote>
+      
+      <p><strong>Respond to this update:</strong></p>
+      <p>You can reply to this comment directly on your ticket or use the comment section to ask questions.</p>
+      
+      <p><strong>View Your Ticket:</strong></p>
+      <p><a href="${ticketLink}" style="background-color: #14b8a6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View Ticket #${ticketNumber}</a></p>
+      
+      <p>Best regards,<br/>The LivingRite Support Team</p>
+    `,
+    text: `New update on your support ticket #${ticketNumber}. Comment from ${authorName}: ${comment}. View your ticket: ${ticketLink}`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+>>>>>>> 337b2fd

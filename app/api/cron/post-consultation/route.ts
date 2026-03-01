@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import {
   sendPostConsultationThankYou,
+<<<<<<< HEAD
   getPostConsultationThankYouSMS,
 } from '@/lib/email';
 import { sendSMSWithRetry } from '@/lib/sms';
+=======
+} from '@/lib/email';
+import { sendSMSWithRetry } from '@/lib/sms';
+import { getPostConsultationThankYouSMS } from '@/lib/sms-templates';
+>>>>>>> 337b2fd
 
 const prisma = new PrismaClient();
 
@@ -64,6 +70,7 @@ export async function GET(req: NextRequest) {
         // Send thank you SMS
         if (booking.clientPhone) {
           const feedbackLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/feedback?booking=${booking.id}`;
+<<<<<<< HEAD
           const smsBody = getPostConsultationThankYouSMS(booking.clientName, feedbackLink);
           const smsResult = await sendSMSWithRetry({ to: booking.clientPhone, body: smsBody });
 
@@ -79,6 +86,27 @@ export async function GET(req: NextRequest) {
               bookingId: booking.id,
               error: `SMS: ${smsResult.error || 'Unknown error'}`,
             });
+=======
+          const smsBody = await getPostConsultationThankYouSMS(booking.clientName, feedbackLink);
+          
+          // Only send SMS if the reminder is enabled (non-empty template)
+          if (smsBody) {
+            const smsResult = await sendSMSWithRetry({ to: booking.clientPhone, body: smsBody });
+
+            if (smsResult.success) {
+              await prisma.booking.update({
+                where: { id: booking.id },
+                data: { thankYouSmsSent: true },
+              });
+              results.smsSuccess++;
+            } else {
+              results.smsFailed++;
+              results.errors.push({
+                bookingId: booking.id,
+                error: `SMS: ${smsResult.error || 'Unknown error'}`,
+              });
+            }
+>>>>>>> 337b2fd
           }
         }
 

@@ -4,9 +4,10 @@ import { useState } from 'react';
 import PopupSettingsPage from './Settings/Popup';
 import CodesSection from './Settings/Codes';
 import ServicesSection from './Settings/Services';
+import SMSRemindersSettings from './Settings/SMSReminders';
 
 
-type Tab = 'services' | 'codes' | 'popups';
+type Tab = 'services' | 'codes' | 'popups' | 'sms-reminders';
 
 
 export default function SettingsSection() {
@@ -81,6 +82,16 @@ export default function SettingsSection() {
             >
               Landing Page Popups
             </button>
+            <button
+              onClick={() => setActiveTab('sms-reminders')}
+              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                activeTab === 'sms-reminders'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              SMS Reminders
+            </button>
           </div>
         </div>
 
@@ -97,6 +108,11 @@ export default function SettingsSection() {
       {/* Popups Tab */}
       {activeTab === 'popups' && (
        <PopupSettingsPage />
+      )}
+
+      {/* SMS Reminders Tab */}
+      {activeTab === 'sms-reminders' && (
+       <SMSRemindersSettings />
       )}
   
     </div>

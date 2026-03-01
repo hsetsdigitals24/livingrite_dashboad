@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendTicketCreationEmail } from "@/lib/email";
 
 /**
  * GET /api/tickets
@@ -99,7 +100,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // TODO: Send email notification to support team
+    // Send email notification to customer (non-blocking)
+    if (ticket.customer?.email) {
+      sendTicketCreationEmail(
+        ticket.customer.email,
+        ticket.customer.name || "Valued Customer",
+        ticket.number,
+        ticket.title,
+        ticket.category,
+        ticket.priority,
+        ticket.id
+      ).catch((error) => {
+        console.error(
+          `Failed to send ticket creation email for ticket #${ticket.number}:`,
+          error
+        );
+      });
+    }
 
     return NextResponse.json(
       {

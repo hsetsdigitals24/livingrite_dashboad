@@ -120,144 +120,215 @@ export default function TrainingPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       {/* Hero Section */}
-      <section className="py-20 px-4 lg:px-8 bg-gradient-to-r from-primary/5 to-cyan-600/5 border-b border-primary/10">
+      <section className="relative py-24 px-4 lg:px-8 overflow-hidden">
+        {/* Modern gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-primary/10 to-slate-950 -z-10" />
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10" />
+        
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-8">
-            <h1 className="text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-primary to-cyan-600 bg-clip-text text-transparent">
-              Training & Academy
+          {/* Top accent bar */}
+          <div className="flex items-center justify-center mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-1 bg-gradient-to-r from-primary/20 to-primary rounded-full" />
+              <span className="text-sm font-semibold uppercase tracking-widest text-primary">Elevating Healthcare Standards</span>
+              <div className="w-12 h-1 bg-gradient-to-l from-z to-primary rounded-full" />
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="text-center mb-12">
+            <h1 className="text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-cyan-300 to-primary bg-clip-text text-transparent">
+                Transform Healthcare
+              </span>
+              <br />
+              <span className="text-3xl lg:text-4xl text-gray-300 font-light">
+                Through Specialized Training
+              </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Building the specialized manpower Nigeria's healthcare system needs
+            <p className="text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+              Building the next generation of healthcare professionals equipped with world-class expertise and clinical precision
             </p>
           </div>
 
-          <div className="bg-white border border-primary/20 rounded-2xl p-8 lg:p-12 shadow-lg">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Closing the Care Gap: Building the Manpower Nigeria Needs
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Nigeria's healthcare system is at a crossroads. As many professionals seek opportunities abroad, the dedicated nurses, clinicians, and caregivers who remain are often left without the advanced, specialized training required for complex out-of-hospital care. This skill gap doesn't just stall recovery—it can lead to preventable harm.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              At LivingRite Care, we are stepping in to bridge this gap. We are a capacity-building company dedicated to equipping the next generation of healthcare providers with the clinical precision and requisite skills needed to protect and restore the lives of our citizens.
-            </p>
+          {/* Content card */}
+          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 lg:p-12 shadow-2xl hover:border-white/20 transition-all duration-500">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6">
+                Closing the Care Gap
+              </h2>
+              
+              <div className="space-y-4">
+                <p className="text-gray-300 leading-relaxed text-base lg:text-lg">
+                  Nigeria's healthcare system stands at a pivotal moment. While many professionals seek opportunities beyond our borders, those who remain are often constrained by outdated practices and insufficient training in specialized care delivery. The result? A skill gap that compromises patient outcomes and limits our nation's healthcare potential.
+                </p>
+                <p className="text-gray-300 leading-relaxed text-base lg:text-lg">
+                  At LivingRite Care Academy, we're writing a different story. We invest in <span className="text-cyan-400 font-semibold">those who stay</span>, providing cutting-edge training programs that equip caregivers, nurses, and clinicians with the expertise to deliver world-class care right here at home.
+                </p>
+                
+                {/* Key stats */}
+                <div className="flex flex-col sm:flex-row gap-6 mt-8 pt-8 border-t border-white/10">
+                  <div className="flex-1">
+                    <div className="text-2xl font-bold text-primary mb-1">5+</div>
+                    <p className="text-sm text-gray-400">Specialized Programs</p>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-2xl font-bold text-primary mb-1">World-Class</div>
+                    <p className="text-sm text-gray-400">Training Standards</p>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-2xl font-bold text-primary mb-1">100%</div>
+                    <p className="text-sm text-gray-400">Practical Focus</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Training Programs Section */}
-      <section className="py-20 px-4 lg:px-8">
+      <section className="py-20 px-4 lg:px-8 bg-gradient-to-b from-slate-50 to-white">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">
-            Our 2026 Training Schedule
-          </h2>
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold text-gray-900 mb-4">
+              Our 2026 Training Schedule
+            </h2>
+            <p className="text-xl text-gray-600">
+              Choose from our expertly-designed programs and start your journey today
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Program List */}
-            <div className="lg:col-span-1 space-y-4">
-              {programs.map((program) => (
-                <button
-                  key={program.id}
-                  onClick={() => setSelectedProgram(program.id)}
-                  className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-300 ${
-                    selectedProgram === program.id
-                      ? program.lightColor + " border-primary shadow-lg"
-                      : "border-gray-200 hover:border-primary/50"
-                  }`}
-                >
-                  <h4 className="font-bold text-gray-900">{program.title}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{program.duration}</p>
-                </button>
-              ))}
+            {/* Program List - Enhanced Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="space-y-3">
+                {programs.map((program) => (
+                  <button
+                    key={program.id}
+                    onClick={() => setSelectedProgram(program.id)}
+                    className={`w-full text-left p-5 rounded-xl transition-all duration-300 group relative overflow-hidden ${
+                      selectedProgram === program.id
+                        ? `${program.lightColor} border-2 border-primary shadow-lg scale-105`
+                        : "border-2 border-gray-200 hover:border-primary/50 bg-white hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-gray-900 text-base">{program.title}</h4>
+                      <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        {program.duration}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Program Details */}
+            {/* Program Details - Enhanced Card */}
             <div className="lg:col-span-2">
               {activeProgram ? (
-                <div className={`${activeProgram.lightColor} border-2 rounded-2xl p-8 lg:p-10`}>
-                  <div className={`h-1 bg-gradient-to-r ${activeProgram.color} mb-6 rounded-full`} />
+                <div className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300">
+                  {/* Header with gradient */}
+                  <div className={`h-2 bg-gradient-to-r ${activeProgram.color}`} />
                   
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                    {activeProgram.title}
-                  </h3>
+                  <div className="p-8 lg:p-10">
+                    <h3 className="text-4xl font-bold text-gray-900 mb-2">
+                      {activeProgram.title}
+                    </h3>
+                    <p className="text-gray-600 mb-8 font-medium">{activeProgram.focus}</p>
 
-                  <div className="grid grid-cols-3 gap-4 mb-8">
-                    <div className="bg-white rounded-lg p-4">
-                      <Calendar className="w-6 h-6 text-primary mb-2" />
-                      <p className="text-sm text-gray-600">Date</p>
-                      <p className="font-semibold text-gray-900 text-sm">
-                        {activeProgram.date}
-                      </p>
+                    {/* Key Info Cards */}
+                    <div className="grid grid-cols-3 gap-4 mb-10 p-6 bg-gray-50 rounded-xl">
+                      <div className="text-center">
+                        <Calendar className={`w-6 h-6 bg-gradient-to-br ${activeProgram.color} bg-clip-text text-transparent mx-auto mb-2`} />
+                        <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Date</p>
+                        <p className="font-bold text-gray-900 text-sm mt-1 leading-tight">
+                          {activeProgram.date}
+                        </p>
+                      </div>
+                      <div className="text-center border-l border-r border-gray-200">
+                        <Clock className={`w-6 h-6 bg-gradient-to-br ${activeProgram.color} bg-clip-text text-transparent mx-auto mb-2`} />
+                        <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Duration</p>
+                        <p className="font-bold text-gray-900 text-sm mt-1">
+                          {activeProgram.duration}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <Award className={`w-6 h-6 bg-gradient-to-br ${activeProgram.color} bg-clip-text text-transparent mx-auto mb-2`} />
+                        <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Level</p>
+                        <p className="font-bold text-gray-900 text-sm mt-1">Professional</p>
+                      </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4">
-                      <Clock className="w-6 h-6 text-primary mb-2" />
-                      <p className="text-sm text-gray-600">Duration</p>
-                      <p className="font-semibold text-gray-900 text-sm">
-                        {activeProgram.duration}
-                      </p>
+
+                    {/* Program Description */}
+                    <div className="mb-10">
+                      <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Target className={`w-5 h-5 bg-gradient-to-br ${activeProgram.color} bg-clip-text text-transparent`} />
+                        What You'll Learn
+                      </h4>
+                      <p className="text-gray-700 leading-relaxed text-base">{activeProgram.description}</p>
                     </div>
-                    <div className="bg-white rounded-lg p-4">
-                      <Users className="w-6 h-6 text-primary mb-2" />
-                      <p className="text-sm text-gray-600">Target</p>
-                      <p className="font-semibold text-gray-900 text-sm">
-                        Pro
-                      </p>
+
+                    {/* Target Audience */}
+                    <div className="mb-10">
+                      <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Users className={`w-5 h-5 bg-gradient-to-br ${activeProgram.color} bg-clip-text text-transparent`} />
+                        Who Should Enroll
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {activeProgram.targetAudience.map((audience, idx) => (
+                          <span
+                            key={idx}
+                            className={`px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-br ${activeProgram.lightColor} text-gray-700 border border-primary/20`}
+                          >
+                            {audience}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mb-8">
-                    <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                      <Target className="w-5 h-5 text-primary" />
-                      Program Focus
-                    </h4>
-                    <p className="text-gray-700">{activeProgram.description}</p>
-                  </div>
-
-                  <div className="mb-8">
-                    <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                      <Users className="w-5 h-5 text-primary" />
-                      Target Audience
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {activeProgram.targetAudience.map((audience, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-700 border border-primary/20"
-                        >
-                          {audience}
-                        </span>
-                      ))}
+                    {/* Learning Outcomes */}
+                    <div className="mb-10">
+                      <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Check className={`w-5 h-5 bg-gradient-to-br ${activeProgram.color} bg-clip-text text-transparent`} />
+                        Learning Outcomes
+                      </h4>
+                      <ul className="space-y-3">
+                        {activeProgram.learningOutcomes.map((outcome, idx) => (
+                          <li key={idx} className="flex items-start gap-3">
+                            <Check className={`w-5 h-5 bg-gradient-to-br ${activeProgram.color} bg-clip-text text-transparent mt-0.5 flex-shrink-0`} />
+                            <span className="text-gray-700 text-base">{outcome}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
 
-                  <div className="mb-8">
-                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Award className="w-5 h-5 text-primary" />
-                      Learning Outcomes
-                    </h4>
-                    <ul className="space-y-3">
-                      {activeProgram.learningOutcomes.map((outcome, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{outcome}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <Button className="flex-1 bg-gradient-to-r from-primary to-cyan-600 rounded-full">
-                      Enroll Now
-                    </Button>
-                    <Button variant="outline" className="flex-1 rounded-full">
-                      Request Info
-                    </Button>
+                    {/* CTA Buttons */}
+                    <div className="flex gap-4 pt-6 border-t border-gray-200">
+                       <Link href="https://nestuge.com/ivjxuy9om" target="_blank" className="flex-1">
+                      <Button className={`flex-1 bg-gradient-to-r ${activeProgram.color} text-white rounded-full font-semibold py-3 hover:shadow-lg transition-all duration-300`}>
+                        Enroll Now
+                      </Button>
+                      </Link>
+                      <Link href="/support" className="flex-1">
+                      <Button variant="outline" className="flex-1 border-2 border-gray-300 text-gray-900 rounded-full font-semibold py-3 hover:bg-gray-50 transition-all duration-300">
+                        Request Info
+                      </Button>
+                      </Link
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-br from-primary/5 to-cyan-600/5 border-2 border-dashed border-primary/30 rounded-2xl p-12 text-center">
-                  <Zap className="w-12 h-12 text-primary mx-auto mb-4 opacity-50" />
-                  <p className="text-gray-600 text-lg">
+                <div className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-16 text-center">
+                  <div className="bg-gradient-to-br from-primary/10 to-cyan-600/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                    <Zap className="w-10 h-10 text-primary" />
+                  </div>
+                  <p className="text-gray-600 text-lg font-medium">
                     Select a program to view details
                   </p>
                 </div>
@@ -268,66 +339,128 @@ export default function TrainingPage() {
       </section>
 
       {/* Why It Matters Section */}
-      <section className="py-20 px-4 lg:px-8 bg-white border-t border-gray-200">
+      <section className="py-24 px-4 lg:px-8 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-600/5 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
+
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">
-            Why Our Training Academy Matters
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="p-8 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Combatting Brain Drain
-              </h3>
-              <p className="text-gray-700">
-                We invest in those who stay, ensuring that "home-based care" means world-class care.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-              <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center mb-4">
-                <Award className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Preventing Patient Harm
-              </h3>
-              <p className="text-gray-700">
-                We empower caregivers and clinicians with the confidence and skill to perform procedures safely.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mb-4">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Building Specialized Manpower
-              </h3>
-              <p className="text-gray-700">
-                Training the specialists that the Nigerian healthcare landscape currently lacks.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-gradient-to-br from-teal-50 to-teal-100 border-teal-200">
-              <div className="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                World-Class Standards
-              </h3>
-              <p className="text-gray-700">
-                Moving beyond theory into high-impact, practical mastery for real-world excellence.
-              </p>
-            </Card>
+          {/* Section Header */}
+          <div className="text-center mb-20">
+            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
+              Why Our Training Academy Matters
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We're not just providing training—we're building the foundation for healthcare excellence across Nigeria
+            </p>
           </div>
 
-          <div className="mt-16 bg-gradient-to-r from-primary to-cyan-600 rounded-2xl p-12 text-center text-white">
-            <p className="text-2xl font-bold mb-2">
-              "The rite path to full recovery starts with the rite training."
-            </p>
+          {/* Value Props Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            {/* Card 1 */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Card className="relative p-10 bg-white border-2 border-gray-200 hover:border-blue-200 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                {/* Top accent bar */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-600" />
+                
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Users className="w-7 h-7 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 pt-1">
+                    Combatting Brain Drain
+                  </h3>
+                </div>
+                <p className="text-gray-700 leading-relaxed text-base ml-18">
+                  We invest in those who stay, ensuring that "home-based care" means world-class care and creating pathways for excellence at home.
+                </p>
+              </Card>
+            </div>
+
+            {/* Card 2 */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-orange-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Card className="relative p-10 bg-white border-2 border-gray-200 hover:border-red-200 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                {/* Top accent bar */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-orange-600" />
+                
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-red-100 to-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Award className="w-7 h-7 text-red-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 pt-1">
+                    Preventing Patient Harm
+                  </h3>
+                </div>
+                <p className="text-gray-700 leading-relaxed text-base ml-18">
+                  We empower caregivers and clinicians with the confidence and skill to perform procedures safely and effectively.
+                </p>
+              </Card>
+            </div>
+
+            {/* Card 3 */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Card className="relative p-10 bg-white border-2 border-gray-200 hover:border-purple-200 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                {/* Top accent bar */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
+                
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Target className="w-7 h-7 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 pt-1">
+                    Building Specialized Manpower
+                  </h3>
+                </div>
+                <p className="text-gray-700 leading-relaxed text-base ml-18">
+                  Training the specialists that the Nigerian healthcare landscape currently lacks, filling critical gaps in expertise.
+                </p>
+              </Card>
+            </div>
+
+            {/* Card 4 */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-teal-600/20 to-cyan-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Card className="relative p-10 bg-white border-2 border-gray-200 hover:border-teal-200 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                {/* Top accent bar */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-600 to-cyan-600" />
+                
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-teal-100 to-teal-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-7 h-7 text-teal-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 pt-1">
+                    World-Class Standards
+                  </h3>
+                </div>
+                <p className="text-gray-700 leading-relaxed text-base ml-18">
+                  Moving beyond theory into high-impact, practical mastery for real-world excellence and immediate application.
+                </p>
+              </Card>
+            </div>
+          </div>
+
+          {/* Featured Quote Section */}
+          <div className="relative mt-20">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary to-cyan-600 rounded-3xl blur-2xl opacity-20" />
+            <div className="relative bg-gradient-to-br from-primary via-primary to-cyan-600 rounded-3xl p-12 lg:p-16 shadow-2xl border border-white/10 overflow-hidden">
+              {/* Decorative background pattern */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -z-10" />
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -z-10" />
+              
+              <div className="relative z-10 text-center">
+                <p className="text-2xl lg:text-3xl font-bold text-white mb-2 leading-relaxed">
+                  "The rite path to full recovery starts with the rite training."
+                </p>
+                <div className="flex justify-center gap-2 mt-6">
+                  <div className="w-8 h-1 bg-white/40 rounded-full" />
+                  <div className="w-8 h-1 bg-white rounded-full" />
+                  <div className="w-8 h-1 bg-white/40 rounded-full" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -343,6 +476,7 @@ export default function TrainingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="https://nestuge.com/ivjxuy9om" target="_blank" className="flex-1">
             <Button
               size="lg"
               className="bg-gradient-to-r from-primary to-cyan-600 rounded-full font-semibold"
@@ -350,6 +484,8 @@ export default function TrainingPage() {
               Enroll in a Program
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
+            </Link>
+            <Link href="/support">
             <Button
               size="lg"
               variant="outline"
@@ -357,6 +493,7 @@ export default function TrainingPage() {
             >
               Contact Us
             </Button>
+            </Link>
           </div>
 
           <p className="text-gray-600 mt-8">

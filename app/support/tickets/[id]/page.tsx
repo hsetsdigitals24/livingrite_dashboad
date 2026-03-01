@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { AlertCircle, MessageSquare, CheckCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface Ticket {
   id: string;
@@ -120,8 +119,12 @@ export default function TicketStatusPage() {
               <p className="text-gray-600 mt-2">{ticket.title}</p>
             </div>
             <div className="flex gap-2">
-              <Badge>{ticket.status}</Badge>
-              <Badge>{ticket.priority}</Badge>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                {ticket.status}
+              </span>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                {ticket.priority}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">

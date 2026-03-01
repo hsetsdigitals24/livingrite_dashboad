@@ -17,8 +17,7 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
                      { label: "Clients", icon: Users, id: "clients" },
                      { label: "Caregivers", icon: Users, id: "caregivers" },
                      { label: "Invoices", icon: FileText, id: "invoices" },
-                     { label: "Revenue", icon: DollarSign, id: "revenue" },
-                     { label: "Analytics", icon: TrendingUp, id: "analytics" },
+                     { label: "Reports", icon: TrendingUp, id: "reports" },
                      { label: "Tickets", icon: MessageSquare, id: "tickets" },
                      { label: "Settings", icon: Settings, id: "settings" },
                    ].map((item) => (

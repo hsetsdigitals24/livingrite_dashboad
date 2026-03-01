@@ -277,6 +277,11 @@ model Booking {
   reminderSent     Boolean       @default(false)
   thankYouSent     Boolean       @default(false)
   followUpSent     Boolean       @default(false)
+  
+  // SMS tracking flags (parallel to email flags)
+  reminderSmsSent  Boolean       @default(false)
+  thankYouSmsSent  Boolean       @default(false)
+  followUpSmsSent  Boolean       @default(false) 
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   cancelledAt      DateTime?
@@ -747,16 +752,24 @@ model Invoice {
 }
 
 model Reminder {
-  id          String         @id @default(cuid())
-  bookingId   String
-  type        String
-  scheduledAt DateTime
-  status      ReminderStatus @default(PENDING)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  booking     Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id            String         @id @default(cuid())
+  bookingId     String
+  type          String         // Type of reminder: "12-hour-pre", "thank-you", "48-hour-followup"
+  scheduledAt   DateTime       // When the reminder should be sent
+  status        ReminderStatus @default(PENDING)
+  sentVia       String?        // How it was sent: "EMAIL", "SMS", "BOTH"
+  sentAt        DateTime?      // When the reminder was actually sent
+  errorMessage  String?        // Error message if sending failed
+  retryCount    Int            @default(0) // Number of retry attempts
+  maxRetries    Int            @default(3) // Maximum retry attempts allowed
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  booking       Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([type])
   @@map("reminders")
 }
 
@@ -1096,4 +1109,26 @@ model CaseStudy {
   @@index([slug])
   @@index([createdAt])
   @@map("case_studies")
+}
+
+// SMS Reminder Settings - configurable templates for booking reminders
+model SMSReminderSettings {
+  id                              String    @id @default(cuid())
+  
+  // 12-hour pre-consultation reminder template
+  preConsultationTemplate         String    @default("Hi {clientName}, your LivingRite consultation is in 12 hours ({consultationTime}). Please join 5-10 minutes early. Reply with any questions!")
+  preConsultationEnabled          Boolean   @default(true)
+  
+  // Post-consultation thank you template
+  postConsultationTemplate        String    @default("Hi {clientName}, thank you for your consultation! We'd love your feedback: {feedbackLink}. Reply if you have any questions!")
+  postConsultationEnabled         Boolean   @default(true)
+  
+  // 48-hour follow-up reminder template
+  followUpTemplate                String    @default("Hi {clientName}, following up from your consultation. How are you doing? Let us know if you have any questions. We're here to help!")
+  followUpEnabled                 Boolean   @default(true)
+  
+  createdAt                       DateTime  @default(now())
+  updatedAt                       DateTime  @updatedAt
+
+  @@map("sms_reminder_settings")
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendTicketStatusUpdateEmail, sendTicketResolvedEmail } from "@/lib/email";
 
 /**
  * GET /api/tickets/[id]
@@ -88,6 +89,19 @@ export async function PATCH(
 
     const body = await req.json();
 
+    // Fetch the current ticket to compare status changes
+    const currentTicket = await prisma.ticket.findUnique({
+      where: { id: params.id },
+      include: { customer: true },
+    });
+
+    if (!currentTicket) {
+      return NextResponse.json(
+        { error: "Ticket not found" },
+        { status: 404 }
+      );
+    }
+
     const updateData: any = {};
 
     if (body.status !== undefined) {
@@ -127,7 +141,46 @@ export async function PATCH(
       },
     });
 
-    // TODO: Send email notification on status/assignment change
+    // Send email notifications for status changes (non-blocking)
+    if (
+      body.status &&
+      body.status !== currentTicket.status &&
+      ticket.customer?.email
+    ) {
+      if (body.status === "RESOLVED") {
+        // Send special resolved email with resolution notes
+        sendTicketResolvedEmail(
+          ticket.customer.email,
+          ticket.customer.name || "Valued Customer",
+          ticket.number,
+          ticket.title,
+          body.resolutionNotes || "Your issue has been successfully resolved.",
+          ticket.id
+        ).catch((error) => {
+          console.error(
+            `Failed to send ticket resolved email for ticket #${ticket.number}:`,
+            error
+          );
+        });
+      } else {
+        // Send standard status update email
+        sendTicketStatusUpdateEmail(
+          ticket.customer.email,
+          ticket.customer.name || "Valued Customer",
+          ticket.number,
+          ticket.title,
+          currentTicket.status,
+          body.status,
+          body.message || `Your ticket status has been updated to ${body.status}.`,
+          ticket.id
+        ).catch((error) => {
+          console.error(
+            `Failed to send ticket status update email for ticket #${ticket.number}:`,
+            error
+          );
+        });
+      }
+    }
 
     return NextResponse.json({
       success: true,

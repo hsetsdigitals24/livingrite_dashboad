@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import notFoundImage from "@/public/undraw_page-not-found_6wni (1).svg";
+import notFoundImage from "@/public/undraw_page-not-found_6wni.svg";
  
 
 export default function NotFound() {

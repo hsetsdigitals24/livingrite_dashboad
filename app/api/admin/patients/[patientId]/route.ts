@@ -94,7 +94,7 @@ export async function GET(
 // PATCH: Update patient details
 export async function PATCH(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -174,7 +174,7 @@ export async function PATCH(
 // DELETE: Delete patient
 export async function DELETE(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);

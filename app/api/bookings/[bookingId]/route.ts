@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
-  console.log("Fetching booking with ID:", params.bookingId);
+  // console.log("Fetching booking with ID:", bookingId);
   try {
-    const { bookingId } = params;
+    const { bookingId } = await params;
  
     const booking = await prisma.booking.findFirst({
       where: {
@@ -43,11 +43,11 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const { bookingId } = params;
+    const { bookingId } = await params;
     const body = await req.json();
 
     console.log({"id": bookingId, "body": body});

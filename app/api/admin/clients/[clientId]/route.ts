@@ -1,12 +1,12 @@
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // GET: Fetch single client details with all associated records
 export async function GET(
-  req: Request,
-  { params }: { params: { clientId: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);

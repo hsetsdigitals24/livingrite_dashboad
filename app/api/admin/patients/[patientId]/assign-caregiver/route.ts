@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // GET: Fetch assigned caregivers for a patient
 export async function GET(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -57,7 +57,7 @@ export async function GET(
 // POST: Assign caregiver to patient
 export async function POST(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -164,7 +164,7 @@ export async function POST(
 // DELETE: Unassign caregiver from patient
 export async function DELETE(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);

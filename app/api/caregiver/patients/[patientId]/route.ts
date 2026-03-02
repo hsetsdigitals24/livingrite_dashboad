@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // GET: Fetch single patient details for the caregiver
 export async function GET(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }>  }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const { patientId } = params;
+    const { patientId } = await params;
     const caregiverId = session.user.id;
 
     // Verify that the patient is assigned to this caregiver

@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // POST: Create or update daily log for a patient
 export async function POST(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,7 +18,7 @@ export async function POST(
       );
     }
 
-    const { patientId } = params;
+    const { patientId } = await params;
     const { date, notes, ...logData } = await req.json();
 
     // Verify caregiver has access to this patient

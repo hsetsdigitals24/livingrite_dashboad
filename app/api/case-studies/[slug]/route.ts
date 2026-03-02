@@ -12,8 +12,9 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
+    let { slug } = params;
     const caseStudy = await prisma.caseStudy.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         service: true,
       },

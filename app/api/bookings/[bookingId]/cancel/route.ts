@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
-    const { bookingId } = params;
+    const { bookingId } = await params;
 
     // Find the booking by calcomId or internal id
     const booking = await prisma.booking.findFirst({

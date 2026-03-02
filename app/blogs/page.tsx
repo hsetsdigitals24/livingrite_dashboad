@@ -155,7 +155,7 @@ export default async function BlogPage({ searchParams }: SearchParamsProps) {
       <NewsletterSignup />
 
       {/* Resources Hub */}
-      <section className="py-12 bg-gray-50">
+      {/* <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Additional Resources</h2>
@@ -163,7 +163,7 @@ export default async function BlogPage({ searchParams }: SearchParamsProps) {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Resource 1 */}
+          
             <Card className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
@@ -180,7 +180,7 @@ export default async function BlogPage({ searchParams }: SearchParamsProps) {
               </CardContent>
             </Card>
 
-            {/* Resource 2 */}
+           
             <Card className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
@@ -197,7 +197,7 @@ export default async function BlogPage({ searchParams }: SearchParamsProps) {
               </CardContent>
             </Card>
 
-            {/* Resource 3 */}
+            
             <Card className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
@@ -215,7 +215,7 @@ export default async function BlogPage({ searchParams }: SearchParamsProps) {
             </Card>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Banner */}
       <CTABanner />

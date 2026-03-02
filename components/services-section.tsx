@@ -1,68 +1,87 @@
 "use client";
 
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+// import {
+//   Brain,
+//   Hospital,
+//   Heart,
+//   Check,
+//   Home,
+//   Baby
+// } from "@shadcn/healthcare-icons";
+import { Activity as Brain, Hospital, Heart, CheckCircle as Check, Home, User as Baby } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 const services = [
   {
-    icon: "🧠",
+    icon: <Brain size={32} />,
     title: "Neurorehabilitation",
-    description: "Specialized recovery support with experienced nurses trained in stroke rehabilitation.",
+    description:
+      "Specialized recovery support with experienced nurses trained in stroke rehabilitation.",
     color: "from-[#00b2ec]",
     borderColor: "border-[#00b2ec]",
   },
   {
-    icon: "🏥",
+    icon: <Hospital size={32} />,
     title: "Post-ICU Recovery Care",
-    description: "Comprehensive home care for patients transitioning from ICU, ensuring smooth recovery.",
+    description:
+      "Comprehensive home care for patients transitioning from ICU, ensuring smooth recovery.",
     color: "from-[#0088b8]",
     borderColor: "border-[#0088b8]",
   },
   {
-    icon: "✨",
+    icon: <Home size={32} />,
     title: "Post-Surgical Care",
-    description: "Expert post-operative care to ensure smooth recovery with 24/7 monitoring.",
+    description:
+      "Expert post-operative care to ensure smooth recovery with 24/7 monitoring.",
     color: "from-[#e50d92]",
     borderColor: "border-[#e50d92]",
   },
   {
-    icon: "❤️",
+    icon: <Heart size={32} />,
     title: "End-of-Life & Palliative Care",
-    description: "Compassionate palliative support focusing on comfort and dignity.",
+    description:
+      "Compassionate palliative support focusing on comfort and dignity.",
     color: "from-[#d00a7f]",
     borderColor: "border-[#d00a7f]",
   },
   {
-    icon: "👴",
+    icon: <Check size={32} />,
     title: "Geriatric Care",
-    description: "Specialized care for seniors to maintain independence and quality of life.",
+    description:
+      "Specialized care for seniors to maintain independence and quality of life.",
     color: "from-[#00b2ec]",
     borderColor: "border-[#00b2ec]",
   },
   {
-    icon: "🩹",
+    icon: <Hospital size={32} />,
     title: "Chronic Wound Care",
-    description: "Specialized care for chronic wounds to promote healing and prevent complications.",
+    description:
+      "Specialized care for chronic wounds to promote healing and prevent complications.",
     color: "from-[#e50d92]",
     borderColor: "border-[#e50d92]",
   },
   {
-    icon: "🏠",
+    icon: <Home size={32} />,
     title: "Home Medical Consultations",
-    description: "Skip the hospital wait with comprehensive check-ups in the privacy of your home.",
+    description:
+      "Skip the hospital wait with comprehensive check-ups in the privacy of your home.",
     color: "from-[#0088b8]",
     borderColor: "border-[#0088b8]",
   },
   {
-    icon: "👶",
+    icon: <Baby size={32} />,
     title: "Postpartum Care",
-    description: "Support for new mothers during recovery, wound healing, and newborn monitoring.",
+    description:
+      "Support for new mothers during recovery, wound healing, and newborn monitoring.",
     color: "from-[#d00a7f]",
     borderColor: "border-[#d00a7f]",
   },
-];
+]; 
+
 
 export function ServicesSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -117,7 +136,7 @@ export function ServicesSection() {
                 {/* Content */}
                 <div className="relative z-10">
                   {/* Icon */}
-                  <div className={`text-5xl mb-4 transition-all duration-300 ${hoveredIndex === index ? 'scale-125 mb-6' : 'scale-100'}`}>
+                  <div className={`text-5xl mb-4 transition-all duration-300`}>
                     {service.icon}
                   </div>
 
@@ -136,7 +155,7 @@ export function ServicesSection() {
                 </div>
 
                 {/* Border Glow */}
-                <div className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-300 ${hoveredIndex === index ? 'opacity-100' : 'opacity-0'}`}
+                <div className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-300 ${hoveredIndex === index ? 'opacity-50' : 'opacity-0'}`}
                   style={{
                     background: `radial-gradient(circle at 50% 50%, rgba(0, 178, 236, 0.3) 0%, transparent 70%)`,
                     filter: 'blur(8px)',

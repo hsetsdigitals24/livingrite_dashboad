@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ArrowUpRightFromCircle } from "lucide-react";
 import Link from "next/link";
-
+import sectionImage from "@/public/african-nurse-caring-for-elderly-patient-at-home--.jpg";
 const values = [
   "Hospital-trained nurses with years of experience",
   "Personalized care plans for every patient",
@@ -24,7 +24,7 @@ export function AboutSection() {
           <div className="relative animate-slide-up animation-delay-200">
             <div className="aspect-4/3 rounded-3xl overflow-hidden bg-gradient-to-br from-[#00b2ec]/10 to-[#e50d92]/5 backdrop-blur-sm border border-[#00b2ec]/30 shadow-2xl shadow-[#00b2ec]/25 hover:shadow-3xl hover:shadow-[#00b2ec]/40 transition-all duration-500">
               <img
-                src="/african-nurse-caring-for-elderly-patient-at-home--.jpg"
+                src={sectionImage.src}
                 alt="Professional caregiver with elderly patient"
                 className="w-full h-full object-cover"
               />

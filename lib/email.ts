@@ -571,9 +571,7 @@ export function getPostConsultationThankYouSMS(clientName: string, feedbackLink:
 export function get48HourFollowUpSMS(clientName: string): string {
   return `Hi ${clientName}, following up from your consultation. How are you doing? Let us know if you have any questions. We're here to help!`;
 }
-
-<<<<<<< HEAD
-=======
+ 
 /**
  * Support Ticket Notification Emails
  */
@@ -806,6 +804,4 @@ export async function sendTicketCommentNotificationEmail(
   };
 
   return await transporter.sendMail(mailOptions);
-}
-
->>>>>>> 337b2fd
+} 

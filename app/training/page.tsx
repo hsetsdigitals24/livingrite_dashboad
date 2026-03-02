@@ -134,7 +134,7 @@ export default function TrainingPage() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-1 bg-gradient-to-r from-primary/20 to-primary rounded-full" />
               <span className="text-sm font-semibold uppercase tracking-widest text-primary">Elevating Healthcare Standards</span>
-              <div className="w-12 h-1 bg-gradient-to-l from-z to-primary rounded-full" />
+              <div className="w-12 h-1 bg-gradient-to-l from-accent to-primary rounded-full" />
             </div>
           </div>
 
@@ -319,7 +319,7 @@ export default function TrainingPage() {
                       <Button variant="outline" className="flex-1 border-2 border-gray-300 text-gray-900 rounded-full font-semibold py-3 hover:bg-gray-50 transition-all duration-300">
                         Request Info
                       </Button>
-                      </Link
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -502,5 +502,6 @@ export default function TrainingPage() {
         </div>
       </section>
     </main>
+
   );
 }

@@ -77,23 +77,6 @@ export async function GET(req: NextRequest) {
 
         // Send SMS reminder
         if (booking.clientPhone) {
-<<<<<<< HEAD
-          const smsBody = get12HourPreConsultationSMS(booking.clientName, consultationTime);
-          const smsResult = await sendSMSWithRetry({ to: booking.clientPhone, body: smsBody });
-
-          if (smsResult.success) {
-            await prisma.booking.update({
-              where: { id: booking.id },
-              data: { reminderSmsSent: true },
-            });
-            results.smsSuccess++;
-          } else {
-            results.smsFailed++;
-            results.errors.push({
-              bookingId: booking.id,
-              error: `SMS: ${smsResult.error || 'Unknown error'}`,
-            });
-=======
           const smsBody = await get12HourPreConsultationSMS(booking.clientName, consultationTime);
           
           // Only send SMS if the reminder is enabled (non-empty template)
@@ -112,8 +95,7 @@ export async function GET(req: NextRequest) {
                 bookingId: booking.id,
                 error: `SMS: ${smsResult.error || 'Unknown error'}`,
               });
-            }
->>>>>>> 337b2fd
+            } 
           }
         }
 

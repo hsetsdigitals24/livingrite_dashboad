@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import {
   send12HourPreConsultationReminder,
-<<<<<<< HEAD
-  get12HourPreConsultationSMS,
 } from '@/lib/email';
 import { sendSMSWithRetry } from '@/lib/sms';
-=======
-} from '@/lib/email';
-import { sendSMSWithRetry } from '@/lib/sms';
-import { get12HourPreConsultationSMS } from '@/lib/sms-templates';
->>>>>>> 337b2fd
+import { get12HourPreConsultationSMS } from '@/lib/sms-templates'; 
 
 const prisma = new PrismaClient();
 

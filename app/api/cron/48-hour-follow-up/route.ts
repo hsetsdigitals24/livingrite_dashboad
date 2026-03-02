@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import {
   send48HourFollowUp,
-<<<<<<< HEAD
-  get48HourFollowUpSMS,
 } from '@/lib/email';
 import { sendSMSWithRetry } from '@/lib/sms';
-=======
-} from '@/lib/email';
-import { sendSMSWithRetry } from '@/lib/sms';
-import { get48HourFollowUpSMS } from '@/lib/sms-templates';
->>>>>>> 337b2fd
+import { get48HourFollowUpSMS } from '@/lib/sms-templates'; 
 
 const prisma = new PrismaClient();
 

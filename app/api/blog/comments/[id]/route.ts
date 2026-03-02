@@ -10,10 +10,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const { action } = await req.json() // 'approve', 'reject', 'flag'
 
     if (!action) {
@@ -79,10 +79,10 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     await client.delete(id)
 

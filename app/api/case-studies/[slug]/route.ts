@@ -58,7 +58,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -71,10 +71,11 @@ export async function PATCH(
       );
     }
 
+    let { slug } = await params;
     const body = await req.json();
 
     // If slug is being changed, verify new slug is unique
-    if (body.slug && body.slug !== params.slug) {
+    if (body.slug && body.slug !== slug) {
       const existingSlug = await prisma.caseStudy.findUnique({
         where: { slug: body.slug },
       });
@@ -87,7 +88,7 @@ export async function PATCH(
     }
 
     const caseStudy = await prisma.caseStudy.update({
-      where: { slug: params.slug },
+      where: { slug: slug },
       data: {
         ...(body.slug !== undefined && { slug: body.slug }),
         ...(body.title !== undefined && { title: body.title }),
@@ -133,7 +134,7 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -146,8 +147,9 @@ export async function DELETE(
       );
     }
 
+    let { slug } = await params;
     await prisma.caseStudy.delete({
-      where: { slug: params.slug },
+      where: { slug: slug },
     });
 
     return NextResponse.json({

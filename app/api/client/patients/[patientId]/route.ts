@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,12 +13,13 @@ export async function GET(
     if (!session || !session.user?.id || session.user?.role !== "CLIENT") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    let { patientId } = await params;
 
     // Verify client has access to this patient
     const access = await prisma.familyMemberAssignment.findUnique({
       where: {
         patientId_clientId: {
-          patientId: params.patientId,
+          patientId: patientId,
           clientId: session.user.id,
         },
       },
@@ -33,7 +34,7 @@ export async function GET(
 
     // Get detailed patient information
     const patient = await prisma.patient.findUnique({
-      where: { id: params.patientId },
+      where: { id: patientId },
       include: {
         vitals: {
           orderBy: { recordedAt: "desc" },

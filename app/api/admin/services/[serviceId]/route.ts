@@ -9,10 +9,10 @@ const prisma = new PrismaClient();
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { serviceId: string } }
+  { params }: { params: Promise<{ serviceId: string }> }
 ) {
   try {
-    const { serviceId } = params;
+    const { serviceId } = await params;
 
     // Validate serviceId
     if (!serviceId || typeof serviceId !== 'string' || !serviceId.trim()) {
@@ -130,10 +130,10 @@ export async function DELETE(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { serviceId: string } }
+  { params }: { params: Promise<{ serviceId: string }> }
 ) {
   try {
-    const { serviceId } = params;
+    const { serviceId } = await params;
     const body = await req.json();
 
     // Validate serviceId
@@ -226,7 +226,7 @@ export async function PATCH(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { serviceId: string } }
+  { params }: { params: Promise<{ serviceId: string }> }
 ) {
   // This is a workaround for bulk delete using PATCH
   // Useful if you want to delete multiple services in one request

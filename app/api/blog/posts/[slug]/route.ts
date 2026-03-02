@@ -3,17 +3,16 @@ import { readOnlyClient } from '@/sanity/lib/client'
 
 export const dynamic = 'force-dynamic'
 
-interface Params {
-  slug: string
-}
-
 /**
  * GET /api/blog/posts/[slug]
  * Fetch a single blog post by slug with comments
  */
-export async function GET(req: NextRequest, { params }: { params: Params }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   try {
-    const { slug } = params
+    const { slug } = await params
 
     if (!slug) {
       return NextResponse.json(

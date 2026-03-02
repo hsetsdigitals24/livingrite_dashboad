@@ -7,11 +7,11 @@ import { randomUUID } from 'crypto'
 // UPLOAD FILES TO R2 AND SAVE METADATA IN DB
 export async function POST(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   const formData = await req.formData()
   const file = formData.get('file') as File 
-  const patientId = params.patientId;
+  const { patientId } = await params;
 
   if (!file) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -46,9 +46,9 @@ export async function POST(
 // FETCH FILES FOR A PATIENT
 export async function GET(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
-  const patientId = params.patientId
+  const { patientId } = await params;
 
   if (!patientId) {
     return NextResponse.json({ error: 'Patient ID is required' }, { status: 400 })

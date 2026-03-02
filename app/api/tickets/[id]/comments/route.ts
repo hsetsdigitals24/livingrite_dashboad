@@ -9,7 +9,7 @@ import { prisma } from "@/lib/prisma";
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,9 +17,10 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    let { id } = await params;
     // Verify ticket access
     const ticket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       select: { customerId: true },
     });
 
@@ -32,7 +33,7 @@ export async function GET(
     }
 
     const comments = await prisma.ticketComment.findMany({
-      where: { ticketId: params.id },
+      where: { ticketId: id },
       include: {
         author: {
           select: { id: true, name: true, email: true, image: true },
@@ -62,7 +63,7 @@ export async function GET(
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -79,9 +80,11 @@ export async function POST(
       );
     }
 
+    let { id } = await params;
+
     // Verify ticket exists and user has access
     const ticket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       select: { customerId: true },
     });
 
@@ -95,7 +98,7 @@ export async function POST(
 
     const comment = await prisma.ticketComment.create({
       data: {
-        ticketId: params.id,
+        ticketId: id,
         authorId: session.user.id,
         content: body.content,
         isInternal: body.isInternal || false,
@@ -109,7 +112,7 @@ export async function POST(
 
     // Update ticket's updatedAt
     await prisma.ticket.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { updatedAt: new Date() },
     });
 

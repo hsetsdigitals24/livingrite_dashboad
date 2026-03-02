@@ -9,11 +9,11 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const { bookingId } = params;
+    const { bookingId } = await params;
 
     if (!bookingId) {
       return NextResponse.json(

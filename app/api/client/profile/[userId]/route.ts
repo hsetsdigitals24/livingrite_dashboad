@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,7 +21,7 @@ export async function GET(
       );
     }
 
-    const { userId } = params;
+    const { userId } = await params;
 
     // Verify user is requesting their own profile
     if (session.user.id !== userId) {
@@ -68,7 +68,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -80,7 +80,7 @@ export async function PATCH(
       );
     }
 
-    const { userId } = params;
+    const { userId } = await params;
 
     // Verify user is updating their own profile
     if (session.user.id !== userId) {

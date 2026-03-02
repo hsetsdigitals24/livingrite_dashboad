@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { paymentId: string } }
+  { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +23,7 @@ export async function PATCH(
       );
     }
 
-    const { paymentId } = params;
+    const { paymentId } = await params;
     const { status } = await req.json();
 
     if (!status) {

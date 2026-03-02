@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { reference: string } }
+  { params }: { params: Promise<{ reference: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -24,7 +24,7 @@ export async function GET(
       );
     }
 
-    const { reference } = params;
+    const { reference } = await params;
 
     // Find payment by reference
     const payment = await prisma.payment.findFirst({

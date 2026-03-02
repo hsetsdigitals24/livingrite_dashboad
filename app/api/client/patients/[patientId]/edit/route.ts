@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,11 +14,12 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    let { patientId } = await params;
     // Verify access to this patient
     const access = await prisma.familyMemberAssignment.findUnique({
       where: {
         patientId_clientId: {
-          patientId: params.patientId,
+          patientId: patientId,
           clientId: session.user.id,
         },
       },
@@ -62,7 +63,7 @@ export async function PATCH(
     if (emergencyPhone !== undefined) updateData.emergencyPhone = emergencyPhone;
 
     const updatedPatient = await prisma.patient.update({
-      where: { id: params.patientId },
+      where: { id: patientId },
       data: updateData,
     });
 
@@ -78,7 +79,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -87,11 +88,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    let { patientId } = await params;
     // Verify access to this patient
     const access = await prisma.familyMemberAssignment.findUnique({
       where: {
         patientId_clientId: {
-          patientId: params.patientId,
+          patientId: patientId,
           clientId: session.user.id,
         },
       },
@@ -108,7 +110,7 @@ export async function DELETE(
     await prisma.familyMemberAssignment.delete({
       where: {
         patientId_clientId: {
-          patientId: params.patientId,
+          patientId: patientId,
           clientId: session.user.id,
         },
       },

@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,11 +14,12 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    let { patientId } = await params;
     // Verify access to this patient
     const access = await prisma.familyMemberAssignment.findUnique({
       where: {
         patientId_clientId: {
-          patientId: params.patientId,
+          patientId: patientId,
           clientId: session.user.id,
         },
       },
@@ -43,7 +44,7 @@ export async function POST(
 
     const appointment = await prisma.medicalAppointment.create({
       data: {
-        patientId: params.patientId,
+        patientId: patientId,
         date: new Date(date),
         provider,
         reason,
@@ -68,7 +69,7 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -77,11 +78,12 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    let { patientId } = await params;
     // Verify access to this patient
     const access = await prisma.familyMemberAssignment.findUnique({
       where: {
         patientId_clientId: {
-          patientId: params.patientId,
+          patientId: patientId,
           clientId: session.user.id,
         },
       },
@@ -95,7 +97,7 @@ export async function GET(
     }
 
     const appointments = await prisma.medicalAppointment.findMany({
-      where: { patientId: params.patientId },
+      where: { patientId: patientId },
       orderBy: { date: "desc" },
     });
 

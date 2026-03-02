@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,7 +26,7 @@ export async function GET(
       );
     }
 
-    const { patientId } = params;
+    const { patientId } = await  params;
     console.log('Fetching caregivers for patientId:', patientId);
 
     // Verify that the client has access to this patient

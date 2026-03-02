@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -24,7 +24,7 @@ export async function GET(
     }
 
     const { id: userId, role } = session.user;
-    const { conversationId } = params;
+    const { conversationId } = await params;
 
     // Validate user has messaging access
     if (role !== 'CLIENT' && role !== 'CAREGIVER') {

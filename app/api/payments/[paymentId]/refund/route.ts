@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { paymentId: string } }
+  { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +23,7 @@ export async function POST(
       );
     }
 
-    const { paymentId } = params;
+    const { paymentId } = await params;
     const { amount, reason } = await req.json();
 
     if (!amount || !reason) {

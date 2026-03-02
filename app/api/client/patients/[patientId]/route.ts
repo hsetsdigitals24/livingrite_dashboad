@@ -105,7 +105,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -117,7 +117,7 @@ export async function PATCH(
       );
     }
 
-    const { patientId } = params;
+    const { patientId } = await params;
 
     // Verify user has access to this patient
     const familyMember = await prisma.familyMemberAssignment.findUnique({

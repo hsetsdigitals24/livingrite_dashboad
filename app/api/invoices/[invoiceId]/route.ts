@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { invoiceId: string } }
+  { params }: { params: Promise<{ invoiceId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +23,7 @@ export async function GET(
       );
     }
 
-    const { invoiceId } = params;
+    const { invoiceId } = await params;
 
     const invoice = await prisma.invoice.findUnique({
       where: { id: invoiceId },
@@ -90,7 +90,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { invoiceId: string } }
+  { params }: { params: Promise<{ invoiceId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -102,7 +102,7 @@ export async function PATCH(
       );
     }
 
-    const { invoiceId } = params;
+    const { invoiceId } = await params;
     const { status, action } = await req.json();
 
     const invoice = await prisma.invoice.findUnique({

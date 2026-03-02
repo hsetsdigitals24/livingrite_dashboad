@@ -17,10 +17,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const inquiry = await getInquiryById(params.id);
+    const { id } = await params;
+    const inquiry = await getInquiryById(id);
 
     if (!inquiry) {
       return NextResponse.json(
@@ -45,7 +46,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -57,11 +58,12 @@ export async function PATCH(
     }
 
     const body = await req.json();
+    let { id } = await params;
     const { action, reason, bookingId, subject, message, notes } = body;
 
     // Handle actions
     if (action === 'qualify') {
-      const inquiry = await qualifyInquiry(params.id);
+      const inquiry = await qualifyInquiry(id);
       return NextResponse.json(inquiry);
     }
 
@@ -72,7 +74,7 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      const inquiry = await disqualifyInquiry(params.id, reason);
+      const inquiry = await disqualifyInquiry(id, reason);
       return NextResponse.json(inquiry);
     }
 
@@ -83,12 +85,12 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      const inquiry = await convertInquiryToBooking(params.id, bookingId);
+      const inquiry = await convertInquiryToBooking(id, bookingId);
       return NextResponse.json(inquiry);
     }
 
     // Regular update
-    const updatedInquiry = await updateInquiry(params.id, {
+    const updatedInquiry = await updateInquiry(id, {
       subject: subject || undefined,
       message: message || undefined,
       notes: notes || undefined,

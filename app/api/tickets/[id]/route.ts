@@ -10,7 +10,7 @@ import { sendTicketStatusUpdateEmail, sendTicketResolvedEmail } from "@/lib/emai
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,8 +18,9 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const ticket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         customer: {
           select: { id: true, name: true, email: true, image: true },
@@ -74,7 +75,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -87,11 +88,13 @@ export async function PATCH(
       );
     }
 
+    let { id } = await params;
+
     const body = await req.json();
 
     // Fetch the current ticket to compare status changes
     const currentTicket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { customer: true },
     });
 
@@ -132,7 +135,7 @@ export async function PATCH(
     }
 
     const ticket = await prisma.ticket.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         customer: true,
@@ -201,7 +204,7 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -212,9 +215,9 @@ export async function DELETE(
         { status: 403 }
       );
     }
-
+let { id } = await params;
     await prisma.ticket.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({

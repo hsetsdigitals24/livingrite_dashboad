@@ -18,10 +18,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const proposal = await getProposalById(params.id);
+    const { id } = await params;
+    const proposal = await getProposalById(id);
 
     if (!proposal) {
       return NextResponse.json(
@@ -46,7 +47,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -57,6 +58,7 @@ export async function PATCH(
       );
     }
 
+    const { id } = await params;
     const body = await req.json();
     const {
       action,
@@ -71,17 +73,17 @@ export async function PATCH(
 
     // Handle actions
     if (action === 'send') {
-      const proposal = await sendProposal(params.id);
+      const proposal = await sendProposal(id);
       return NextResponse.json(proposal);
     }
 
     if (action === 'viewed') {
-      const proposal = await markProposalViewed(params.id);
+      const proposal = await markProposalViewed(id);
       return NextResponse.json(proposal);
     }
 
     if (action === 'accept') {
-      const proposal = await acceptProposal(params.id);
+      const proposal = await acceptProposal(id);
       return NextResponse.json(proposal);
     }
 
@@ -92,12 +94,12 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      const proposal = await rejectProposal(params.id, reason);
+      const proposal = await rejectProposal(id, reason);
       return NextResponse.json(proposal);
     }
 
     // Regular update
-    const updatedProposal = await updateProposal(params.id, {
+    const updatedProposal = await updateProposal(id, {
       title: title || undefined,
       description: description || undefined,
       servicesOffered: servicesOffered || undefined,

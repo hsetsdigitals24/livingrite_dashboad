@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { invoiceId: string } }
+  { params }: { params: Promise<{ invoiceId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const invoiceId = params.invoiceId;
+    let { invoiceId } = await params;
 
     // Fetch invoice
     const invoice = await prisma.invoice.findUnique({

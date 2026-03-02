@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-export async function POST(request: Request, { params }: { params: { token: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }) {
     const { password, confirmPassword } = await request.json();
 
     if (!password || !confirmPassword) {
@@ -26,9 +26,10 @@ export async function POST(request: Request, { params }: { params: { token: stri
     }
 
     try {
+        let { token } = await params;
         // Find the reset token
         const resetToken = await prisma.passwordResetToken.findUnique({
-            where: { token: params.token },
+            where: { token: token },
         });
 
         if (!resetToken) {

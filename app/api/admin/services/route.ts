@@ -406,10 +406,10 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { serviceId: string } }
+  { params }: { params: Promise<{ serviceId: string }> }
 ) {
   try {
-    const { serviceId } = params;
+    const { serviceId } = await params;
 
     // Check if service exists
     const existingService = await prisma.service.findUnique({

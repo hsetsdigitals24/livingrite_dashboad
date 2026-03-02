@@ -62,7 +62,7 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -90,7 +90,7 @@ export async function GET(
     }
 
     const vitals = await prisma.vitals.findMany({
-      where: { patientId: params.patientId },
+      where: { patientId: patientId },
       orderBy: { recordedAt: "desc" },
     });
 

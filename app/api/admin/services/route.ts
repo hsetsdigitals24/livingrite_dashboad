@@ -214,10 +214,10 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { serviceId: string } }
+  { params }: { params: Promise<{ serviceId: string }> }
 ) {
   try {
-    const { serviceId } = params;
+    const { serviceId } = await params;
     const body = await req.json();
 
     // Check if service exists

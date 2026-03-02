@@ -86,33 +86,11 @@ function generateSlug(title: string): string {
 }
 
 // ============================================================================
-// GET: Fetch all services or single service
+// GET: Fetch all services
 // ============================================================================
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params?: { serviceId?: string } } = {}
-) {
+export async function GET(req: NextRequest) {
   try {
-    // If serviceId is provided, fetch single service
-    if (params?.serviceId) {
-      const service = await prisma.service.findUnique({
-        where: { id: params.serviceId },
-      });
-
-      if (!service) {
-        return NextResponse.json(
-          {
-            error: 'Service not found',
-          },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json(service);
-    }
-
-    // Fetch all services
     const services = await prisma.service.findMany({
       orderBy: { createdAt: 'desc' },
     });

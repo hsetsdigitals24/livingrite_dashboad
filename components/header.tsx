@@ -15,7 +15,7 @@ import logo from "@/public/logo.png";
 import Image from "next/image";
 import { useUserRole } from "@/hooks/useUserRole";
 import { RoleAwareUserMenu } from "./RoleAwareUserMenu";
-import { AdminNav } from "./nav/AdminNav";
+// import { AdminNav } from "./nav/AdminNav";
 import { CombinedNav } from "./nav/CombinedNav";
 import { MobileCombinedNav } from "./nav/MobileCombinedNav";
 
@@ -35,6 +35,11 @@ export function Header() {
       label: "Blogs",
       href: "/blogs",
       // icon: BookOpen,
+    },
+    {
+      label: "Team",
+      href: "/team",
+      // icon: Users,
     },
     {
       label: "About",
@@ -145,10 +150,8 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            {role === "ADMIN" && isAuthenticated && !isLoading ? (
-              <AdminNav />
-            ) : (
-              publicLinks.map((item, index) => {
+            
+              {publicLinks.map((item, index) => {
                 return (
                   <Link
                   key={index}
@@ -163,9 +166,10 @@ export function Header() {
                     <span>{item.label}</span>
                   </Link>
                 );
-              })
-            )}
+              })}
           </div>
+          
+          
 
           {/* CTA Button / Auth - Role Aware */}
           <div className="hidden md:flex items-center gap-4">

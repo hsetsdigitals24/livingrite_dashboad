@@ -1,7 +1,7 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 
-export const middleware = withAuth(
+export const proxy = withAuth(
   function middleware(request) {
     const token = request.nextauth.token
     const pathname = request.nextUrl.pathname
@@ -20,6 +20,13 @@ export const middleware = withAuth(
 
     // Allow unauthenticated users to access auth pages
     if ((isAuthPage || isResetPasswordWithToken) && !token) {
+      return NextResponse.next()
+    }
+
+    // Public booking pages - accessible without authentication
+    const publicBookingPages = ["/client/booking"]
+    const isPublicBookingPage = publicBookingPages.some((page) => pathname === page || pathname.startsWith(page + "/"))
+    if (isPublicBookingPage) {
       return NextResponse.next()
     }
 

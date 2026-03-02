@@ -7,6 +7,7 @@ import {
   BookOpen,
   HelpCircle,
   Search,
+  Mail,
 } from "lucide-react";
 
 /**
@@ -26,6 +27,11 @@ export function PublicNav() {
       icon: Users,
     },
     {
+      label: "Team",
+      href: "/team",
+      icon: Users,
+    },
+    {
       label: "Testimonials",
       href: "/testimonials",
       icon: BookOpen,
@@ -39,6 +45,11 @@ export function PublicNav() {
       label: "FAQs",
       href: "/faqs",
       icon: HelpCircle,
+    },
+    {
+      label: "Contact",
+      href: "/contact",
+      icon: Mail,
     },
   ];
 

@@ -41,8 +41,8 @@ const PopupSettingsPage = () => {
       setLoading(true);
       const response = await fetch("/api/admin/popups");
       const result = await response.json();
-      // Wrap single popup in array
-      setPopups(result ? [result[0]] : []);
+      // Display all popups, or empty array if none exist
+      setPopups(Array.isArray(result) ? result : []);
       setError(null);
     } catch (err) {
       console.error("Error fetching popups:", err);
@@ -183,31 +183,31 @@ const PopupSettingsPage = () => {
                         className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                          {popup.title}
+                          {popup && popup.title && popup.title}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          {popup.actionButtonText}
+                          {popup && popup.actionButtonText && popup.actionButtonText}
                         </td>
                         <td className="px-6 py-4 text-sm">
                           <button
                             onClick={() => handleTogglePopup(popup)}
                             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                              popup.isActive
+                              popup && popup.isActive
                                 ? "bg-green-100 text-green-800 hover:bg-green-200"
                                 : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                             }`}
                           >
-                            {popup.isActive ? "Active" : "Inactive"}
+                            {popup && popup.isActive ? "Active" : "Inactive"}
                           </button>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          {popup.displayOrder}
+                          {popup && popup.displayOrder && popup.displayOrder}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                            {popup.popupCount}
+                            {popup && popup.popupCount}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          {new Date(popup.createdAt).toLocaleDateString()}
+                          {popup && new Date(popup.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 text-sm flex gap-2">
                           <button
@@ -228,7 +228,7 @@ const PopupSettingsPage = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       No popups found

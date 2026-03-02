@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const { clientId } = params;
+    const { clientId } = await params;
 
     const client = await prisma.user.findUnique({
       where: { id: clientId, role: 'CLIENT' },

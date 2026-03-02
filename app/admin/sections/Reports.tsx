@@ -212,19 +212,19 @@ function ConversionFunnelReport({ data }: { data: any }) {
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-sm text-gray-600">Overall Conversion Rate</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            {data.overallConversionRate.toFixed(1)}%
+            {data && data.overallConversionRate && data.overallConversionRate.toFixed(1)}%
           </p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-sm text-gray-600">Avg Time to Payment</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            {(data.averageTimeToPaymentMs / (1000 * 60 * 60 * 24)).toFixed(0)} days
+            {data.averageTimeToPaymentMs ? `${(data.averageTimeToPaymentMs / (1000 * 60 * 60 * 24)).toFixed(0)} days` : 'N/A'}
           </p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-sm text-gray-600">Total Inquiries to Paid</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            {data.stages[0].count} → {data.stages[5].count}
+            {data && data.stages && data.stages[0].count} → {data && data.stages && data.stages[5].count}
           </p>
         </div>
       </div>
@@ -232,7 +232,7 @@ function ConversionFunnelReport({ data }: { data: any }) {
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <h3 className="mb-4 text-lg font-semibold text-gray-900">Conversion Funnel</h3>
         <div className="space-y-3">
-          {data.stages.map((stage: any, idx: number) => (
+          {data && data.stages && data.stages.map((stage: any, idx: number) => (
             <div key={idx}>
               <div className="mb-1 flex justify-between text-sm">
                 <span className="font-medium text-gray-900">{stage.stage}</span>
@@ -377,7 +377,7 @@ function BookingMetricsReport({ data }: { data: any }) {
       <div className="rounded-lg border border-gray-200 bg-white p-6 col-span-3">
         <p className="text-sm text-gray-600">Booking to Payment Conversion</p>
         <p className="mt-2 text-4xl font-bold text-gray-900">
-          {data.conversionToPaymentRate.toFixed(1)}%
+          {data && data.conversionToPaymentRate && data.conversionToPaymentRate.toFixed(1)}%
         </p>
       </div>
     </div>

@@ -18,9 +18,11 @@ export async function GET(
       );
     }
 
+    let {patientId} = await params;
+
     const assignments = await prisma.patientCaregiverAssignment.findMany({
       where: {
-        patientId: params.patientId,
+        patientId: patientId,
         unassignedAt: null,
       },
       include: {
@@ -92,11 +94,14 @@ export async function POST(
       );
     }
 
+    let {patientId} = await params;
+
+
     // Check if assignment already exists (unassigned)
     const existingAssignment = await prisma.patientCaregiverAssignment.findUnique({
       where: {
         patientId_caregiverId: {
-          patientId: params.patientId,
+          patientId: patientId,
           caregiverId,
         },
       },
@@ -107,13 +112,13 @@ export async function POST(
         { error: 'Caregiver is already assigned to this patient' },
         { status: 400 }
       );
-    }
+    } 
 
     // Create or update assignment
     const assignment = await prisma.patientCaregiverAssignment.upsert({
       where: {
         patientId_caregiverId: {
-          patientId: params.patientId,
+          patientId: patientId,
           caregiverId,
         },
       },
@@ -123,7 +128,7 @@ export async function POST(
         assignedAt: new Date(),
       },
       create: {
-        patientId: params.patientId,
+        patientId: patientId,
         caregiverId,
         notes,
       },
@@ -181,10 +186,12 @@ export async function DELETE(
       );
     }
 
+    let {patientId} = await params;
+
     await prisma.patientCaregiverAssignment.update({
       where: {
         patientId_caregiverId: {
-          patientId: params.patientId,
+          patientId: patientId,
           caregiverId,
         },
       },

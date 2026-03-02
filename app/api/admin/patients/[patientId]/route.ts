@@ -18,8 +18,10 @@ export async function GET(
       );
     }
 
+    const {patientId} = await params;
+
     const patient = await prisma.patient.findUnique({
-      where: { id: params.patientId },
+      where: { id: patientId },
       include: {
         caregivers: {
           include: {
@@ -104,6 +106,8 @@ export async function PATCH(
       );
     }
 
+    const {patientId} = await params;
+
     const body = await req.json();
     const {
       firstName,
@@ -138,7 +142,7 @@ export async function PATCH(
     if (emergencyPhone !== undefined) updateData.emergencyPhone = emergencyPhone;
 
     const patient = await prisma.patient.update({
-      where: { id: params.patientId },
+      where: { id: patientId },
       data: updateData,
       include: {
         caregivers: {
@@ -182,8 +186,10 @@ export async function DELETE(
       );
     }
 
+    const {patientId} = await params;
+
     await prisma.patient.delete({
-      where: { id: params.patientId },
+      where: { id: patientId },
     });
 
     return NextResponse.json({ success: true });

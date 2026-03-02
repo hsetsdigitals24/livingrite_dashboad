@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // GET: Fetch single patient with all associated records
 export async function GET(
   req: Request,
-  { params }: { params: { patientId: string } }
+  { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);

@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { codeId: string } }
+  { params }: { params: Promise<{ codeId: string }> }
 ) {
   try {
-    const { codeId } = params;
+    const { codeId } = await params;
 
     const deletedCode = await prisma.adminSignupCode.delete({
       where: { id: codeId },

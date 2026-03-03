@@ -76,6 +76,7 @@ const services = [
 export function ServicesHero() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -93,8 +94,13 @@ export function ServicesHero() {
       if (e.key === "ArrowLeft") prev();
       if (e.key === "ArrowRight") next();
     };
+    const onScroll = () => setScrollY(window.scrollY);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScroll);
+    };
   });
 
   function prev() {
@@ -116,19 +122,25 @@ export function ServicesHero() {
         alt="Services background"
         fill
         className="object-cover object-top opacity-30 pointer-events-none"
+        style={{
+          transform: `translateY(${scrollY * 0.4}px)`,
+          transition: "transform 0.1s ease-out",
+        }}
       />
 
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-white text-3xl font-bold">Our Services</h2>
-            <p className="text-slate-200 mt-1 max-w-xl">
+            <h2 className="text-white text-3xl font-bold animate-fade-in-up">
+              Our Services
+            </h2>
+            <p className="text-slate-200 mt-1 max-w-xl animate-fade-in-up animation-delay-200">
               Expert home-based care across post-acute, rehabilitation and
               ongoing support — tailored to each family's needs.
             </p>
           </div>
 
-          <div className="hidden sm:flex gap-3">
+          <div className="hidden sm:flex gap-3 animate-fade-in-up animation-delay-400">
             <button
               aria-label="Previous service"
               onClick={prev}

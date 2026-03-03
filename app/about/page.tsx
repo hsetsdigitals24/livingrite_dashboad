@@ -7,9 +7,9 @@ import { RefreshCw, Heart, Stethoscope, Shield, Sparkles, Sprout, Target, Users,
 import heroImage from '@/public/service-hero.jpg'
 
 export const metadata = {
-	title: "About Us — LivingRite Care",
+	title: "About Us — Livingrite Care",
 	description:
-		"LivingRite Care brings hospital-quality home healthcare to Nigerian families — discover our mission, values and team.",
+		"Livingrite Care brings hospital-quality home healthcare to Nigerian families — discover our mission, values and team.",
 }
 
 const team = [
@@ -50,7 +50,7 @@ export default function AboutPage() {
 				<div className="container mx-auto px-4 relative z-10">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 						<div>
-							<p className="inline-flex items-center gap-2 bg-primary/10 to-accent/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-primary/20">About LivingRite Care</p>
+							<p className="inline-flex items-center gap-2 bg-primary/10 to-accent/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-primary/20">About Livingrite Care</p>
 							<h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 leading-tight mb-6">Specialized Care for the Healing Journey Back to becoming yourself</h1>
 							<p className="text-lg text-gray-600 mb-8 max-w-xl leading-relaxed font-light">
 								 Hospital discharge is just the beginning. We are a team of neuro-specialists and educators dedicated to reimagining out-of-hospital recovery. By combining evidence-led rehabilitation with compassionate caregiver coaching, we can nurture you back to health in the place you feel safest.
@@ -107,8 +107,8 @@ export default function AboutPage() {
 						She saw that recovery could be safer, more comfortable, and more sustainable when care continued at home under proper medical supervision. Livingrite Care was created to bridge this gap by providing expert, doctor-led home care that supports patients through recovery, restores dignity, and improves outcomes in an environment where healing feels natural and humane.
 					</p>
 
-					<p className="pt-6">
-						<Link href="https://medium.com/@livingritecare/nigerias-post-acute-care-gap" target="_blank" rel="noopener noreferrer">
+					{/* <p className="pt-6">
+						<Link href="https://" target="_blank" rel="noopener noreferrer">
 							<span className="text-lg font-semibold text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-2">
 								Read Dr. Okongwu's thought leadership article on Nigeria's post-acute care gap
 								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +116,7 @@ export default function AboutPage() {
 								</svg>
 							</span>
 						</Link>
-						</p>
+						</p> */}
 					</div>
 				</div>
 			</section>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AddFamilyMemberForm from "@/app/client/components/AddFamilyMemberForm";
 import BookingModal from "@/app/client/components/BookingModal";
+import DoctorAppointmentModal from "@/components/caregiver/DoctorAppointmentModal";
 import { Calendar } from "lucide-react";
 
 interface Patient {
@@ -16,19 +17,29 @@ interface Patient {
     image: string;
     dateOfBirth: string;
     medicalConditions: string[];
+    bookings?: Array<{
+      id: string;
+      scheduledAt: string;
+      status: string;
+      service?: { title: string };
+    }>;
   };
   relationshipType: string;
 }
 
 const ClientDashboard = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingAppointments, setLoadingAppointments] = useState(false);
   const [error, setError] = useState("");
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showDoctorModal, setShowDoctorModal] = useState(false);
 
   useEffect(() => {
     fetchPatients();
+    fetchAppointments();
   }, []);
 
   const fetchPatients = async () => {
@@ -44,6 +55,19 @@ const ClientDashboard = () => {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    setLoadingAppointments(true);
+    try {
+      const res = await fetch('/api/client/doctor-appointments');
+      const json = await res.json();
+      if (json.success) setAppointments(json.data);
+    } catch (err) {
+      console.error('failed to load appointments', err);
+    } finally {
+      setLoadingAppointments(false);
     }
   };
 
@@ -67,6 +91,21 @@ const ClientDashboard = () => {
     );
   }
 
+  // aggregate upcoming bookings across patients
+  const upcoming = patients
+    .flatMap((item) =>
+      (item.patient.bookings ?? []).map((b) => ({
+        ...b,
+        patientName: `${item.patient.firstName} ${item.patient.lastName}`,
+      }))
+    )
+    .filter((b) => new Date(b.scheduledAt) > new Date())
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+
+  const upcomingAppointments = appointments
+    .filter((a) => new Date(a.date) > new Date())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-8 flex justify-between items-center">
@@ -89,6 +128,13 @@ const ClientDashboard = () => {
             Book Consultation
           </button>
           <button
+            onClick={() => setShowDoctorModal(true)}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-medium flex items-center gap-2"
+          >
+            <Calendar className="w-5 h-5" />
+            Log Doctor Visit
+          </button>
+          <button
             onClick={() => setShowAddPatientModal(true)}
             className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-medium"
           >
@@ -96,6 +142,47 @@ const ClientDashboard = () => {
           </button>
         </div>
       </div>
+
+      {upcoming.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Upcoming Appointments</h2>
+          <div className="space-y-2">
+            {upcoming.map((b) => (
+              <div key={b.id} className="flex justify-between bg-white p-4 rounded shadow">
+                <div>
+                  <p className="font-medium text-gray-900">{b.patientName}</p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(b.scheduledAt).toLocaleString()}
+                    {b.service && ` – ${b.service.title}`}
+                  </p>
+                </div>
+                <span className="text-sm text-gray-500 capitalize">{b.status.toLowerCase()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {upcomingAppointments.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Upcoming Doctor Visits</h2>
+          <div className="space-y-2">
+            {upcomingAppointments.map((a) => (
+              <div key={a.id} className="flex justify-between bg-white p-4 rounded shadow">
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {a.patient?.firstName} {a.patient?.lastName}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(a.date).toLocaleString()} – {a.provider}
+                  </p>
+                  <p className="text-sm text-gray-500">{a.reason}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -187,6 +274,14 @@ const ClientDashboard = () => {
           lastName: item.patient.lastName,
           email: item.patient.email,
         }))}
+      />
+
+      {/* Doctor Visit Modal */}
+      <DoctorAppointmentModal
+        isOpen={showDoctorModal}
+        onClose={() => setShowDoctorModal(false)}
+        onSuccess={fetchAppointments}
+        postUrl="/api/client/doctor-appointments"
       />
     </div>
   );

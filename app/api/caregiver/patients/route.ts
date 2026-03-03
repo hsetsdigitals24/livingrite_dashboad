@@ -43,6 +43,7 @@ export async function GET(req: Request) {
     const patients = await prisma.patient.findMany({
       where: {
         ...searchFilter,
+        status: 'ACTIVE',
         caregivers: {
           some: {
             caregiverId,
@@ -59,6 +60,19 @@ export async function GET(req: Request) {
             id: true,
             assignedAt: true,
             notes: true,
+          },
+        },
+        familyMembers: {
+          select: {
+            id: true,
+            clientId: true,
+            client: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
         vitals: {

@@ -13,7 +13,12 @@ export async function GET(request: Request) {
 
     // Get all patients associated with this client
     const familyMembers = await prisma.familyMemberAssignment.findMany({
-      where: { clientId: session.user.id },
+      where: { 
+        clientId: session.user.id,
+        patient: {
+          status: 'ACTIVE'
+        }
+      },
       include: {
         patient: {
           include: {

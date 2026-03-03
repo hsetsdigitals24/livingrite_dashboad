@@ -130,6 +130,7 @@ model Patient {
   medications       Json? // Array of {name, dosage, frequency}
   emergencyContact  String?
   emergencyPhone    String?
+  status            PatientStatus @default(ACTIVE)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -847,6 +848,13 @@ model Message {
   @@index([senderId])
   @@index([createdAt])
   @@map("messages")
+}
+
+enum PatientStatus {
+  ACTIVE       // Currently under care
+  INACTIVE     // No longer receiving active services
+  ARCHIVED     // Past patient, records kept
+  DISCHARGED   // Successfully completed care
 }
 
 enum Role {

@@ -44,7 +44,7 @@ const ServiceCard = ({
   return (
     <Link href={`/services/${slug}`}>
       <Card
-        className="h-full border-gray-700/50 bg-gray-900/90 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:scale-105 cursor-pointer group animate-slide-up"
+        className="h-full border-gray-700/50 bg-gray-900/90 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 cursor-pointer group perspective-1000" 
         style={{ animationDelay: `${index * 75}ms` }}
       >
         <CardContent className="p-8">

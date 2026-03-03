@@ -14,10 +14,10 @@ export const metadata = {
 
 export default function ServicesPage() {
   return (
-    <main className="min-h-screen"> 
+    <main className="min-h-screen space-y-20 animate-fade-in-up">
       <ServicesHero />
       <ServicesGrid />
-      <CTABanner /> 
+      <CTABanner />
     </main>
   )
 }

@@ -38,7 +38,10 @@ export async function GET(req: Request) {
 
     // Fetch patients with caregivers
     const patients = await prisma.patient.findMany({
-      where: searchFilter,
+      where: {
+        ...searchFilter,
+        status: 'ACTIVE'
+      },
       include: {
         caregivers: {
           include: {

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const SIGNED_URL_EXPIRY = 3600; // 1 hour in seconds
 
 // Initialize S3 client for Cloudflare R2
 const s3Client = new S3Client({
@@ -14,6 +16,33 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
   },
 });
+
+/**
+ * Generates a signed URL for accessing an uploaded file
+ * @param key - The S3 object key
+ * @param expirySeconds - URL expiration time in seconds (default: 1 hour)
+ * @returns Signed URL string
+ */
+async function getSignedFileUrl(
+  key: string,
+  expirySeconds: number = SIGNED_URL_EXPIRY
+): Promise<string> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    });
+
+    const signedUrl = await getSignedUrl(s3Client, command, {
+      expiresIn: expirySeconds,
+    });
+
+    return signedUrl;
+  } catch (error) {
+    console.error('Failed to generate signed URL:', error);
+    throw new Error('Failed to generate signed URL');
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,15 +105,16 @@ export async function POST(request: NextRequest) {
 
     await s3Client.send(command);
 
-    // Generate accessible URL
-    const url = `${process.env.NEXTAUTH_URL}/${key}`;
+    // Generate signed URL
+    const signedUrl = await getSignedFileUrl(key);
 
     return NextResponse.json(
       {
-        url,
+        url: signedUrl,
         filename,
         size: file.size,
         type: file.type,
+        expiresIn: SIGNED_URL_EXPIRY,
       },
       { status: 201 }
     );

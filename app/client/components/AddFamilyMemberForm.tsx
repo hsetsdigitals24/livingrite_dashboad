@@ -367,7 +367,7 @@ export default function AddFamilyMemberForm({
             </Button>
             <Button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="bg-primary hover:bg-accent text-white"
               disabled={loading}
             >
               {loading ? 'Adding...' : 'Add Family Member'}

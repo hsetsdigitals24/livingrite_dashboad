@@ -1,8 +1,38 @@
 import { NextResponse } from 'next/server'
-import { PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
+import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { r2 } from '@/lib/r2'
 import { prisma } from '@/lib/prisma'
 import { randomUUID } from 'crypto'
+
+const SIGNED_URL_EXPIRY = 3600 // 1 hour in seconds
+
+/**
+ * Generates a signed URL for accessing an uploaded file
+ * @param key - The S3 object key
+ * @param expirySeconds - URL expiration time in seconds (default: 1 hour)
+ * @returns Signed URL string
+ */
+async function getSignedFileUrl(
+  key: string,
+  expirySeconds: number = SIGNED_URL_EXPIRY
+): Promise<string> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    })
+
+    const signedUrl = await getSignedUrl(r2, command, {
+      expiresIn: expirySeconds,
+    })
+
+    return signedUrl
+  } catch (error) {
+    console.error('Failed to generate signed URL:', error)
+    throw new Error('Failed to generate signed URL')
+  }
+}
 
 // UPLOAD FILES TO R2 AND SAVE METADATA IN DB
 export async function POST(
@@ -29,18 +59,24 @@ export async function POST(
     })
   )
 
+  // Generate signed URL
+  const signedUrl = await getSignedFileUrl(key)
+
   const record = await prisma.file.create({
     data: {
       filename: key,
       originalName: file.name,
       mimeType: file.type,
       size: file.size,
-      url: `${process.env.R2_PUBLIC_URL}/${key}`,
+      url: signedUrl,
       patientId: patientId || undefined,
     },
   })
 
-  return NextResponse.json(record)
+  return NextResponse.json({
+    ...record,
+    expiresIn: SIGNED_URL_EXPIRY,
+  })
 }
 
 // FETCH FILES FOR A PATIENT
@@ -58,45 +94,7 @@ export async function GET(
     where: { patientId },
     orderBy: { createdAt: 'desc' },
   })
- console.log('Fetched files for patient:', patientId, files) // Debug log
+  console.log('Fetched files for patient:', patientId, files)
   return NextResponse.json(files)
 }
 
-
-// DELETE FILES
-export async function DELETE(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const fileId = searchParams.get('fileId')
-
-  if (!fileId) {
-    return NextResponse.json({ error: 'File ID is required' }, { status: 400 })
-  }
-
-  const fileRecord = await prisma.file.findUnique({ where: { id: fileId } })
-
-  if (!fileRecord) {
-    return NextResponse.json({ error: 'File not found' }, { status: 404 })
-  }
-
-  await r2.send(
-    new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: fileRecord.filename,
-    })
-  )
-
-  await prisma.file.delete({ where: { id: fileId } })
-
-  return NextResponse.json({ message: 'File deleted' })
-}
-
-// LIST ALL FILES IN R2 (FOR DEBUGGING)
-// export async function GET() {
-//   const response = await r2.send(
-//     new ListObjectsV2Command({
-//       Bucket: process.env.R2_BUCKET_NAME!,
-//     })
-//   )
-
-//   return NextResponse.json(response.Contents || [])
-// }

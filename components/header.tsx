@@ -16,8 +16,8 @@ import Image from "next/image";
 import { useUserRole } from "@/hooks/useUserRole";
 import { RoleAwareUserMenu } from "./RoleAwareUserMenu";
 // import { AdminNav } from "./nav/AdminNav";
-import { CombinedNav } from "./nav/CombinedNav";
-import { MobileCombinedNav } from "./nav/MobileCombinedNav";
+// import { CombinedNav } from "./nav/CombinedNav";
+// import { MobileCombinedNav } from "./nav/MobileCombinedNav";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -209,69 +209,7 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden animate-slide-up bg-white/98 backdrop-blur-sm border-t border-gray-200 py-4">
-            {isAuthenticated && !isLoading ? (
-              <>
-                {role === "ADMIN" ? (
-                  // Admin-only mobile menu
-                  <div className="flex flex-col gap-2">
-                    <div className="px-4 py-2">
-                      <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                        Admin Dashboard
-                      </p>
-                      <Link
-                        href="/admin"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
-                      >
-                        Dashboard
-                      </Link>
-                      <Link
-                        href="/admin?section=patients"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
-                      >
-                        Patients
-                      </Link>
-                      <Link
-                        href="/admin?section=caregivers"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
-                      >
-                        Caregivers
-                      </Link>
-                      <Link
-                        href="/admin?section=clients"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
-                      >
-                        Clients
-                      </Link>
-                      <Link
-                        href="/admin?section=revenue"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700"
-                      >
-                        Revenue
-                      </Link>
-                    </div>
-                    <div className="border-t border-gray-200 pt-4 px-4">
-                      <RoleAwareUserMenu />
-                    </div>
-                  </div>
-                ) : (
-                  // Caregiver and Client combined mobile menu
-                  <>
-                    <MobileCombinedNav
-                      role={role}
-                      onLinkClick={() => setMobileMenuOpen(false)}
-                    />
-                    <div className="border-t border-gray-200 pt-4 px-4">
-                      <RoleAwareUserMenu />
-                    </div>
-                  </>
-                )}
-              </>
-            ) : (
+            
               // Public mobile menu for unauthenticated users
               <div className="flex flex-col gap-2">
                 <DropdownMenu>
@@ -409,7 +347,7 @@ export function Header() {
                   </Link>
                 </div>
               </div>
-            )}
+            
           </div>
         )}
       </nav>
@@ -417,7 +355,7 @@ export function Header() {
         {/* inner wrapper */}
         {role &&
         <div className="text-white">
-          <CombinedNav role={role} />
+          {/* <CombinedNav role={role} /> */}
         </div>
         }
       </div>

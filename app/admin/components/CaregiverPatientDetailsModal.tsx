@@ -116,8 +116,9 @@ export default function CaregiverPatientDetailsModal({
 
  const handleFileDelete = async (fileId: string) => {
   try {
+    console.log({"id: ": fileId})
     setLoading(true);
-    const deleteResponse = await fetch(`/api/files/${fileId}`, {
+    const deleteResponse = await fetch(`/api/files/delete/${fileId}`, {
       method: "DELETE",
     });
 

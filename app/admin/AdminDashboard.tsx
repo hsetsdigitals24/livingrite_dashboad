@@ -14,6 +14,8 @@ import PipelineSection from "./sections/Pipeline";
 import TicketsSection from "./sections/Tickets";
 import InvoicesSection from "./sections/Invoices";
 import ReportsSection from "./sections/Reports";
+import CaseStudiesSection from "./sections/CaseStudies";
+import CaregiverAllowList from "./sections/CaregiverAllowList";
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
@@ -38,8 +40,10 @@ export default function AdminDashboard() {
             {activeSection === "clients" && <ClientsSection />}
             {activeSection === "patients" && <PatientsSection />}
             {activeSection === "caregivers" && <CaregiversSection />}
+            {activeSection === "caregiver-allow-list" && <CaregiverAllowList />}
             {activeSection === "invoices" && <InvoicesSection />}
             {activeSection === "tickets" && <TicketsSection />}
+            {activeSection === "case-studies" && <CaseStudiesSection />}
             {activeSection === "settings" && <SettingsSection />}
             {activeSection === "reports" && <ReportsSection />}
             {activeSection === "overview" && <OverviewSection />}

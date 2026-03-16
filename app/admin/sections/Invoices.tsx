@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, Download, Eye } from "lucide-react";
+import { AlertCircle, Download, Eye, Plus, CheckCircle2 } from "lucide-react";
+import { GenerateInvoiceForm } from "../components/GenerateInvoiceForm";
 
 interface Invoice {
   id: string;
@@ -27,6 +28,9 @@ export default function InvoicesSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isGenerateFormOpen, setIsGenerateFormOpen] = useState(false);
+  const [markingAsPaid, setMarkingAsPaid] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     setCurrentPage(1);
@@ -65,6 +69,42 @@ export default function InvoicesSection() {
     }
   };
 
+  const handleMarkAsPaid = async (invoiceId: string) => {
+    try {
+      setActionError("");
+      setMarkingAsPaid(invoiceId);
+
+      const response = await fetch(`/api/invoices/${invoiceId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "markPaid" }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to mark invoice as paid");
+      }
+
+      // Refresh invoice list
+      await fetchInvoices(currentPage);
+      
+      // Update selected invoice if it's currently selected
+      if (selectedInvoice?.id === invoiceId) {
+        const updated = await fetch(`/api/invoices/${invoiceId}`);
+        if (updated.ok) {
+          const data = await updated.json();
+          setSelectedInvoice(data);
+        }
+      }
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : "Failed to mark invoice as paid"
+      );
+    } finally {
+      setMarkingAsPaid(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "DRAFT":
@@ -89,6 +129,13 @@ export default function InvoicesSection() {
           <h2 className="text-3xl font-bold text-gray-900">Invoices</h2>
           <p className="text-gray-600 mt-1">Manage and track client invoices</p>
         </div>
+        <button
+          onClick={() => setIsGenerateFormOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium"
+        >
+          <Plus className="w-5 h-5" />
+          Generate Invoice
+        </button>
       </div>
 
       {/* Filter Buttons */}
@@ -142,6 +189,13 @@ export default function InvoicesSection() {
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex gap-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <span>{error}</span>
+        </div>
+      )}
+
+      {actionError && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex gap-2">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{actionError}</span>
         </div>
       )}
 
@@ -217,13 +271,29 @@ export default function InvoicesSection() {
                         : "-"}
                     </td>
                     <td className="px-6 py-4 text-sm">
-                      <button
-                        onClick={() => setSelectedInvoice(invoice)}
-                        className="text-teal-600 hover:text-teal-700 p-1 inline-block"
-                        title="View Details"
-                      >
-                        <Eye className="w-5 h-5" />
-                      </button>
+                      <div className="flex gap-2">
+                        {/* Mark as Paid Button */}
+                        {invoice.status !== "PAID" && (
+                          <button
+                            onClick={() => handleMarkAsPaid(invoice.id)}
+                            disabled={markingAsPaid === invoice.id}
+                            className="text-green-600 hover:text-green-700 p-1 inline-block disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Mark as Paid"
+                          >
+                            {markingAsPaid === invoice.id ? (
+                              <div className="w-5 h-5 rounded-full border-2 border-green-600 border-t-transparent animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-5 h-5" />
+                            )}
+                          </button>
+                        )}\n                        {/* View Details Button */}\n                        <button
+                          onClick={() => setSelectedInvoice(invoice)}
+                          className="text-teal-600 hover:text-teal-700 p-1 inline-block"
+                          title="View Details"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -361,9 +431,21 @@ export default function InvoicesSection() {
             </div>
 
             <div className="mt-6 flex gap-3">
+              {selectedInvoice.status !== "PAID" && (
+                <button
+                  onClick={() => {
+                    handleMarkAsPaid(selectedInvoice.id);
+                    setSelectedInvoice(null);
+                  }}
+                  disabled={markingAsPaid === selectedInvoice.id}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                >
+                  {markingAsPaid === selectedInvoice.id ? "Marking as Paid..." : "Mark as Paid"}
+                </button>
+              )}
               <button
                 onClick={() => setSelectedInvoice(null)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
               >
                 Close
               </button>
@@ -371,6 +453,16 @@ export default function InvoicesSection() {
           </div>
         </div>
       )}
+
+      {/* Generate Invoice Form Modal */}
+      <GenerateInvoiceForm
+        isOpen={isGenerateFormOpen}
+        onClose={() => setIsGenerateFormOpen(false)}
+        onSuccess={() => {
+          setIsGenerateFormOpen(false);
+          fetchInvoices(1);
+        }}
+      />
     </div>
   );
 }

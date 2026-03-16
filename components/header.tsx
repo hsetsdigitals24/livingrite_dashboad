@@ -53,11 +53,6 @@ export function Header() {
     },
   ];
 
-  // Hide header on admin dashboard routes
-  if (pathname.startsWith("/admin")) {
-    return null;
-  }
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -65,6 +60,11 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Hide header on admin dashboard routes
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <header

@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { bookingId } = await req.json();
+    const { bookingId, amount: adminAmount, tax: adminTax, discount: adminDiscount } = await req.json();
 
     if (!bookingId) {
       return NextResponse.json(
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify access
+    // Verify access - admins can generate from any booking, users only from their own
     if (booking.userId !== session.user.id && session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Access denied' },
@@ -154,23 +154,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate invoice amount (from payment or service)
-    const amount =
-      booking.payment?.amount || booking.service?.basePrice || 0;
+    // Use admin-provided amounts or calculate from booking
+    let amount = adminAmount !== undefined ? adminAmount : (booking.payment?.amount || booking.service?.basePrice || 0);
+    let tax = adminTax !== undefined ? adminTax : (amount * 0.1); // 10% default tax
+    let discount = adminDiscount !== undefined ? adminDiscount : 0;
 
-    if (amount === 0) {
+    // Validate amounts
+    if (amount <= 0) {
       return NextResponse.json(
-        { error: 'Cannot generate invoice: no amount specified' },
+        { error: 'Amount must be greater than 0' },
+        { status: 400 }
+      );
+    }
+
+    if (tax < 0 || discount < 0) {
+      return NextResponse.json(
+        { error: 'Tax and discount cannot be negative' },
+        { status: 400 }
+      );
+    }
+
+    if (discount >= amount) {
+      return NextResponse.json(
+        { error: 'Discount cannot be equal to or greater than amount' },
         { status: 400 }
       );
     }
 
     // Generate unique invoice number
-    const invoiceNumber = `INV-${Date.now()}-${bookingId.slice(0, 8)}`;
+    const invoiceNumber = `INV-${new Date().toISOString().split('T')[0]}-${Date.now().toString().slice(-5)}`;
 
-    // Calculate total with tax
-    const tax = amount * 0.1; // 10% tax
-    const totalAmount = amount + tax;
+    // Calculate total
+    const totalAmount = amount + tax - discount;
 
     // Create invoice record
     const invoice = await prisma.invoice.create({
@@ -179,9 +194,19 @@ export async function POST(req: NextRequest) {
         invoiceNumber,
         amount,
         tax,
+        discount,
         totalAmount,
-        currency: booking.payment?.currency || 'USD',
+        currency: booking.payment?.currency || 'NGN',
         status: 'GENERATED',
+        dueAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      },
+      include: {
+        booking: {
+          select: {
+            clientName: true,
+            clientEmail: true,
+          },
+        },
       },
     });
 

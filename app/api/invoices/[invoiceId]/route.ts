@@ -133,11 +133,27 @@ export async function PATCH(
     if (action === 'markPaid') {
       updateData.status = 'PAID';
       updateData.paidAt = new Date();
+    }
 
-      // Also update payment status if exists
+    const updatedInvoice = await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: updateData,
+      include: {
+        booking: {
+          select: {
+            id: true,
+            clientName: true,
+            clientEmail: true,
+          },
+        },
+      },
+    });
+
+    // Handle mark as paid - sync booking and payment
+    if (action === 'markPaid') {
       const booking = await prisma.booking.findUnique({
         where: { id: invoice.bookingId },
-        select: { payment: true },
+        include: { payment: true },
       });
 
       if (booking?.payment) {
@@ -149,26 +165,22 @@ export async function PATCH(
           },
         });
       }
-    }
 
-    const updatedInvoice = await prisma.invoice.update({
-      where: { id: invoiceId },
-      data: updateData,
-      include: {
-        booking: {
-          select: {
-            clientName: true,
-            clientEmail: true,
-          },
-        },
-      },
-    });
-
-    // TODO: Send email notification if action is 'send'
-    if (action === 'send') {
-      console.log(
-        `[Invoice] Sent invoice ${invoice.invoiceNumber} to ${updatedInvoice.booking.clientEmail}`
-      );
+      // Send payment confirmation email to client
+      try {
+        const { sendInvoicePaidNotification } = await import('@/lib/email');
+        await sendInvoicePaidNotification(
+          updatedInvoice.booking.clientEmail,
+          updatedInvoice.booking.clientName,
+          updatedInvoice.invoiceNumber,
+          updatedInvoice.amount,
+          updatedInvoice.totalAmount,
+          updatedInvoice.currency
+        );
+      } catch (emailError) {
+        console.error('Failed to send payment notification email:', emailError);
+        // Continue even if email fails
+      }
     }
 
     return NextResponse.json(updatedInvoice, { status: 200 });

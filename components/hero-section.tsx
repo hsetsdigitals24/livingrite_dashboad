@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRightFromCircle, ChevronDown, Heart } from "lucide-react";
 import Link from "next/link";
-import heroImage from '@/public/service-hero.jpg'
+// import heroImage from '@/public/service-hero.jpg'
 
 export function HeroSection() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -35,7 +35,7 @@ export function HeroSection() {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('${heroImage.src}')`,
+          backgroundImage: `url('/main-hero.jpg')`,
           transform: `translateY(${scrollY * 0.5}px)`,
           transition: 'transform 0.1s ease-out',
         }}
@@ -128,7 +128,7 @@ export function HeroSection() {
           {/* Left Content */}
           <div className="max-w-2xl flex flex-col justify-center">
             {/* Announcement Badge */}
-            <div className="inline-flex items-center gap-3 bg-primary/10 border border-gray-300 text-primary px-5 py-3 rounded-full text-sm font-semibold mb-8 animate-slide-up animation-delay-200 w-fit hover:border-gray-400 hover:shadow-lg hover:shadow-gray-300/20 transition-all duration-300">
+            <div className="inline-flex items-center gap-3 bg-primary/5 border border-gray-300 text-primary px-5 py-2 rounded-full text-sm font-semibold mb-4 animate-slide-up animation-delay-200 w-fit hover:border-gray-400 hover:shadow-lg hover:shadow-gray-300/20 transition-all duration-300">
               {/* Animated Heartbeat SVG Icon */}
               <svg
                 className="h-4 w-4 animate-pulse"
@@ -144,7 +144,7 @@ export function HeroSection() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-gray-900 mb-3 leading-tight">
               Healing Happens Best Where{" "}
               <span className=" text-primary">
                 You Are Most Loved.

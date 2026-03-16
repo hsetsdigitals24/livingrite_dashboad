@@ -759,6 +759,46 @@ export async function sendTicketResolvedEmail(
 }
 
 /**
+ * Send invoice paid notification email to client
+ */
+export async function sendInvoicePaidNotification(
+  clientEmail: string,
+  clientName: string,
+  invoiceNumber: string,
+  amount: number,
+  totalAmount: number,
+  currency: string = 'NGN'
+) {
+  if (!clientEmail) throw new Error('Client email is required');
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite'} <${process.env.SMTP_FROM}>`,
+    to: clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: `Payment Confirmed - Invoice ${invoiceNumber}`,
+    html: `
+      <h2>Payment Confirmation</h2>
+      <p>Hi ${clientName},</p>
+      <p>We're writing to confirm that we have received your payment for the following invoice:</p>
+      
+      <div style="background-color: #f5f5f5; padding: 16px; border-radius: 4px; margin: 16px 0;">
+        <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
+        <p><strong>Amount Paid:</strong> ${currency} ${totalAmount.toLocaleString()}</p>
+        <p><strong>Payment Date:</strong> ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      </div>
+      
+      <p>Thank you for choosing LivingRite Care. Your continued trust means everything to us.</p>
+      <p>If you have any questions about this payment, please don't hesitate to contact our support team.</p>
+      
+      <p>Best regards,<br/>The LivingRite Team</p>
+    `,
+    text: `Payment confirmation for invoice ${invoiceNumber}. Amount: ${currency} ${totalAmount.toLocaleString()}. Thank you for your payment.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
+/**
  * Send new comment notification email to customer (only for staff comments)
  */
 export async function sendTicketCommentNotificationEmail(

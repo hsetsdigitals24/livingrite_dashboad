@@ -111,6 +111,25 @@ model CaregiverProfile {
   @@map("caregiver_profiles")
 }
 
+// Caregiver allow list - admin must approve caregiver emails before they can signup
+// This enforces a whitelist-based registration for caregivers
+model CaregiverAllowList {
+  id            String                      @id @default(cuid())
+  email         String                      @unique
+  status        CaregiverAllowListStatus    @default(APPROVED)
+  addedBy       String                      // Admin user ID who added this
+  addedAt       DateTime                    @default(now())
+  approvedAt    DateTime?
+  notes         String?                     // Optional notes from admin
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@map("caregiver_allow_list")
+}
+
 // Patient is a separate entity, not a User
 // Patients have health data and can be assigned caregivers
 // Patients are associated with user-clients as family members
@@ -931,6 +950,12 @@ enum InvoiceStatus {
 enum CaregiverTitle {
   DR
   RN
+}
+
+enum CaregiverAllowListStatus {
+  APPROVED
+  REJECTED
+  PENDING
 }
 
 enum TestimonialStatus {

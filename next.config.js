@@ -6,9 +6,13 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cdn.sanity.io',
       },
-       {
+      {
         protocol: 'http',
         hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.r2.cloudflarestorage.com',
       },
     ],
   },

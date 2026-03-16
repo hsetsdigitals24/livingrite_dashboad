@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, DollarSign, MessageSquare, Settings, TrendingUp, Users, GitBranch, FileText } from "lucide-react";
+import { BarChart3, Calendar, DollarSign, MessageSquare, Settings, TrendingUp, Users, GitBranch, FileText, BookOpen, ShieldCheck } from "lucide-react";
 
 interface SidebarProps {
   activeSection: string;
@@ -16,9 +16,11 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
                      {label: "Patients", icon: Users, id: "patients"},
                      { label: "Clients", icon: Users, id: "clients" },
                      { label: "Caregivers", icon: Users, id: "caregivers" },
+                     { label: "Caregiver Allow List", icon: ShieldCheck, id: "caregiver-allow-list" },
                      { label: "Invoices", icon: FileText, id: "invoices" },
                      { label: "Reports", icon: TrendingUp, id: "reports" },
                      { label: "Tickets", icon: MessageSquare, id: "tickets" },
+                     { label: "Case Studies", icon: BookOpen, id: "case-studies" },
                      { label: "Settings", icon: Settings, id: "settings" },
                    ].map((item) => (
                      <button

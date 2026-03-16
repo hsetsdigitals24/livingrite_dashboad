@@ -15,6 +15,7 @@ interface SignUpFormData {
   confirmPassword: string
   invitationCode?: string
   role: 'CLIENT' | 'CAREGIVER'
+  title?: 'RN' | 'DR' // Title for caregivers
 }
 
 export default function SignUp() {
@@ -29,6 +30,7 @@ export default function SignUp() {
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<SignUpFormData>()
 
   const password = watch('password')
+  const selectedRole = watch('role')
 
   // Extract invitation code from URL params on mount
   React.useEffect(() => {
@@ -46,6 +48,12 @@ export default function SignUp() {
       return
     }
 
+    // Validate title is provided for caregivers
+    if (data.role === 'CAREGIVER' && !data.title) {
+      setError('Please select a title (RN or DR) for caregiver registration')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -58,7 +66,8 @@ export default function SignUp() {
           email: data.email,
           password: data.password,
           invitationCode: data.invitationCode,
-          role: data.role
+          role: data.role,
+          ...(data.role === 'CAREGIVER' && { title: data.title }),
         }),
       })
 
@@ -230,6 +239,33 @@ export default function SignUp() {
                 )}
               </div>
             </div>
+
+            {/* Title Field - Only for Caregivers */}
+            {selectedRole === 'CAREGIVER' && (
+              <div className="animate-scale-in">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Professional Title *
+                </label>
+                <select
+                  {...register('title', {
+                    validate: (value) => {
+                      if (selectedRole === 'CAREGIVER' && !value) {
+                        return 'Title is required for caregivers'
+                      }
+                      return true
+                    },
+                  })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition duration-300 bg-gray-50 hover:bg-white"
+                >
+                  <option value="">-- Select a title --</option>
+                  <option value="RN">Registered Nurse (RN)</option>
+                  <option value="DR">Doctor (DR)</option>
+                </select>
+                {errors.title && (
+                  <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+                )}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button

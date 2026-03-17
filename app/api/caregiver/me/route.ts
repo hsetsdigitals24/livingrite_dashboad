@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     const bookingCount = await prisma.booking.count({
       where: {
         patient: {
-          assignments: {
+          caregivers: {
             some: {
               caregiverId: session.user.id,
               unassignedAt: null,

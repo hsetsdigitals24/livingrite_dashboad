@@ -12,54 +12,71 @@ interface CaseStudyDetailPageProps {
   }>
 }
 
-export async function generateStaticParams() {
-  const caseStudies = await prisma.caseStudy.findMany({
-    where: { status: "APPROVED" },
-    select: { slug: true },
-  })
+export const dynamicParams = true
 
-  return caseStudies.map((cs) => ({
-    slug: cs.slug,
-  }))
+export async function generateStaticParams() {
+  try {
+    const caseStudies = await prisma.caseStudy.findMany({
+      where: { status: "APPROVED" },
+      select: { slug: true },
+    })
+
+    return caseStudies.map((cs) => ({
+      slug: cs.slug,
+    }))
+  } catch (error) {
+    console.warn("Failed to generate static params for case studies - will generate dynamically:", error)
+    // Return empty array - dynamic params will handle requests at runtime
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: CaseStudyDetailPageProps) {
-  const { slug } = await params
+  try {
+    const { slug } = await params
 
-  const caseStudy = await prisma.caseStudy.findUnique({
-    where: { slug },
-  })
+    const caseStudy = await prisma.caseStudy.findUnique({
+      where: { slug },
+    })
 
-  if (!caseStudy) {
-    return {
-      title: "Case Study Not Found",
+    if (!caseStudy) {
+      return {
+        title: "Case Study Not Found",
+      }
     }
-  }
 
-  return {
-    title: `${caseStudy.title} - Case Study`,
-    description: caseStudy.challenge,
-    openGraph: {
-      title: caseStudy.title,
+    return {
+      title: `${caseStudy.title} - Case Study`,
       description: caseStudy.challenge,
-      images: caseStudy.heroImage ? [{ url: caseStudy.heroImage }] : [],
-    },
+      openGraph: {
+        title: caseStudy.title,
+        description: caseStudy.challenge,
+        images: caseStudy.heroImage ? [{ url: caseStudy.heroImage }] : [],
+      },
+    }
+  } catch (error) {
+    console.warn("Failed to generate metadata for case study:", error)
+    return {
+      title: "Case Study",
+      description: "View our case studies",
+    }
   }
 }
 
 export default async function CaseStudyDetailPage({ params }: CaseStudyDetailPageProps) {
   const { slug } = await params
 
-  const caseStudy = await prisma.caseStudy.findUnique({
-    where: { slug },
-    include: { service: true },
-  })
+  try {
+    const caseStudy = await prisma.caseStudy.findUnique({
+      where: { slug },
+      include: { service: true },
+    })
 
-  if (!caseStudy || caseStudy.status !== "APPROVED") {
-    notFound()
-  }
+    if (!caseStudy || caseStudy.status !== "APPROVED") {
+      notFound()
+    }
 
-  const keyResults = caseStudy.keyResults as Array<{ metric: string; value: string }> | null
+    const keyResults = caseStudy.keyResults as Array<{ metric: string; value: string }> | null
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
@@ -264,4 +281,8 @@ export default async function CaseStudyDetailPage({ params }: CaseStudyDetailPag
       <CTABanner />
     </main>
   )
+  } catch (error) {
+    console.error("Error loading case study:", error)
+    notFound()
+  }
 }

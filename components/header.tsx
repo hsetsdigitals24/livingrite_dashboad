@@ -87,7 +87,7 @@ export function Header() {
           <div className="hidden md:flex items-center gap-8">
               <Link 
                     href='/'
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors font-bold ${
                       role && role !== "ADMIN"
                         ? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         : "text-gray-700 relative hover:text-gray-900 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-teal-500 after:to-cyan-500 after:transition-all after:duration-300 hover:after:w-full"
@@ -156,7 +156,7 @@ export function Header() {
                   <Link
                   key={index}
                     href={item.href}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-[600] transition-colors ${
                       role && role !== "ADMIN"
                         ? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         : "text-gray-700 relative hover:text-gray-900 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-teal-500 after:to-cyan-500 after:transition-all after:duration-300 hover:after:w-full"
@@ -186,7 +186,13 @@ export function Header() {
                   </Button>
                 </Link>
                 <Link href="/auth/signin">
-                  <User2 />
+                     <Button
+                     variant="outline"
+                    size="lg"
+                    className="font-semibold rounded-full bg-white border border-primary text-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
+                  >
+                   sigin 
+                  </Button>
                 </Link>
               </>
             )}

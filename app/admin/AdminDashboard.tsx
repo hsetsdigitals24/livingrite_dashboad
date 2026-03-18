@@ -6,7 +6,7 @@ import ClientsSection from "./sections/Clients";
 import Sidebar from "./components/Sidebar";
 import PatientsSection from "./sections/Patients";
 import CaregiversSection from "./sections/Caregivers";
-import MetricCard from "./components/MetricCard";
+import MetricCard from "./components/MetricCard"; 
 import SettingsSection from "./sections/Settings"; 
 import Header from "./components/Header";
 import OverviewSection from "./sections/Overview";

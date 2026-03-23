@@ -8,26 +8,26 @@ import { usePathname } from "next/navigation";
 
 const footerLinks = {
   services: [
-    { name: "Post-Stroke Care", href: "#" },
-    { name: "Post-ICU Care", href: "#" },
-    { name: "Physiotherapy", href: "#" },
-    { name: "Palliative Care", href: "#" },
-    { name: "Live-in Nursing", href: "#" },
-    { name: "Rehabilitation", href: "#" },
+    { name: "Post-Stroke Care", href: "/services/post-stroke-care" },
+    { name: "Post-ICU Care", href: "/services/post-icu-care" },
+    { name: "Physiotherapy", href: "/services/physiotherapy" },
+    { name: "Palliative Care", href: "/services/end-of-life-care" },
+    { name: "Live-in Nursing", href: "/services/live-in-nursing" },
+    { name: "Rehabilitation", href: "/services/rehabilitation" },
   ],
   company: [
-    { name: "About Us", href: "#about" },
-    { name: "Our Team", href: "#" },
-    { name: "Careers", href: "#" },
-    { name: "Blog", href: "#" },
-    { name: "Press", href: "#" },
+    { name: "About Us", href: "/about" },
+    { name: "Our Team", href: "/team" },
+    { name: "Careers", href: "/careers" },
+    { name: "Blog", href: "/blogs" },
+    { name: "Press", href: "/press" },
   ],
   resources: [
-    { name: "Care Guides", href: "#" },
-    { name: "FAQ", href: "#" },
-    { name: "Testimonials", href: "#testimonials" },
-    { name: "Pricing", href: "#" },
-    { name: "Contact", href: "#" },
+    // { name: "Care Guides", href: "/care-guides" },
+    { name: "FAQ", href: "/faq" },
+    { name: "Testimonials", href: "/testimonials" },
+    // { name: "Pricing", href: "/pricing" },
+    { name: "Contact", href: "/contact" },
   ],
 };
 
@@ -119,6 +119,7 @@ export function Footer() {
                 </li>
               ))}
             </ul>
+              <span className="text-gray-900 hover:text-primary transition-colors text-sm"><Link href="/auth/admin">Admin</Link></span>
           </div>
 
           {/* Newsletter Column */}
@@ -155,6 +156,8 @@ export function Footer() {
               </Button>
             </div>
           </div>
+        <div>
+        </div>
         </div>
 
         {/* Social Links & Copyright */}

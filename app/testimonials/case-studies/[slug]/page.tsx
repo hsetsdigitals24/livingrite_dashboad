@@ -124,7 +124,7 @@ export default async function CaseStudyPage({
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="container mx-auto px-4 md:px-8 py-6">
           <Link
-            href="/case-studies"
+            href="testimonials/case-studies"
             className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -132,7 +132,7 @@ export default async function CaseStudyPage({
           </Link>
           <nav className="text-sm text-gray-600">
             <span>
-              <Link href="/case-studies" className="hover:text-teal-600">
+              <Link href="testimonials/case-studies" className="hover:text-teal-600">
                 Case Studies
               </Link>
               {" / "}

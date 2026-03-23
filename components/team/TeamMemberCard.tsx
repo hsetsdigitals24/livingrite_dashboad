@@ -15,7 +15,8 @@ interface TeamMember {
 
 export default function TeamMemberCard({ member }: { member: TeamMember }) {
   const [isHovered, setIsHovered] = useState(false);
-
+  
+  console.log("TeamMemberCard component loaded with member:", member);
   return (
     <div
       className="group relative h-full"
@@ -33,7 +34,7 @@ export default function TeamMemberCard({ member }: { member: TeamMember }) {
           <img
             src={member.image}
             alt={member.name}
-            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+            className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-700"
           />
           {/* Overlay gradient on hover */}
           <div

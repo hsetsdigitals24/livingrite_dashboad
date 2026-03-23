@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+// import { Button } from "@/components/ui/button"
 import type { Testimonial } from "@/lib/testimonials"
 import { getTestimonials, getTestimonialImage } from "@/lib/testimonials"
 

@@ -1,5 +1,5 @@
 import { Edit, Eye, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ServiceForm from "../../components/ServiceForm";
 import ServiceView from "../../components/ServiceView";
 
@@ -33,6 +33,7 @@ const ServicesSection = () => {
           setLoading(true);
           const response = await fetch('/api/admin/services');
           const result = await response.json();
+          console.log({"result": result});
           if (Array.isArray(result)) {
             setServices(result);
           } else if (result.error) {
@@ -48,6 +49,10 @@ const ServicesSection = () => {
         }
       };
      
+      useEffect(() => {
+        fetchServices();
+      }, []);
+      
       // Delete service
       const handleDeleteService = async (serviceId: string) => {
         if (!confirm('Are you sure you want to delete this service? This action cannot be undone.')) {

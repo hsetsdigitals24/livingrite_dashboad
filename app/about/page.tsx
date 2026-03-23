@@ -12,31 +12,31 @@ export const metadata = {
 		"Livingrite Care brings hospital-quality home healthcare to Nigerian families — discover our mission, values and team.",
 }
 
-const team = [
+const team = [ 
 	{
-		name: "Aisha Bello",
-		title: "Head Nurse",
-		image: "/african-woman-professional-headshot.png",
-		bio: "Hospital-trained nurse with 12 years experience in post-acute care.",
+		name: "Dr. Chidinma Okongwu",
+		title: "Founder & Chief Medical Officer",
+		image: "/team/dr_chidinma.jpg",
+		bio: "Visionary leader with 15+ years in clinical medicine and post-acute care innovation. Dr. Okongwu founded LivingRite Care to bridge Nigeria's critical gap in out-of-hospital recovery.",
 	},
 	{
-		name: "Dr. Emeka Okoye",
-		title: "Clinical Lead",
-		image: "/african-doctor-professional-headshot.jpg",
-		bio: "Consultant in internal medicine guiding our care protocols.",
+		name: "Ajala Emmanuel",
+		title: "Head Nurse & Care Operations",
+		image: "/team/ajala_emmanuel.jpg",
+		bio: "Hospital-trained RN with 12 years of experience in post-acute and critical care. Aisha ensures every patient receives compassionate, evidence-based nursing care at home.",
 	},
 	{
-		name: "Ngozi Ade",
-		title: "Physiotherapy Lead",
-		image: "/african-woman-professional-headshot.png",
-		bio: "Specialist in stroke rehab and mobility recovery.",
+		name: "Arawore Divine",
+		title: "Clinical Lead & Internal Medicine Consultant",
+		image: "/team/arawore_divine.jpg",
+		bio: "Consultant physician specializing in internal medicine and critical care management. Dr. Okoye guides all clinical protocols and oversees patient care pathways.",
 	},
 	{
-		name: "Chinedu Ibe",
-		title: "Operations Manager",
-		image: "/african-man-professional-headshot.png",
-		bio: "Ensures smooth scheduling and caregiver matching.",
-	},
+		name: "Igbenedion Kosiso Cynthia",
+		title: "Lead Physiotherapist",
+		image: "/team/igbenedion_kosiso_cynthia.jpg",
+		bio: "Specialist physiotherapist with expertise in stroke rehabilitation and mobility recovery. Ngozi designs personalized rehabilitation programs for each patient's recovery goals.",
+	}
 ]
 
 export default function AboutPage() {

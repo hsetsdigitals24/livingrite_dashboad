@@ -77,17 +77,17 @@ export function Header() {
       <nav className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-50 h-15 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Image src={logo} alt="LivingRite Care Logo" />
-            </div> 
+          <Link href="/" className="flex items-center gap-2 group w-fit">
+            {/* <div className="w-fit border border-gray-300 rounded-lg flex items-center justify-start group-hover:scale-110 transition-transform duration-300"> */}
+              <Image src={logo} className="w-100 h-auto " alt="LivingRite Care Logo" />
+            {/* </div>  */}
           </Link>
 
           {/* Desktop Navigation - Role Aware */}
           <div className="hidden md:flex items-center gap-8">
               <Link 
                     href='/'
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors font-bold ${
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold transition-colors font-bold ${
                       role && role !== "ADMIN"
                         ? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         : "text-gray-700 relative hover:text-gray-900 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-teal-500 after:to-cyan-500 after:transition-all after:duration-300 hover:after:w-full"
@@ -96,7 +96,7 @@ export function Header() {
                     <span>Home</span>
                   </Link>
              <DropdownMenu>
-              <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium group">
+              <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-bold group">
                 Services
                 <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
               </DropdownMenuTrigger>
@@ -177,7 +177,7 @@ export function Header() {
               <RoleAwareUserMenu />
             ) : (
               <>
-                <Link href="/portal/booking">
+                <Link href="/client/booking">
                   <Button
                     size="lg"
                     className="font-semibold rounded-full bg-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
@@ -186,13 +186,13 @@ export function Header() {
                   </Button>
                 </Link>
                 <Link href="/auth/signin">
-                     <Button
-                     variant="outline"
-                    size="lg"
-                    className="font-semibold rounded-full bg-white border border-primary text-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
+                     <button
+                    //  variant="outline"
+                    // size="lg"
+                    className="px-6 py-2 cursor-pointer font-semibold rounded-full bg-white border border-primary text-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
                   >
                    sigin 
-                  </Button>
+                  </button>
                 </Link>
               </>
             )}

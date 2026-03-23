@@ -189,7 +189,7 @@ export function HeroSection() {
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/20 animate-slide-up animation-delay-600">
               <div className="flex flex-col">
-                <span className="text-3xl font-bold text-[#00d4ff]">20+</span>
+                <span className="text-3xl font-bold text-[#00d4ff]">50+</span>
                 <span className="text-sm text-gray-800 font-medium">
                   Patients Served
                 </span>

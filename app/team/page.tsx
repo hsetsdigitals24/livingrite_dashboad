@@ -9,71 +9,64 @@ export const metadata = {
 	description:
 		"Meet the dedicated professionals at LivingRite Care. Our team of doctors, nurses, and specialists are committed to delivering exceptional home healthcare in Nigeria.",
 }
+ 
 
 const teamMembers = [
 	{
 		name: "Dr. Chidinma Okongwu",
 		title: "Founder & Chief Medical Officer",
-		image: "/african-doctor-professional-headshot.jpg",
+		image: "/team/dr_chidinma.jpg",
 		bio: "Visionary leader with 15+ years in clinical medicine and post-acute care innovation. Dr. Okongwu founded LivingRite Care to bridge Nigeria's critical gap in out-of-hospital recovery.",
 		email: "chidinma@livingritecare.com",
 		linkedin: "https://linkedin.com/in/chidinma-okongwu",
 		specialties: ["Healthcare Leadership", "Post-Acute Care", "Clinical Innovation"]
 	},
 	{
-		name: "Aisha Bello",
+		name: "Ajala Emmanuel",
 		title: "Head Nurse & Care Operations",
-		image: "/african-woman-professional-headshot.png",
+		image: "/team/ajala_emmanuel.jpg",
 		bio: "Hospital-trained RN with 12 years of experience in post-acute and critical care. Aisha ensures every patient receives compassionate, evidence-based nursing care at home.",
 		email: "aisha@livingritecare.com",
 		specialties: ["Clinical Nursing", "Patient Safety", "Team Leadership"]
 	},
 	{
-		name: "Dr. Emeka Okoye",
+		name: "Arawore Divine",
 		title: "Clinical Lead & Internal Medicine Consultant",
-		image: "/african-doctor-professional-headshot.jpg",
+		image: "/team/arawore_divine.jpg",
 		bio: "Consultant physician specializing in internal medicine and critical care management. Dr. Okoye guides all clinical protocols and oversees patient care pathways.",
 		email: "emeka@livingritecare.com",
 		specialties: ["Internal Medicine", "Critical Care", "Geriatric Medicine"]
 	},
 	{
-		name: "Ngozi Ade",
+		name: "Igbenedion Kosiso Cynthia",
 		title: "Lead Physiotherapist",
-		image: "/african-woman-professional-headshot.png",
+		image: "/team/igbenedion_kosiso_cynthia.jpg",
 		bio: "Specialist physiotherapist with expertise in stroke rehabilitation and mobility recovery. Ngozi designs personalized rehabilitation programs for each patient's recovery goals.",
 		email: "ngozi@livingritecare.com",
 		specialties: ["Stroke Rehabilitation", "Mobility Recovery", "Physical Therapy"]
 	},
 	{
-		name: "Chinedu Ibe",
+		name: "Moody Omolara Eniola",
 		title: "Operations Manager",
-		image: "/african-man-professional-headshot.png",
+		image: "/team/moody_omolara_eniola.jpg",
 		bio: "Logistics expert ensuring seamless scheduling, caregiver matching, and operational excellence. Chinedu coordinates care delivery across all our service areas.",
 		email: "chinedu@livingritecare.com",
 		specialties: ["Operations", "Logistics", "Caregiver Management"]
 	},
 	{
-		name: "Grace Okonkwo",
+		name: "Nnumolu Amarachi Lilian",
 		title: "Patient Advocacy & Wellness Coordinator",
-		image: "/african-woman-professional-headshot.png",
+		image: "/team/nnumolu_amarachi_lilian.jpg",
 		bio: "Dedicated advocate ensuring patient voices are heard and wellness needs are met. Grace bridges communication between families, caregivers, and clinical teams.",
 		email: "grace@livingritecare.com",
 		specialties: ["Patient Advocacy", "Family Support", "Care Coordination"]
 	},
 	{
-		name: "Prof. Adeyemi Adeniran",
+		name: "Okoro Jennifer Odochi",
 		title: "Clinical Advisory Board Chair",
-		image: "/african-doctor-professional-headshot.jpg",
+		image: "/team/okoro_jennifer_odochi.jpg",
 		bio: "Retired Professor of Neurology with 30+ years of experience. Prof. Adeniran provides strategic guidance on clinical excellence and neurological care protocols.",
 		specialties: ["Neurology", "Clinical Strategy", "Medical Education"]
-	},
-	{
-		name: "Musa Hassan",
-		title: "Senior Caregiver & Training Lead",
-		image: "/african-man-professional-headshot.png",
-		bio: "Compassionate caregiver with 8+ years of hands-on experience. Musa trains and mentors our entire caregiver team, ensuring consistent, quality patient care.",
-		email: "musa@livingritecare.com",
-		specialties: ["Patient Care", "Caregiver Training", "Quality Assurance"]
 	}
 ]
 

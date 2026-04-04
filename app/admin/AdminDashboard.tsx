@@ -1,21 +1,30 @@
 "use client";
 
-import { useState } from "react"; 
-import ConsultationsSection from "./sections/Consultations";
-import ClientsSection from "./sections/Clients";
+import { useState, lazy, Suspense } from "react";
 import Sidebar from "./components/Sidebar";
-import PatientsSection from "./sections/Patients";
-import CaregiversSection from "./sections/Caregivers";
-import MetricCard from "./components/MetricCard"; 
-import SettingsSection from "./sections/Settings"; 
 import Header from "./components/Header";
-import OverviewSection from "./sections/Overview";
-import PipelineSection from "./sections/Pipeline";
-import TicketsSection from "./sections/Tickets";
-import InvoicesSection from "./sections/Invoices";
-import ReportsSection from "./sections/Reports";
-import CaseStudiesSection from "./sections/CaseStudies";
-import CaregiverAllowList from "./sections/CaregiverAllowList";
+
+// Lazy-load all sections — only the active one is ever downloaded
+const ConsultationsSection = lazy(() => import("./sections/Consultations"));
+const ClientsSection = lazy(() => import("./sections/Clients"));
+const PatientsSection = lazy(() => import("./sections/Patients"));
+const CaregiversSection = lazy(() => import("./sections/Caregivers"));
+const SettingsSection = lazy(() => import("./sections/Settings"));
+const OverviewSection = lazy(() => import("./sections/Overview"));
+const PipelineSection = lazy(() => import("./sections/Pipeline"));
+const TicketsSection = lazy(() => import("./sections/Tickets"));
+const InvoicesSection = lazy(() => import("./sections/Invoices"));
+const ReportsSection = lazy(() => import("./sections/Reports"));
+const CaseStudiesSection = lazy(() => import("./sections/CaseStudies"));
+const CaregiverAllowList = lazy(() => import("./sections/CaregiverAllowList"));
+
+function SectionFallback() {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
@@ -35,21 +44,23 @@ export default function AdminDashboard() {
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           <div className="p-8">
-            {activeSection === "pipeline" && <PipelineSection />}
-            {activeSection === "consultations" && <ConsultationsSection />}
-            {activeSection === "clients" && <ClientsSection />}
-            {activeSection === "patients" && <PatientsSection />}
-            {activeSection === "caregivers" && <CaregiversSection />}
-            {activeSection === "caregiver-allow-list" && <CaregiverAllowList />}
-            {activeSection === "invoices" && <InvoicesSection />}
-            {activeSection === "tickets" && <TicketsSection />}
-            {activeSection === "case-studies" && <CaseStudiesSection />}
-            {activeSection === "settings" && <SettingsSection />}
-            {activeSection === "reports" && <ReportsSection />}
-            {activeSection === "overview" && <OverviewSection />}
+            <Suspense fallback={<SectionFallback />}>
+              {activeSection === "pipeline" && <PipelineSection />}
+              {activeSection === "consultations" && <ConsultationsSection />}
+              {activeSection === "clients" && <ClientsSection />}
+              {activeSection === "patients" && <PatientsSection />}
+              {activeSection === "caregivers" && <CaregiversSection />}
+              {activeSection === "caregiver-allow-list" && <CaregiverAllowList />}
+              {activeSection === "invoices" && <InvoicesSection />}
+              {activeSection === "tickets" && <TicketsSection />}
+              {activeSection === "case-studies" && <CaseStudiesSection />}
+              {activeSection === "settings" && <SettingsSection />}
+              {activeSection === "reports" && <ReportsSection />}
+              {activeSection === "overview" && <OverviewSection />}
+            </Suspense>
           </div>
         </main>
-    </div>
       </div>
+    </div>
   );
 }

@@ -1,8 +1,6 @@
-
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   LineChart,
   Line,
@@ -18,14 +16,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  TrendingUp,
-  Users,
-  Calendar,
-  DollarSign,
-  Activity,
-  Clock,
-} from "lucide-react";
+import { Users, Calendar, DollarSign, Activity } from "lucide-react";
 import MetricCard from "../components/MetricCard";
 
 interface DashboardData {
@@ -44,53 +35,25 @@ interface DashboardData {
   bookingsTrend: Array<{ date: string; count: number }>;
   patientsByGender: Array<{ gender: string; count: number }>;
   topServices: Array<{ service: string; bookings: number }>;
-  loading: boolean;
-  error: string | null;
 }
 
+async function fetchDashboardData(): Promise<DashboardData> {
+  const response = await fetch("/api/admin/dashboard");
+  if (!response.ok) throw new Error("Failed to fetch dashboard data");
+  return response.json();
+}
+
+const COLORS = ["#12ccda", "#f762be", "#10b981", "#f59e0b", "#8b5cf6"];
+
 const OverviewSection = () => {
-  const [data, setData] = useState<DashboardData>({
-    totalClients: 0,
-    totalPatients: 0,
-    totalBookings: 0,
-    totalRevenue: 0,
-    bookingsByStatus: [],
-    recentBookings: [],
-    bookingsTrend: [],
-    patientsByGender: [],
-    topServices: [],
-    loading: true,
-    error: null,
+  const { data, isLoading, error } = useQuery<DashboardData>({
+    queryKey: ["admin-dashboard"],
+    queryFn: fetchDashboardData,
+    staleTime: 60 * 1000, // treat data as fresh for 1 minute
+    refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await fetch("/api/admin/dashboard");
-        if (!response.ok) {
-          throw new Error("Failed to fetch dashboard data");
-        }
-        const result = await response.json();
-        setData((prev) => ({
-          ...prev,
-          ...result,
-          loading: false,
-        }));
-      } catch (err) {
-        setData((prev) => ({
-          ...prev,
-          error: err instanceof Error ? err.message : "An error occurred",
-          loading: false,
-        }));
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
-
-  const COLORS = ["#12ccda", "#f762be", "#10b981", "#f59e0b", "#8b5cf6"];
-
-  if (data.loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
@@ -103,35 +66,29 @@ const OverviewSection = () => {
     );
   }
 
+  if (error || !data) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        Error loading dashboard:{" "}
+        {error instanceof Error ? error.message : "An error occurred"}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
         <p className="text-gray-600 mt-2">
-          Welcome back! Here's your platform's performance at a glance.
+          Welcome back! Here&apos;s your platform&apos;s performance at a glance.
         </p>
       </div>
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          label="Total Clients"
-          value={data.totalClients}
-          icon={Users}
-          color="blue"
-        />
-        <MetricCard
-          label="Total Patients"
-          value={data.totalPatients}
-          icon={Activity}
-          color="green"
-        />
-        <MetricCard
-          label="Total Bookings"
-          value={data.totalBookings}
-          icon={Calendar}
-          color="purple"
-        />
+        <MetricCard label="Total Clients" value={data.totalClients} icon={Users} color="blue" />
+        <MetricCard label="Total Patients" value={data.totalPatients} icon={Activity} color="green" />
+        <MetricCard label="Total Bookings" value={data.totalBookings} icon={Calendar} color="purple" />
         <MetricCard
           label="Total Revenue"
           value={`₦${data.totalRevenue.toLocaleString()}`}
@@ -142,12 +99,9 @@ const OverviewSection = () => {
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bookings by Status */}
         {data.bookingsByStatus.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Bookings by Status
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Bookings by Status</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -161,10 +115,7 @@ const OverviewSection = () => {
                   dataKey="count"
                 >
                   {data.bookingsByStatus.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -173,12 +124,9 @@ const OverviewSection = () => {
           </div>
         )}
 
-        {/* Patients by Gender */}
         {data.patientsByGender.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Patients by Gender
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Patients by Gender</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.patientsByGender}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -222,9 +170,7 @@ const OverviewSection = () => {
       {/* Top Services */}
       {data.topServices.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Top Services
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Services</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.topServices} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" />
@@ -240,35 +186,22 @@ const OverviewSection = () => {
       {/* Recent Bookings Table */}
       {data.recentBookings.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Recent Bookings
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Bookings</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                    Event
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                    Scheduled At
-                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Event</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Scheduled At</th>
                   {data.recentBookings.some((b) => b.amount) && (
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                      Amount
-                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Amount</th>
                   )}
                 </tr>
               </thead>
               <tbody>
                 {data.recentBookings.map((booking) => (
-                  <tr
-                    key={booking.id}
-                    className="border-b hover:bg-gray-50 transition-colors"
-                  >
+                  <tr key={booking.id} className="border-b hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {booking.eventTitle || "Consultation"}
                     </td>
@@ -300,12 +233,6 @@ const OverviewSection = () => {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {data.error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          Error loading dashboard: {data.error}
         </div>
       )}
     </div>

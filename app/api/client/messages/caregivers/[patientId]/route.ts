@@ -27,7 +27,6 @@ export async function GET(
     }
 
     const { patientId } = await  params;
-    console.log('Fetching caregivers for patientId:', patientId);
 
     // Verify that the client has access to this patient
     const familyMemberAccess = await prisma.familyMemberAssignment.findUnique({

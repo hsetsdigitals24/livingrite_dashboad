@@ -128,14 +128,13 @@ export async function POST(request: NextRequest) {
     const verificationToken = crypto.randomBytes(32).toString('hex')
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
     
-    let vr = await prisma.verificationToken.create({
+    await prisma.verificationToken.create({
       data: {
         identifier: email,
         token: verificationToken,
         expires: expiresAt,
       },
-    })
-    console.log('Created verification token:', vr)
+    });
 
     // Send verification email
     try {

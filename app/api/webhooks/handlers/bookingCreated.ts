@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 
 export async function handleBookingCreated(payload: any) {
   const bookingData = payload.payload;
-console.log("Booking Data:", bookingData);
   const {
     eventId: eventId,
     startTime,

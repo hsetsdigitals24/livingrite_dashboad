@@ -34,7 +34,8 @@ export async function GET(req: Request) {
         ? {
             OR: [
               { name: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } }
+              { email: { contains: search, mode: 'insensitive' } },
+              { phone: { contains: search, mode: 'insensitive' } },
             ],
           }
         : {}),
@@ -89,20 +90,9 @@ export async function GET(req: Request) {
       take: limit,
     });
 
-    // Get total count for pagination
+    // Get total count for pagination (uses same filter as findMany)
     const total = await prisma.user.count({
-      where: {
-        role: 'CLIENT',
-        ...(search
-          ? {
-              OR: [
-                { name: { contains: search, mode: 'insensitive' as const } },
-                { email: { contains: search, mode: 'insensitive' as const } },
-                { phone: { contains: search, mode: 'insensitive' as const } },
-              ],
-            }
-          : {}),
-      },
+      where: searchFilter,
     });
 
     return NextResponse.json({

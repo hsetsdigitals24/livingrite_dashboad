@@ -35,22 +35,7 @@ export function Header() {
       label: "Blogs",
       href: "/blogs",
       // icon: BookOpen,
-    },
-    {
-      label: "Team",
-      href: "/team",
-      // icon: Users,
-    },
-    {
-      label: "About",
-      href: "/about",
-      // icon: Users,
-    },
-    {
-      label: "FAQs",
-      href: "/faqs",
-      // icon: HelpCircle,
-    },
+    }
   ];
 
   useEffect(() => {
@@ -167,6 +152,25 @@ export function Header() {
                   </Link>
                 );
               })}
+                 <DropdownMenu>
+              <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-bold group">
+                Who We Are
+                <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link href="/about">About Us</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/team">
+                    Our Team
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/faqs">FAQs</Link>
+                </DropdownMenuItem> 
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           

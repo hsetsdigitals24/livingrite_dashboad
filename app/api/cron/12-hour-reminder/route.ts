@@ -1,12 +1,11 @@
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import {
   send12HourPreConsultationReminder,
 } from '@/lib/email';
 import { sendSMSWithRetry } from '@/lib/sms';
 import { get12HourPreConsultationSMS } from '@/lib/sms-templates'; 
 
-const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
   // Verify cron secret to prevent unauthorized access

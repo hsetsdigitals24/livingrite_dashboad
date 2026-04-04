@@ -1,8 +1,7 @@
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 
-const prisma = new PrismaClient();
 
 // Generate a random 12-character alphanumeric code
 function generateCode(): string {

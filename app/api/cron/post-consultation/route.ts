@@ -1,5 +1,5 @@
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import {
   sendPostConsultationThankYou,
  
@@ -7,7 +7,6 @@ import {
 import { sendSMSWithRetry } from '@/lib/sms';
 import { getPostConsultationThankYouSMS } from '@/lib/sms-templates'; 
 
-const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
   // Verify cron secret to prevent unauthorized access

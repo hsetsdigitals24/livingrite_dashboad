@@ -16,18 +16,18 @@ export async function GET() {
       );
     }
 
-    // Fetch total counts
-    const [totalClients, totalPatients, totalBookings, payments] = await Promise.all([
+    // Fetch total counts and revenue aggregate in parallel
+    const [totalClients, totalPatients, totalBookings, revenueAggregate] = await Promise.all([
       prisma.user.count({ where: { role: "CLIENT" } }),
       prisma.patient.count(),
       prisma.booking.count(),
-      prisma.payment.findMany({
+      prisma.payment.aggregate({
         where: { status: "PAID" },
-        select: { amount: true },
+        _sum: { amount: true },
       }),
     ]);
 
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalRevenue = revenueAggregate._sum.amount ?? 0;
 
     // Bookings by status
     const bookingsByStatusRaw = await prisma.booking.groupBy({
@@ -98,18 +98,22 @@ export async function GET() {
       take: 5,
     });
 
-    const topServices = await Promise.all(
-      topServicesRaw.map(async (item) => {
-        const service = await prisma.service.findUnique({
-          where: { id: item.serviceId! },
-          select: { title: true },
-        });
-        return {
-          service: service?.title || "Unknown Service",
-          bookings: item._count.id,
-        };
-      })
-    );
+    // Batch-fetch service names in a single query instead of N individual lookups
+    const serviceIds = topServicesRaw
+      .map((item) => item.serviceId)
+      .filter((id): id is string => id !== null);
+
+    const services = await prisma.service.findMany({
+      where: { id: { in: serviceIds } },
+      select: { id: true, title: true },
+    });
+
+    const serviceMap = new Map(services.map((s) => [s.id, s.title]));
+
+    const topServices = topServicesRaw.map((item) => ({
+      service: serviceMap.get(item.serviceId!) ?? "Unknown Service",
+      bookings: item._count.id,
+    }));
 
     // Recent bookings
     const recentBookings = await prisma.booking.findMany({

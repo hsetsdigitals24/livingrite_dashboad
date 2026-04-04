@@ -1,25 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    // const paymentReference = searchParams.get('paymentReference');
     const calcomId = searchParams.get('calcomId');
     const clientEmail = searchParams.get('clientEmail');
 
     let booking;
 
-    // if (paymentReference) {
-    //   booking = await prisma.booking.findUnique({
-    //     where: { paymentReference },
-    //   });
-    // }
-      if (calcomId) {
+    if (calcomId) {
       booking = await prisma.booking.findUnique({
         where: { calcomId },
       });
@@ -30,7 +22,7 @@ export async function GET(req: NextRequest) {
       });
     } else {
       return NextResponse.json(
-        { error: 'Please provide a search parameter: paymentReference, calcomId, or clientEmail' },
+        { error: 'Please provide a search parameter: calcomId or clientEmail' },
         { status: 400 }
       );
     }

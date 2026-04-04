@@ -94,7 +94,6 @@ export async function GET(
     where: { patientId },
     orderBy: { createdAt: 'desc' },
   })
-  console.log('Fetched files for patient:', patientId, files)
   return NextResponse.json(files)
 }
 

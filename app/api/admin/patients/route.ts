@@ -86,9 +86,12 @@ export async function GET(req: Request) {
       take: limit,
     });
 
-    // Get total count for pagination
+    // Get total count for pagination (must match findMany filter)
     const total = await prisma.patient.count({
-      where: searchFilter,
+      where: {
+        ...searchFilter,
+        status: 'ACTIVE',
+      },
     });
 
     return NextResponse.json({

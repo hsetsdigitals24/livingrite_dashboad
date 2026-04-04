@@ -16,8 +16,6 @@ export async function POST(request: NextRequest) {
 
     const { bookingId, serviceId, customAmount } = await request.json();
 
-    console.log("Invoice generation request:", { bookingId, serviceId, customAmount });
-
     if (!bookingId) {
       return NextResponse.json(
         { error: "Booking ID is required" },
@@ -30,8 +28,6 @@ export async function POST(request: NextRequest) {
       where: { calcomId: bookingId },
       include: { service: true, user: true },
     });
-
-    console.log({"Booking Details:": booking})
 
     if (!booking) {
       return NextResponse.json(

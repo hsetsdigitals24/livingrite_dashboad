@@ -1,15 +1,13 @@
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-const prisma = new PrismaClient();
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ bookingId: string }> }
 ) {
-  // console.log("Fetching booking with ID:", bookingId);
   try {
     const { bookingId } = await params;
  
@@ -50,7 +48,6 @@ export async function PATCH(
     const { bookingId } = await params;
     const body = await req.json();
 
-    console.log({"id": bookingId, "body": body});
 
     // Find booking by id or calcomId
     const booking = await prisma.booking.findFirst({
@@ -72,33 +69,6 @@ export async function PATCH(
       );
     }
 
-    // Check if this is an unpaid booking and user already has a free booking
-    // const existingFreeBooking = await prisma.booking.findFirst({
-    //   where: {
-    //     userId: booking.userId,
-    //     id: { not: booking.id }, // Exclude current booking
-    //     OR: [
-    //       { payment: null }, // No payment record (free booking)
-    //       { payment: { status: 'PENDING' } }, // Unpaid booking
-    //     ],
-    //   },
-    //   include: {
-    //     payment: true,
-    //   },
-    // });
-// console.log({"existingFreeBooking": existingFreeBooking});
-    // If trying to create/maintain another free booking, require payment
-    // if (existingFreeBooking) {
-    //   return NextResponse.json(
-    //     { 
-    //       error: 'You can only have one free consultation. This booking requires payment.',
-    //       code: 'FREE_BOOKING_LIMIT_EXCEEDED',
-    //       existingFreeBookingId: existingFreeBooking.id,
-    //     },
-    //     { status: 403 }
-    //   );
-    // }
-
     // Update booking with provided fields
     const updateData: any = {};
 
@@ -109,18 +79,6 @@ export async function PATCH(
     if (body.serviceId) {
       updateData.serviceId = body.serviceId;
     }
-
-    // if (body.scheduledAt) {
-    //   updateData.scheduledAt = new Date(body.scheduledAt);
-    // }
-
-    // if (body.amount !== undefined) {
-    //   updateData.amount = body.amount;
-    // }
-
-    // if (body.status) {
-    //   updateData.status = body.status;
-    // }
 
     const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },

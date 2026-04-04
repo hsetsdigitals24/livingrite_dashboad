@@ -1,43 +1,16 @@
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client"; 
-// import { redirect } from "next/navigation";
+ 
 
-const prisma = new PrismaClient();
 
-// Verify Cal.com webhook signature (optional but recommended)
-// function verifyCalcomWebhookSignature(
-//   payload: string,
-//   signature: string,
-//   secret: string,
-// ): boolean {
-//   const crypto = require("crypto");
-//   const hash = crypto
-//     .createHmac("sha256", secret)
-//     .update(payload)
-//     .digest("hex");
-//   return hash === signature;
-// }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    // const signature = req.headers.get('x-cal-signature');
-    // const webhookSecret = process.env.CALCOM_WEBHOOK_SECRET;
-
-    // Optionally verify webhook signature
-    // if (webhookSecret && signature) {
-    //   const rawBody = await req.text();
-    //   if (!verifyCalcomWebhookSignature(rawBody, signature, webhookSecret)) {
-    //     console.warn('Invalid Cal.com webhook signature');
-    //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    //   }
-    // }
 
     const { triggerEvent, payload } = body;
 
     // console.log("Cal.com webhook event:", triggerEvent);
-    console.log("Cal.com webhook payload:", payload);
-    console.log("Cal.com webhook payload attendees:", payload.attendees);
 
     // Extract booking data from Cal.com payload
     const {
@@ -60,7 +33,6 @@ export async function POST(req: NextRequest) {
     const attendeeTimeZone = attendees?.[0]?.timeZone || null;
     const note = additionalNotes || description || null;
 
-    console.log("Extracted booking data:", attendeeEmail)
     // Route events
     switch (triggerEvent) {
       case "BOOKING_CREATED":
@@ -286,13 +258,6 @@ async function handleBookingCancelled(data: any) {
       },
     });
 
-    // console.log(
-    //   "✓ Cancelled booking(s):",
-    //   updated.count,
-    //   "(calcomId:",
-    //   uid,
-    //   ")",
-    // );
   } catch (error) {
     console.error("Error cancelling booking:", error);
     throw error;
@@ -319,13 +284,6 @@ async function handleBookingRescheduled(data: any) {
       },
     });
 
-    // console.log(
-    //   "✓ Rescheduled booking(s):",
-    //   updated.count,
-    //   "(calcomId:",
-    //   uid,
-    //   ")",
-    // );
   } catch (error) {
     console.error("Error rescheduling booking:", error);
     throw error;
@@ -346,13 +304,6 @@ async function handleBookingCompleted(data: any) {
       data: { status: "COMPLETED" },
     });
 
-    // console.log(
-    //   "✓ Completed booking(s):",
-    //   updated.count,
-    //   "(calcomId:",
-    //   uid,
-    //   ")",
-    // );
   } catch (error) {
     console.error("Error completing booking:", error);
     throw error;

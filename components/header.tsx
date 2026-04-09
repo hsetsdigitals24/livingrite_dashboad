@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, ChevronDown, Search, User2 } from "lucide-react";
+import { Menu, X, ChevronDown, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import logo from "@/public/logo.png";
 import Image from "next/image";

@@ -536,11 +536,7 @@ const PatientDetailPage = () => {
                         minute: "2-digit",
                       })}
                     </p>
-                    {booking.payment && (
-                      <p className="text-sm text-gray-600">
-                        Payment: {booking.payment.amount} ({booking.payment.status})
-                      </p>
-                    )}
+
                   </div>
                 ))
               )}

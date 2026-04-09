@@ -50,14 +50,7 @@ export async function GET(
                 currency: true,
               },
             },
-            payment: {
-              select: {
-                id: true,
-                status: true,
-                amount: true,
-                paidAt: true,
-              },
-            },
+
             patient: {
               select: {
                 id: true,

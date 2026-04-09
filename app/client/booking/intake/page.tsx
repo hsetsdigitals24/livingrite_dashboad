@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { custom } from "zod";
+import { CheckCircle2 } from "lucide-react";
 
 interface IntakeForm {
   healthHistory: string;
@@ -13,25 +13,14 @@ interface IntakeForm {
   additionalInfo: string;
 }
 
-interface Service {
-  id: string;
-  title: string;
-  description: string | null;
-  basePrice: number | null;
-  currency: string;
-  pricingConfig: any;
-}
-
 function IntakeFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const bookingId = searchParams.get("bookingId");
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState<any>(null);
-  const [services, setServices] = useState<Service[]>([]);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [error, setError] = useState("");
-  const [isFreebooking, setIsFreebooking] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
   const [intakeData, setIntakeData] = useState<IntakeForm>({
     healthHistory: "",
     currentConcerns: "",
@@ -44,7 +33,6 @@ function IntakeFormContent() {
   useEffect(() => {
     if (bookingId) {
       fetchBooking();
-      fetchServices();
     }
   }, [bookingId]);
 
@@ -54,15 +42,7 @@ function IntakeFormContent() {
       if (response.ok) {
         const data = await response.json();
         setBooking(data);
-
-        console.log("Fetched booking:", data);
-
-        // Check if this is a free booking (no payment or pending payment)
-        const isFree = data.payment.status === 'FREE';
-        setIsFreebooking(isFree);
-
-        // Pre-fill intake form if it exists
-        if (data.intakeFormData) {
+        if (data.intakeFormData && Object.keys(data.intakeFormData).length > 0) {
           setIntakeData(data.intakeFormData);
         }
       } else {
@@ -73,40 +53,13 @@ function IntakeFormContent() {
     }
   };
 
-  const fetchServices = async () => {
-    try {
-      const response = await fetch(`/api/services`);
-      if (response.ok) {
-        const data = await response.json();
-        setServices(data);
-        // Auto-select first service
-        if (data.length > 0) {
-          setSelectedService(data[0]);
-        }
-      } else {
-        setError("Failed to fetch services");
-      }
-    } catch (err) {
-      console.error("Error fetching services:", err);
-      setError("Failed to load services");
-    }
-  };
-
-  const handleIntakeFormChange = (field: keyof IntakeForm, value: string) => {
-    setIntakeData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleChange = (field: keyof IntakeForm, value: string) => {
+    setIntakeData((prev) => ({ ...prev, [field]: value }));
   };
 
   const submitIntakeForm = async () => {
     if (!intakeData.currentConcerns || !intakeData.goals) {
-      setError("Please fill in required fields (Current Concerns and Goals)");
-      return;
-    }
-
-    if (!isFreebooking && !selectedService) {
-      setError("Please select a service");
+      setError("Please fill in required fields: Current Concerns and Goals");
       return;
     }
 
@@ -117,50 +70,25 @@ function IntakeFormContent() {
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          intakeForm: intakeData,
-          ...(selectedService && { serviceId: selectedService.id }),
-        }),
+        body: JSON.stringify({ intakeForm: intakeData }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.error || "Failed to save intake form");
-        setLoading(false);
         return;
       }
 
-      // Generate invoice if service selected
-      if (selectedService && bookingId) {
-        try {
-          const invoiceResponse = await fetch("/api/invoices/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              bookingId,
-              serviceId: selectedService.id,
-              customAmount: selectedService.basePrice || 0,
-            }),
-          });
-
-          if (!invoiceResponse.ok) {
-            console.warn("Failed to generate invoice, proceeding anyway");
-          }
-        } catch (invoiceError) {
-          console.warn("Invoice generation error:", invoiceError);
-        }
-      }
-
-      // Redirect to bookings page
-      router.push(`/client/invoices`);
+      setSubmitted(true);
+      setTimeout(() => router.push("/client"), 3000);
     } catch (err) {
-      setError("Error saving intake form");
+      setError("Error saving intake form. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!booking) {
+  if (!booking && !error) {
     return (
       <div className="max-w-md mx-auto mt-20 p-6 text-center">
         <div className="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
@@ -169,120 +97,68 @@ function IntakeFormContent() {
     );
   }
 
+  if (submitted) {
+    return (
+      <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-lg shadow-lg text-center">
+        <div className="flex justify-center mb-4">
+          <CheckCircle2 className="w-16 h-16 text-green-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">All Done!</h2>
+        <p className="text-gray-600 mb-1">Your intake form has been submitted successfully.</p>
+        <p className="text-gray-500 text-sm">Redirecting you to your dashboard...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl text-accent font-bold mb-6 text-center">
+      <h1 className="text-2xl text-accent font-bold mb-2 text-center">
         Pre-Consultation Intake Form
       </h1>
+      <p className="text-center text-gray-500 text-sm mb-6">
+        Please complete this form before your consultation. All information is kept confidential.
+      </p>
 
       {/* Booking Summary */}
-      <div className="bg-gray-50 p-4 rounded-md mb-6 space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Client:</span>
-          <span className="font-medium">{booking.clientName}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Scheduled:</span>
-          <span className="font-medium">
-            {new Date(booking.scheduledAt).toLocaleString()}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Timezone:</span>
-          <span className="font-medium">{booking.clientTimezone}</span>
-        </div>
-        {isFreebooking && (
-          <div className="mt-3 p-2 bg-green-100 border border-green-300 rounded text-green-800 text-sm font-semibold">
-            ✓ Free Consultation
+      {booking && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6 space-y-2">
+          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Consultation Details</p>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Name:</span>
+            <span className="font-medium">{booking.clientName}</span>
           </div>
-        )}
-      </div>
-
-      {/* Service Selection - Only show if NOT free booking */}
-      {!isFreebooking && services.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Select Service <span className="text-red-500">*</span>
-          </label>
-          <div className="space-y-2">
-            {services.map((service) => (
-              <div
-                key={service.id}
-                onClick={() => setSelectedService(service)}
-                className={`p-4 border rounded-lg cursor-pointer transition ${
-                  selectedService?.id === service.id
-                    ? "border-blue-500 bg-blue-100"
-                    : "border-gray-300 hover:border-blue-300"
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">
-                      {service.title}
-                    </h3>
-                    {service.description && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        {service.description}
-                      </p>
-                    )}
-                  </div>
-                  {service.basePrice && (
-                    <div className="text-right ml-4">
-                      <p className="font-bold text-green-600">
-                        ₦{service.basePrice.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-gray-500">{service.currency}</p>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-2">
-                  <input
-                    type="radio"
-                    name="service"
-                    checked={selectedService?.id === service.id}
-                    onChange={() => setSelectedService(service)}
-                    className="accent-blue-600"
-                  />
-                </div>
-              </div>
-            ))}
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Scheduled:</span>
+            <span className="font-medium">
+              {new Date(booking.scheduledAt).toLocaleString()}
+            </span>
           </div>
+          {booking.timezone && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Timezone:</span>
+              <span className="font-medium">{booking.timezone}</span>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Selected Service Summary */}
-      {selectedService && !isFreebooking && (
-        <div className="bg-green-50 border border-green-200 p-4 rounded-md mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-gray-600">Selected Service:</p>
-              <p className="font-semibold text-gray-900">{selectedService.title}</p>
-            </div>
-            {selectedService.basePrice && (
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Amount to Pay:</p>
-                <p className="font-bold text-lg text-green-600">
-                  ₦{selectedService.basePrice.toLocaleString()}
-                </p>
-              </div>
-            )}
-          </div>
+      {error && !booking && (
+        <div className="bg-red-50 border border-red-200 p-4 rounded-md mb-6 text-red-700 text-sm">
+          {error}
         </div>
       )}
 
       {/* Intake Form */}
-      <form className="space-y-4">
+      <div className="space-y-5">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Current Concerns <span className="text-red-500">*</span>
           </label>
           <textarea
             value={intakeData.currentConcerns}
-            onChange={(e) =>
-              handleIntakeFormChange("currentConcerns", e.target.value)
-            }
-            placeholder="What brings you to this consultation?"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => handleChange("currentConcerns", e.target.value)}
+            placeholder="What brings you to this consultation? Describe your main concerns..."
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             rows={3}
           />
         </div>
@@ -293,9 +169,9 @@ function IntakeFormContent() {
           </label>
           <textarea
             value={intakeData.goals}
-            onChange={(e) => handleIntakeFormChange("goals", e.target.value)}
+            onChange={(e) => handleChange("goals", e.target.value)}
             placeholder="What would you like to achieve from this consultation?"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             rows={3}
           />
         </div>
@@ -306,16 +182,14 @@ function IntakeFormContent() {
           </label>
           <textarea
             value={intakeData.healthHistory}
-            onChange={(e) =>
-              handleIntakeFormChange("healthHistory", e.target.value)
-            }
-            placeholder="Any relevant health history..."
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => handleChange("healthHistory", e.target.value)}
+            placeholder="Any relevant health history, diagnoses, or previous treatments..."
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             rows={3}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Current Medications
@@ -323,10 +197,8 @@ function IntakeFormContent() {
             <input
               type="text"
               value={intakeData.medications}
-              onChange={(e) =>
-                handleIntakeFormChange("medications", e.target.value)
-              }
-              placeholder="List any medications..."
+              onChange={(e) => handleChange("medications", e.target.value)}
+              placeholder="List any current medications..."
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -338,9 +210,7 @@ function IntakeFormContent() {
             <input
               type="text"
               value={intakeData.allergies}
-              onChange={(e) =>
-                handleIntakeFormChange("allergies", e.target.value)
-              }
+              onChange={(e) => handleChange("allergies", e.target.value)}
               placeholder="Any known allergies..."
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -353,11 +223,9 @@ function IntakeFormContent() {
           </label>
           <textarea
             value={intakeData.additionalInfo}
-            onChange={(e) =>
-              handleIntakeFormChange("additionalInfo", e.target.value)
-            }
-            placeholder="Anything else we should know..."
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => handleChange("additionalInfo", e.target.value)}
+            placeholder="Anything else you would like us to know before your consultation..."
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             rows={2}
           />
         </div>
@@ -368,25 +236,25 @@ function IntakeFormContent() {
           </div>
         )}
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-3 pt-2">
           <button
             type="button"
             onClick={submitIntakeForm}
             disabled={loading}
             className="flex-1 bg-primary text-white py-3 px-4 rounded-md font-semibold hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {loading ? "Saving..." : "Save and Continue"}
+            {loading ? "Submitting..." : "Submit Intake Form"}
           </button>
           <button
             type="button"
-            onClick={() => router.push("/portal/booking")}
+            onClick={() => router.push("/client")}
             disabled={loading}
-            className="flex-1 bg-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium hover:bg-gray-400 disabled:opacity-50 transition"
+            className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-md font-medium hover:bg-gray-200 disabled:opacity-50 transition"
           >
-            Cancel
+            Skip for Now
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

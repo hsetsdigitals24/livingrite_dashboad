@@ -25,7 +25,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<PaginatedRespo
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     const searchTerm = searchParams.get('search') || '';
     const statusFilter = searchParams.get('status') || '';
-    const paymentStatusFilter = searchParams.get('paymentStatus') || '';
+
 
     // Validate pagination parameters
     const validPage = Math.max(1, page);
@@ -47,11 +47,6 @@ export async function GET(req: NextRequest): Promise<NextResponse<PaginatedRespo
     // Filter by status
     if (statusFilter && statusFilter !== 'all') {
       whereConditions.status = statusFilter.toUpperCase();
-    }
-
-    // Filter by payment status
-    if (paymentStatusFilter && paymentStatusFilter !== 'all') {
-      whereConditions.paymentStatus = paymentStatusFilter.toUpperCase();
     }
 
     // Calculate pagination

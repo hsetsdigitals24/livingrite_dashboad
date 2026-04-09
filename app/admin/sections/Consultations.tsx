@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { AlertCircle, Search, X, ChevronLeft, ChevronRight, Loader } from "lucide-react";
+"use client";
 
+import { useState, useEffect } from "react";
+import { AlertCircle, Search, X, ChevronLeft, ChevronRight, Loader, Calendar, Clock } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -8,17 +9,18 @@ interface Booking {
   clientName: string;
   clientEmail: string;
   clientPhone?: string;
-  clientTimezone: string;
+  timezone: string;
   eventTitle?: string;
   note?: string;
   scheduledAt: string;
-  duration: number;
   status: string;
-  paymentStatus: string;
-  paymentAmount?: number;
-  invoiceNumber?: string;
   createdAt: string;
   updatedAt: string;
+  cancelledAt?: string;
+  confirmationSent: boolean;
+  reminderSent: boolean;
+  thankYouSent: boolean;
+  followUpSent: boolean;
 }
 
 interface PaginationInfo {
@@ -30,52 +32,63 @@ interface PaginationInfo {
   hasPreviousPage: boolean;
 }
 
-// Consultations Section
-function ConsultationsSection() {
+const STATUS_COLORS: Record<string, string> = {
+  SCHEDULED:   "bg-blue-100 text-blue-800",
+  RESCHEDULED: "bg-indigo-100 text-indigo-800",
+  COMPLETED:   "bg-green-100 text-green-800",
+  CANCELLED:   "bg-red-100 text-red-800",
+  NO_SHOW:     "bg-orange-100 text-orange-800",
+  PROPOSAL:    "bg-purple-100 text-purple-800",
+};
+
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[status] ?? "bg-gray-100 text-gray-700"}`}>
+      {status}
+    </span>
+  );
+}
+
+function EmailFlag({ sent, label }: { sent: boolean; label: string }) {
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${sent ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"}`}>
+      {label}
+    </span>
+  );
+}
+
+export default function ConsultationsSection() {
   const [consultations, setConsultations] = useState<Booking[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
+    total: 0, pageSize: 10, currentPage: 1, totalPages: 0, hasNextPage: false, hasPreviousPage: false,
   });
-  const [selectedConsultation, setSelectedConsultation] = useState<Booking | null>(null);
+  const [selected, setSelected] = useState<Booking | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch bookings with pagination
   useEffect(() => {
-    fetchBookings(pagination.currentPage);
+    fetchBookings(1);
   }, [filterStatus]);
 
   const fetchBookings = async (page: number) => {
     try {
       setLoading(true);
       setError(null);
-      
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: pagination.pageSize.toString(),
         ...(searchTerm && { search: searchTerm }),
         ...(filterStatus !== "all" && { status: filterStatus }),
       });
-
-      const response = await fetch(`/api/admin/bookings?${params}`);
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch bookings");
-      }
-
-      const result = await response.json();
+      const res = await fetch(`/api/admin/bookings?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch bookings");
+      const result = await res.json();
       setConsultations(result.data);
       setPagination(result.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-      console.error("Error fetching bookings:", err);
     } finally {
       setLoading(false);
     }
@@ -83,82 +96,66 @@ function ConsultationsSection() {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    // Reset to page 1 when searching
-    if (pagination.currentPage !== 1) {
-      setPagination(prev => ({ ...prev, currentPage: 1 }));
-      fetchBookings(1);
-    } else {
-      fetchBookings(1);
-    }
+    fetchBookings(1);
   };
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      fetchBookings(newPage);
-    }
-  };
-
-  // Format date and time for display
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return {
-      date: date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
-      time: date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+      date: date.toLocaleDateString("en-NG", { year: "numeric", month: "short", day: "numeric" }),
+      time: date.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" }),
     };
   };
+
+  const STATUS_FILTERS = ["all", "SCHEDULED", "COMPLETED", "CANCELLED", "RESCHEDULED", "NO_SHOW"];
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold text-gray-900">Consultations & Bookings</h2>
-        <p className="text-gray-600 mt-2">Manage all consultation requests and bookings</p>
+        <p className="text-gray-500 mt-1 text-sm">All consultation bookings from Cal.com</p>
       </div>
 
-      {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+      {/* Search + Filter */}
+      <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
-            placeholder="Search by name, email, or service..."
+            placeholder="Search by name or email..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
-
         <div className="flex gap-2 flex-wrap">
-          {["all", "PENDING", "CONFIRMED", "PAID", "COMPLETED", "CANCELLED"].map((status) => (
+          {STATUS_FILTERS.map((s) => (
             <button
-              key={status}
-              onClick={() => setFilterStatus(status)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                filterStatus === status
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                filterStatus === s ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              {status === "all" ? "All" : status.charAt(0) + status.slice(1).toLowerCase()}
+              {s === "all" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Consultations Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {error && (
-          <div className="bg-red-50 border-b border-red-200 px-6 py-4 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="bg-red-50 border-b border-red-200 px-5 py-3 flex items-center gap-2 text-red-700 text-sm">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            {error}
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="flex flex-col items-center gap-3">
-              <Loader className="w-8 h-8 text-indigo-600 animate-spin" />
-              <p className="text-gray-600 font-medium">Loading consultations...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <Loader className="w-7 h-7 animate-spin mb-3" />
+            <p className="text-sm">Loading consultations...</p>
           </div>
         ) : (
           <>
@@ -166,74 +163,53 @@ function ConsultationsSection() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Client</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Service</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Date & Time</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Status</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Payment</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Amount</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Action</th>
+                    {["Client", "Event", "Scheduled", "Status", "Intake", "Action"].map((h) => (
+                      <th key={h} className="px-5 py-3 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {consultations.map((consultation) => {
-                    const { date, time } = formatDateTime(consultation.scheduledAt);
+                <tbody className="divide-y divide-gray-100">
+                  {consultations.map((c) => {
+                    const { date, time } = formatDateTime(c.scheduledAt);
+                    const hasIntake = false; // intake is stored on booking.intakeFormData — not returned in list
                     return (
-                      <tr key={consultation.id} className="hover:bg-gray-50 transition">
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{consultation.clientName}</span>
-                            <span className="text-xs text-gray-500">{consultation.clientEmail}</span>
+                      <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-5 py-4">
+                          <p className="font-medium text-gray-900">{c.clientName}</p>
+                          <p className="text-xs text-gray-500">{c.clientEmail}</p>
+                        </td>
+                        <td className="px-5 py-4 text-gray-600 max-w-[160px] truncate">
+                          {c.eventTitle || "—"}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-1.5 text-gray-700">
+                            <Calendar className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                            <span>{date}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-gray-500 mt-0.5">
+                            <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                            <span className="text-xs">{time}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="text-gray-600">{consultation.eventTitle || "N/A"}</span>
+                        <td className="px-5 py-4">
+                          <StatusBadge status={c.status} />
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{date}</span>
-                            <span className="text-xs text-gray-500">{time}</span>
+                        <td className="px-5 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            <EmailFlag sent={c.confirmationSent} label="Conf" />
+                            <EmailFlag sent={c.reminderSent}     label="Remind" />
+                            <EmailFlag sent={c.thankYouSent}     label="Thanks" />
+                            <EmailFlag sent={c.followUpSent}     label="Follow" />
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              consultation.status === "CONFIRMED"
-                                ? "bg-blue-100 text-blue-800"
-                                : consultation.status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : consultation.status === "COMPLETED"
-                                ? "bg-green-100 text-green-800"
-                                : consultation.status === "PAID"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {consultation.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              consultation.paymentStatus === "PAID"
-                                ? "bg-green-100 text-green-800"
-                                : consultation.paymentStatus === "PENDING"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {consultation.paymentStatus}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-gray-900">
-                          {consultation.paymentAmount ? `₦${consultation.paymentAmount.toLocaleString()}` : "N/A"}
-                        </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-4">
                           <button
-                            onClick={() => setSelectedConsultation(consultation)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors"
+                            onClick={() => setSelected(c)}
+                            className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-medium hover:bg-teal-700 transition-colors"
                           >
-                            View Details
+                            View
                           </button>
                         </td>
                       </tr>
@@ -244,60 +220,50 @@ function ConsultationsSection() {
             </div>
 
             {consultations.length === 0 && (
-              <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <div className="text-center py-14">
+                <Calendar className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                 <p className="text-gray-500 font-medium">No consultations found</p>
+                <p className="text-gray-400 text-xs mt-1">Try adjusting your filters</p>
               </div>
             )}
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  Showing <span className="font-semibold">{(pagination.currentPage - 1) * pagination.pageSize + 1}</span> to{" "}
-                  <span className="font-semibold">
-                    {Math.min(pagination.currentPage * pagination.pageSize, pagination.total)}
-                  </span>{" "}
-                  of <span className="font-semibold">{pagination.total}</span> results
-                </div>
-                <div className="flex gap-2">
+              <div className="bg-gray-50 border-t border-gray-200 px-5 py-3 flex items-center justify-between text-sm">
+                <p className="text-gray-500">
+                  Showing{" "}
+                  <span className="font-semibold">{(pagination.currentPage - 1) * pagination.pageSize + 1}</span>
+                  {" – "}
+                  <span className="font-semibold">{Math.min(pagination.currentPage * pagination.pageSize, pagination.total)}</span>
+                  {" of "}
+                  <span className="font-semibold">{pagination.total}</span>
+                </p>
+                <div className="flex items-center gap-1">
                   <button
-                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                    onClick={() => fetchBookings(pagination.currentPage - 1)}
                     disabled={!pagination.hasPreviousPage}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                      pagination.hasPreviousPage
-                        ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        : "bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed"
-                    }`}
+                    className="p-1.5 rounded border border-gray-300 text-gray-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    Previous
                   </button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => handlePageChange(p)}
-                        className={`px-3 py-2 rounded-lg font-medium transition-all ${
-                          pagination.currentPage === p
-                            ? "bg-indigo-600 text-white"
-                            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
+                  {Array.from({ length: Math.min(pagination.totalPages, 7) }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => fetchBookings(p)}
+                      className={`px-3 py-1 rounded border text-xs font-medium ${
+                        pagination.currentPage === p
+                          ? "bg-teal-600 text-white border-teal-600"
+                          : "border-gray-300 text-gray-700 hover:bg-white"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
                   <button
-                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    onClick={() => fetchBookings(pagination.currentPage + 1)}
                     disabled={!pagination.hasNextPage}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                      pagination.hasNextPage
-                        ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        : "bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed"
-                    }`}
+                    className="p-1.5 rounded border border-gray-300 text-gray-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Next
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -307,146 +273,120 @@ function ConsultationsSection() {
         )}
       </div>
 
-      {/* Details Modal */}
-      {selectedConsultation && (
+      {/* Detail Modal */}
+      {selected && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-white">Consultation Details</h3>
-              <button
-                onClick={() => setSelectedConsultation(null)}
-                className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
-              >
+          <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b bg-teal-600 rounded-t-xl">
+              <h3 className="text-lg font-bold text-white">Consultation Details</h3>
+              <button onClick={() => setSelected(null)} className="text-white/80 hover:text-white p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* Client Info */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Client Information</h4>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="p-6 space-y-5 text-sm">
+              {/* Client */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Client</p>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-sm text-gray-600">Name</p>
-                    <p className="font-medium text-gray-900">{selectedConsultation.clientName}</p>
+                    <p className="text-xs text-gray-500">Name</p>
+                    <p className="font-semibold text-gray-900">{selected.clientName}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900">{selectedConsultation.clientEmail}</p>
+                    <p className="text-xs text-gray-500">Email</p>
+                    <p className="font-medium text-gray-900">{selected.clientEmail}</p>
                   </div>
-                  {selectedConsultation.clientPhone && (
+                  {selected.clientPhone && (
                     <div>
-                      <p className="text-sm text-gray-600">Phone</p>
-                      <p className="font-medium text-gray-900">{selectedConsultation.clientPhone}</p>
+                      <p className="text-xs text-gray-500">Phone</p>
+                      <p className="font-medium text-gray-900">{selected.clientPhone}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm text-gray-600">Timezone</p>
-                    <p className="font-medium text-gray-900">{selectedConsultation.clientTimezone}</p>
+                    <p className="text-xs text-gray-500">Timezone</p>
+                    <p className="font-medium text-gray-900">{selected.timezone || "—"}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Consultation Details */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                  Consultation Information
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
+              {/* Consultation */}
+              <div className="border-t pt-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Consultation</p>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-sm text-gray-600">Service</p>
-                    <p className="font-medium text-gray-900">{selectedConsultation.eventTitle || "N/A"}</p>
+                    <p className="text-xs text-gray-500">Event</p>
+                    <p className="font-medium text-gray-900">{selected.eventTitle || "—"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Consultation ID</p>
-                    <p className="font-medium text-gray-900 truncate">{selectedConsultation.id}</p>
+                    <p className="text-xs text-gray-500">Status</p>
+                    <div className="mt-1"><StatusBadge status={selected.status} /></div>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Date</p>
-                    <p className="font-medium text-gray-900">{formatDateTime(selectedConsultation.scheduledAt).date}</p>
+                    <p className="text-xs text-gray-500">Date</p>
+                    <p className="font-medium text-gray-900">{formatDateTime(selected.scheduledAt).date}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Time</p>
-                    <p className="font-medium text-gray-900">{formatDateTime(selectedConsultation.scheduledAt).time}</p>
+                    <p className="text-xs text-gray-500">Time</p>
+                    <p className="font-medium text-gray-900">{formatDateTime(selected.scheduledAt).time}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Duration</p>
-                    <p className="font-medium text-gray-900">{selectedConsultation.duration} minutes</p>
-                  </div>
+                  {selected.cancelledAt && (
+                    <div className="col-span-2">
+                      <p className="text-xs text-gray-500">Cancelled At</p>
+                      <p className="font-medium text-red-600">{formatDateTime(selected.cancelledAt).date}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Status & Payment */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Status & Payment</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Consultation Status</p>
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-                        selectedConsultation.status === "CONFIRMED"
-                          ? "bg-blue-100 text-blue-800"
-                          : selectedConsultation.status === "PENDING"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : selectedConsultation.status === "COMPLETED"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {selectedConsultation.status}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Payment Status</p>
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-                        selectedConsultation.paymentStatus === "PAID"
-                          ? "bg-green-100 text-green-800"
-                          : selectedConsultation.paymentStatus === "PENDING"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {selectedConsultation.paymentStatus}
-                    </span>
-                  </div>
-                  {selectedConsultation.paymentAmount && (
-                    <div>
-                      <p className="text-sm text-gray-600">Amount</p>
-                      <p className="font-bold text-indigo-600 text-lg">
-                        ₦{selectedConsultation.paymentAmount.toLocaleString()}
-                      </p>
+              {/* Email Flags */}
+              <div className="border-t pt-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Email Notifications</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "Confirmation", sent: selected.confirmationSent },
+                    { label: "Reminder",     sent: selected.reminderSent },
+                    { label: "Thank You",    sent: selected.thankYouSent },
+                    { label: "Follow Up",    sent: selected.followUpSent },
+                  ].map(({ label, sent }) => (
+                    <div key={label} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg">
+                      <span className="text-gray-600">{label}</span>
+                      <span className={`text-xs font-semibold ${sent ? "text-green-600" : "text-gray-400"}`}>
+                        {sent ? "✓ Sent" : "Not sent"}
+                      </span>
                     </div>
-                  )}
-                  {selectedConsultation.invoiceNumber && (
-                    <div>
-                      <p className="text-sm text-gray-600">Invoice</p>
-                      <p className="font-medium text-gray-900">{selectedConsultation.invoiceNumber}</p>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
 
               {/* Notes */}
-              {selectedConsultation.note && (
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Notes</h4>
-                  <p className="text-gray-600">{selectedConsultation.note}</p>
+              {selected.note && (
+                <div className="border-t pt-4">
+                  <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Notes</p>
+                  <p className="text-gray-700 bg-gray-50 rounded-lg p-3">{selected.note}</p>
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-6 border-t border-gray-200">
-                <button className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                  Send Reminder
-                </button>
-                <button className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-                  Mark Complete
-                </button>
-                <button className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
-                  Reschedule
-                </button>
+              {/* Booking metadata */}
+              <div className="border-t pt-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Metadata</p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                  <div><span className="text-gray-400">Booking ID: </span>{selected.id.slice(0, 12)}…</div>
+                  <div><span className="text-gray-400">Cal ID: </span>{selected.calcomId?.slice(0, 12)}…</div>
+                  <div><span className="text-gray-400">Created: </span>{formatDateTime(selected.createdAt).date}</div>
+                  <div><span className="text-gray-400">Updated: </span>{formatDateTime(selected.updatedAt).date}</div>
+                </div>
               </div>
+            </div>
+
+            <div className="px-6 pb-5">
+              <button
+                onClick={() => setSelected(null)}
+                className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -454,4 +394,3 @@ function ConsultationsSection() {
     </div>
   );
 }
-export default ConsultationsSection;

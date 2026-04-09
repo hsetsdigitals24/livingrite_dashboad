@@ -10,24 +10,21 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch total counts and revenue aggregate in parallel
+    // Fetch total counts and revenue from paid invoices (payment is now invoice-based)
     const [totalClients, totalPatients, totalBookings, revenueAggregate] = await Promise.all([
       prisma.user.count({ where: { role: "CLIENT" } }),
       prisma.patient.count(),
       prisma.booking.count(),
-      prisma.payment.aggregate({
+      prisma.invoice.aggregate({
         where: { status: "PAID" },
-        _sum: { amount: true },
+        _sum: { totalAmount: true },
       }),
     ]);
 
-    const totalRevenue = revenueAggregate._sum.amount ?? 0;
+    const totalRevenue = revenueAggregate._sum.totalAmount ?? 0;
 
     // Bookings by status
     const bookingsByStatusRaw = await prisma.booking.groupBy({
@@ -58,64 +55,40 @@ export async function GET() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const bookingsTrendRaw = await prisma.booking.findMany({
-      where: {
-        scheduledAt: {
-          gte: thirtyDaysAgo,
-        },
-      },
-      select: {
-        scheduledAt: true,
-      },
-      orderBy: {
-        scheduledAt: "asc",
-      },
+      where: { scheduledAt: { gte: thirtyDaysAgo } },
+      select: { scheduledAt: true },
+      orderBy: { scheduledAt: "asc" },
     });
 
-    // Group bookings by date
     const bookingsByDate: { [key: string]: number } = {};
     bookingsTrendRaw.forEach((booking) => {
       const date = new Date(booking.scheduledAt).toLocaleDateString();
       bookingsByDate[date] = (bookingsByDate[date] || 0) + 1;
     });
 
-    const bookingsTrend = Object.entries(bookingsByDate).map(([date, count]) => ({
-      date,
-      count,
-    }));
+    const bookingsTrend = Object.entries(bookingsByDate).map(([date, count]) => ({ date, count }));
 
     // Top services
     const topServicesRaw = await prisma.booking.groupBy({
       by: ["serviceId"],
       _count: { id: true },
-      where: {
-        serviceId: { not: null },
-      },
-      orderBy: {
-        _count: {
-          id: "desc",
-        },
-      },
+      where: { serviceId: { not: null } },
+      orderBy: { _count: { id: "desc" } },
       take: 5,
     });
 
-    // Batch-fetch service names in a single query instead of N individual lookups
-    const serviceIds = topServicesRaw
-      .map((item) => item.serviceId)
-      .filter((id): id is string => id !== null);
-
+    const serviceIds = topServicesRaw.map((item) => item.serviceId).filter((id): id is string => id !== null);
     const services = await prisma.service.findMany({
       where: { id: { in: serviceIds } },
       select: { id: true, title: true },
     });
-
     const serviceMap = new Map(services.map((s) => [s.id, s.title]));
-
     const topServices = topServicesRaw.map((item) => ({
       service: serviceMap.get(item.serviceId!) ?? "Unknown Service",
       bookings: item._count.id,
     }));
 
-    // Recent bookings
+    // Recent bookings (no payment join needed)
     const recentBookings = await prisma.booking.findMany({
       take: 10,
       orderBy: { scheduledAt: "desc" },
@@ -124,9 +97,6 @@ export async function GET() {
         eventTitle: true,
         status: true,
         scheduledAt: true,
-        payment: {
-          select: { amount: true },
-        },
       },
     });
 
@@ -135,7 +105,7 @@ export async function GET() {
       eventTitle: booking.eventTitle,
       status: booking.status,
       scheduledAt: booking.scheduledAt,
-      amount: booking.payment?.amount,
+      amount: null,
     }));
 
     // Pipeline metrics
@@ -157,7 +127,6 @@ export async function GET() {
       bookingsTrend,
       topServices,
       recentBookings: formattedRecentBookings,
-      // Pipeline metrics
       totalInquiries,
       qualifiedInquiries,
       convertedInquiries,
@@ -165,10 +134,7 @@ export async function GET() {
       acceptedProposals,
     });
   } catch (error) {
-    console.error("Dashboard API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Error fetching dashboard data:", error);
+    return NextResponse.json({ error: "Failed to fetch dashboard data" }, { status: 500 });
   }
 }

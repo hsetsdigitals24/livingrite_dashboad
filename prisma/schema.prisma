@@ -37,6 +37,7 @@ model User {
   // Bookings created by/associated with this user
   bookings Booking[]
   inquiries Inquiry[]
+  clientInvoices Invoice[] @relation("ClientInvoices")
 
   // Messaging
   sentMessages Message[]
@@ -166,6 +167,7 @@ model Patient {
   medicalAppointments MedicalAppointment[]
   bookings            Booking[]
   files               File[]
+  invoices            Invoice[]  // Patient-based invoices
 
   // Messaging conversations
   conversations Conversation[] @relation("ConversationToPatient")
@@ -647,6 +649,7 @@ model Service {
   updatedAt     DateTime  @updatedAt
   
   bookings      Booking[]
+  invoices      Invoice[]  // Service-based invoices
   testimonials  Testimonial[]
   caseStudies   CaseStudy[]
 
@@ -748,7 +751,11 @@ model RefundRequest {
 
 model Invoice {
   id            String          @id @default(cuid())
-  bookingId     String          @unique
+  bookingId     String?         @unique  // Optional - for legacy booking-based invoices
+  patientId     String?         // Optional - for direct patient invoices
+  serviceId     String?         // Optional - for direct service invoices
+  clientId      String?         // Client (User with CLIENT role) being billed
+  services      Json?           // Array of {serviceId, title, amount} for multi-service invoices
   invoiceNumber String          @unique
   amount        Float
   tax           Float           @default(0)
@@ -760,15 +767,37 @@ model Invoice {
   sentAt        DateTime?
   paidAt        DateTime?
   dueAt         DateTime?
+  notes         String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  booking       Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  booking       Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  patient       Patient?        @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  service       Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  client        User?           @relation("ClientInvoices", fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([invoiceNumber])
   @@index([createdAt])
+  @@index([bookingId])
+  @@index([patientId])
+  @@index([serviceId])
+  @@index([clientId])
   @@map("invoices")
+}
+
+// Bank account and payment settings for LivingRite
+model PaymentSettings {
+  id              String   @id @default(cuid())
+  bankName        String   @default("")
+  accountName     String   @default("")
+  accountNumber   String   @default("")
+  bankCode        String?  // Sort code / routing number
+  additionalInfo  String?  // Any extra payment details
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@map("payment_settings")
 }
 
 model Reminder {

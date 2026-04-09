@@ -313,7 +313,7 @@ export default function AdminSignUp() {
             <p className="text-gray-600 text-xs text-center">
               Need help? Contact support at{' '}
               <a href="mailto:admin@livingrite.com" className="text-purple-400 hover:text-purple-300 transition">
-                admin@livingrite.com
+                admin@livingritecare.com
               </a>
             </p>
           </div>

@@ -68,13 +68,7 @@ export async function GET(req: Request) {
                 title: true,
               },
             },
-            payment: {
-              select: {
-                id: true,
-                status: true,
-                amount: true,
-              },
-            },
+
           },
         },
         accounts: {

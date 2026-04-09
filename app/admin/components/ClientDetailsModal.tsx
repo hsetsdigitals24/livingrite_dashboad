@@ -42,12 +42,7 @@ interface ClientDetails {
       basePrice?: number;
       currency: string;
     };
-    payment?: {
-      id: string;
-      status: string;
-      amount: number;
-      paidAt: string;
-    };
+
     patient?: {
       id: string;
       firstName: string;
@@ -360,9 +355,7 @@ export default function ClientDetailsModal({
                             Amount
                           </p>
                           <p className="text-gray-900 font-medium mt-1">
-                            {booking.payment?.amount
-                              ? `${booking.service?.currency || 'NGN'} ${booking.payment.amount}`
-                              : 'N/A'}
+                            N/A
                           </p>
                         </div>
                         {booking.patient && (
@@ -375,26 +368,7 @@ export default function ClientDetailsModal({
                             </p>
                           </div>
                         )}
-                        {booking.payment && (
-                          <div>
-                            <p className="text-xs text-gray-500 uppercase font-semibold">
-                              Payment Status
-                            </p>
-                            <p className="text-gray-900 font-medium mt-1">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                  booking.payment.status === 'PAID'
-                                    ? 'bg-green-100 text-green-800'
-                                    : booking.payment.status === 'PENDING'
-                                      ? 'bg-yellow-100 text-yellow-800'
-                                      : 'bg-red-100 text-red-800'
-                                }`}
-                              >
-                                {booking.payment.status}
-                              </span>
-                            </p>
-                          </div>
-                        )}
+
                       </div>
                     </div>
                   ))}

@@ -44,11 +44,23 @@ const ClientDashboard = () => {
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [unpaidInvoiceCount, setUnpaidInvoiceCount] = useState(0);
 
   useEffect(() => {
     fetchPatients();
     fetchAppointments();
+    fetchUnpaidInvoices();
   }, []);
+
+  const fetchUnpaidInvoices = async () => {
+    try {
+      const res = await fetch("/api/invoices/my-invoices?status=SENT");
+      if (res.ok) {
+        const data = await res.json();
+        setUnpaidInvoiceCount(Array.isArray(data) ? data.length : 0);
+      }
+    } catch {}
+  };
 
   const fetchPatients = async () => {
     try {
@@ -136,10 +148,15 @@ const ClientDashboard = () => {
             <div className="flex flex-wrap gap-3 justify-end">
               <Link
                 href="/client/invoices"
-                className="group inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 backdrop-blur-sm border border-white/30 hover:border-white/50"
+                className="group relative inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 backdrop-blur-sm border border-white/30 hover:border-white/50"
               >
                 <FileText className="w-5 h-5" />
                 Invoices
+                {unpaidInvoiceCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {unpaidInvoiceCount}
+                  </span>
+                )}
               </Link>
               <button
                 onClick={() => setShowBookingModal(true)}

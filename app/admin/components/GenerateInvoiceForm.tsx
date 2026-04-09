@@ -1,20 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, X, Plus, Trash2 } from "lucide-react";
 
-interface Booking {
+interface Client {
   id: string;
-  clientName: string;
-  clientEmail: string;
-  service?: {
-    basePrice: number;
-    title: string;
-  };
-  payment?: {
-    amount: number;
-    currency: string;
-  };
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+interface Service {
+  id: string;
+  title: string;
+  basePrice: number | null;
+}
+
+interface ServiceLineItem {
+  serviceId: string;
+  title: string;
+  amount: number;
 }
 
 interface GenerateInvoiceFormProps {
@@ -24,93 +29,122 @@ interface GenerateInvoiceFormProps {
 }
 
 export function GenerateInvoiceForm({ isOpen, onClose, onSuccess }: GenerateInvoiceFormProps) {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [selectedBookingId, setSelectedBookingId] = useState("");
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [amount, setAmount] = useState("");
-  const [tax, setTax] = useState("");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [lineItems, setLineItems] = useState<ServiceLineItem[]>([{ serviceId: "", title: "", amount: 0 }]);
+  const [tax, setTax] = useState("0");
   const [discount, setDiscount] = useState("0");
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [notes, setNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [error, setError] = useState("");
 
-  // Load available bookings on mount
+  const subtotal = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const taxNum = parseFloat(tax) || 0;
+  const discountNum = parseFloat(discount) || 0;
+  const totalAmount = Math.max(0, subtotal + taxNum - discountNum);
+
   useEffect(() => {
     if (isOpen) {
-      loadBookings();
+      loadData();
+      resetForm();
     }
   }, [isOpen]);
 
-  // Calculate total amount whenever any value changes
-  useEffect(() => {
-    if (amount && tax !== "") {
-      const amountNum = parseFloat(amount) || 0;
-      const taxNum = parseFloat(tax) || 0;
-      const discountNum = parseFloat(discount) || 0;
-      const total = amountNum + taxNum - discountNum;
-      setTotalAmount(Math.max(0, total));
-    }
-  }, [amount, tax, discount]);
+  const resetForm = () => {
+    setSelectedClientId("");
+    setSelectedClient(null);
+    setLineItems([{ serviceId: "", title: "", amount: 0 }]);
+    setTax("0");
+    setDiscount("0");
+    setNotes("");
+    setError("");
+  };
 
-  const loadBookings = async () => {
+  const loadData = async () => {
+    setIsLoadingData(true);
+    setError("");
     try {
-      setIsLoadingBookings(true);
-      const response = await fetch("/api/bookings/list?invoiceStatus=no-invoice");
-      if (!response.ok) throw new Error("Failed to load bookings");
-      const data = await response.json();
-      setBookings(data.bookings || []);
+      const [clientsRes, servicesRes] = await Promise.all([
+        fetch("/api/admin/clients?limit=200"),
+        fetch("/api/services"),
+      ]);
+      if (!clientsRes.ok) throw new Error("Failed to load clients");
+      if (!servicesRes.ok) throw new Error("Failed to load services");
+      const clientsData = await clientsRes.json();
+      const servicesData = await servicesRes.json();
+      setClients(Array.isArray(clientsData) ? clientsData : clientsData.clients || []);
+      setServices(Array.isArray(servicesData) ? servicesData : servicesData.services || []);
     } catch (err) {
-      console.error("Error loading bookings:", err);
-      setError("Failed to load bookings");
+      setError("Failed to load clients or services");
     } finally {
-      setIsLoadingBookings(false);
+      setIsLoadingData(false);
     }
   };
 
-  const handleBookingSelect = (bookingId: string) => {
-    setSelectedBookingId(bookingId);
-    const booking = bookings.find((b) => b.id === bookingId);
-    if (booking) {
-      setSelectedBooking(booking);
-      // Set default amounts from booking
-      const defaultAmount = booking.payment?.amount || booking.service?.basePrice || "";
-      setAmount(defaultAmount.toString());
-      setTax((parseFloat(defaultAmount.toString()) * 0.1).toFixed(2));
-      setDiscount("0");
-    }
+  const handleClientSelect = (clientId: string) => {
+    setSelectedClientId(clientId);
+    setSelectedClient(clients.find((c) => c.id === clientId) || null);
+  };
+
+  const handleServiceSelect = (index: number, serviceId: string) => {
+    const service = services.find((s) => s.id === serviceId);
+    setLineItems((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        serviceId,
+        title: service?.title || "",
+        amount: service?.basePrice || 0,
+      };
+      return updated;
+    });
+  };
+
+  const handleAmountChange = (index: number, value: string) => {
+    setLineItems((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], amount: parseFloat(value) || 0 };
+      return updated;
+    });
+  };
+
+  const addLineItem = () => {
+    setLineItems((prev) => [...prev, { serviceId: "", title: "", amount: 0 }]);
+  };
+
+  const removeLineItem = (index: number) => {
+    if (lineItems.length === 1) return;
+    setLineItems((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!selectedBookingId) {
-      setError("Please select a booking");
-      return;
-    }
+    if (!selectedClientId) { setError("Please select a client"); return; }
+    if (lineItems.some((item) => !item.serviceId)) { setError("Please select a service for each line item"); return; }
+    if (subtotal <= 0) { setError("Total amount must be greater than 0"); return; }
+    if (discountNum >= subtotal) { setError("Discount cannot be equal to or greater than the subtotal"); return; }
 
-    if (!amount || parseFloat(amount) <= 0) {
-      setError("Amount must be greater than 0");
-      return;
-    }
-
-    if (parseFloat(discount) >= parseFloat(amount)) {
-      setError("Discount cannot be equal to or greater than amount");
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const response = await fetch("/api/invoices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bookingId: selectedBookingId,
-          amount: parseFloat(amount),
+          clientId: selectedClientId,
+          services: lineItems.map((item) => ({
+            serviceId: item.serviceId,
+            title: item.title,
+            amount: item.amount,
+          })),
+          amount: subtotal,
+          tax: taxNum,
+          discount: discountNum,
+          notes: notes || undefined,
           currency: "NGN",
-          tax: parseFloat(tax) || parseFloat(amount) * 0.1,
-          discount: parseFloat(discount),
         }),
       });
 
@@ -119,8 +153,6 @@ export function GenerateInvoiceForm({ isOpen, onClose, onSuccess }: GenerateInvo
         throw new Error(data.error || "Failed to generate invoice");
       }
 
-      // Success
-      setError("");
       onSuccess();
       onClose();
     } catch (err) {
@@ -134,160 +166,204 @@ export function GenerateInvoiceForm({ isOpen, onClose, onSuccess }: GenerateInvo
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold">Generate Invoice</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="w-6 h-6" />
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">Generate Invoice</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Select a client and services to bill</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex gap-2">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 flex gap-2 text-sm">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Booking Selection */}
+          {/* Client Selection */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Select Booking *
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Client <span className="text-red-500">*</span>
             </label>
-            {isLoadingBookings ? (
-              <div className="p-3 bg-gray-50 rounded border border-gray-200 text-gray-600">
-                Loading bookings...
+            {isLoadingData ? (
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 text-sm">
+                Loading clients...
               </div>
-            ) : bookings.length === 0 ? (
-              <div className="p-3 bg-yellow-50 rounded border border-yellow-200 text-yellow-700">
-                No bookings available for invoicing
+            ) : clients.length === 0 ? (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
+                No clients found
               </div>
             ) : (
               <select
-                value={selectedBookingId}
-                onChange={(e) => handleBookingSelect(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                value={selectedClientId}
+                onChange={(e) => handleClientSelect(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
               >
-                <option value="">-- Select a booking --</option>
-                {bookings.map((booking) => (
-                  <option key={booking.id} value={booking.id}>
-                    {booking.clientName} ({booking.clientEmail})
+                <option value="">— Select a client —</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name || "Unnamed"} {client.email ? `(${client.email})` : ""}
                   </option>
                 ))}
               </select>
             )}
+            {selectedClient && (
+              <div className="mt-2 px-3 py-2 bg-teal-50 border border-teal-200 rounded-lg text-sm text-teal-800">
+                <strong>{selectedClient.name}</strong>
+                {selectedClient.email && <span className="ml-2 text-teal-600">{selectedClient.email}</span>}
+                {selectedClient.phone && <span className="ml-2 text-teal-600">{selectedClient.phone}</span>}
+              </div>
+            )}
           </div>
 
-          {/* Booking Details Display */}
-          {selectedBooking && (
-            <div className="p-3 bg-teal-50 rounded border border-teal-200">
-              <p className="text-sm text-gray-600">
-                <strong>Service:</strong>{" "}
-                {selectedBooking.service?.title || "No service specified"}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Email:</strong> {selectedBooking.clientEmail}
-              </p>
-            </div>
-          )}
-
-          {/* Amount Fields */}
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Amount *
+          {/* Service Line Items */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Services <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="0.00"
-              />
+              <button
+                type="button"
+                onClick={addLineItem}
+                className="flex items-center gap-1 text-xs text-teal-600 hover:text-teal-700 font-medium"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add service
+              </button>
             </div>
 
+            <div className="space-y-2">
+              {lineItems.map((item, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <select
+                    value={item.serviceId}
+                    onChange={(e) => handleServiceSelect(index, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                  >
+                    <option value="">— Select service —</option>
+                    {services.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.title}{s.basePrice ? ` — ₦${s.basePrice.toLocaleString()}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₦</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={item.amount || ""}
+                      onChange={(e) => handleAmountChange(index, e.target.value)}
+                      placeholder="0.00"
+                      className="w-32 pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    />
+                  </div>
+                  {lineItems.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeLineItem(index)}
+                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tax & Discount */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tax
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Tax (₦)</label>
               <input
                 type="number"
+                min="0"
                 step="0.01"
                 value={tax}
                 onChange={(e) => setTax(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="0.00"
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                {amount ? `(${((parseFloat(tax) / parseFloat(amount)) * 100).toFixed(1)}%)` : ""}
-              </p>
             </div>
-
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Discount
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Discount (₦)</label>
               <input
                 type="number"
+                min="0"
                 step="0.01"
                 value={discount}
                 onChange={(e) => setDiscount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="0.00"
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
               />
             </div>
           </div>
 
-          {/* Total Amount Display */}
-          <div className="p-4 bg-gray-100 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-gray-700">Total Amount:</span>
-              <span className="text-2xl font-bold text-teal-600">
-                ₦{totalAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          {/* Notes */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Notes <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any additional notes for the client..."
+              rows={2}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm resize-none"
+            />
+          </div>
+
+          {/* Total Summary */}
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Subtotal</span>
+              <span>₦{subtotal.toLocaleString()}</span>
+            </div>
+            {taxNum > 0 && (
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Tax</span>
+                <span>+₦{taxNum.toLocaleString()}</span>
+              </div>
+            )}
+            {discountNum > 0 && (
+              <div className="flex justify-between text-sm text-red-600">
+                <span>Discount</span>
+                <span>-₦{discountNum.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-2 border-t border-gray-300">
+              <span className="font-bold text-gray-900">Total Due</span>
+              <span className="text-xl font-bold text-teal-600">
+                ₦{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
 
-          {/* Breakdown Summary */}
-          {amount && (
-            <div className="text-sm text-gray-600 space-y-1 p-3 bg-gray-50 rounded">
-              <div className="flex justify-between">
-                <span>Amount:</span>
-                <span>₦{parseFloat(amount).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax:</span>
-                <span>₦{parseFloat(tax).toLocaleString()}</span>
-              </div>
-              {parseFloat(discount) > 0 && (
-                <div className="flex justify-between text-red-600">
-                  <span>Discount:</span>
-                  <span>-₦{parseFloat(discount).toLocaleString()}</span>
-                </div>
-              )}
-            </div>
-          )}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+            📧 An invoice email with LivingRite's bank account details will be sent to the client automatically.
+          </div>
 
-          {/* Form Actions */}
-          <div className="flex gap-3 pt-4 border-t">
+          {/* Actions */}
+          <div className="flex gap-3 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isLoading || !selectedBookingId || !amount}
-              className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+              disabled={isLoading || !selectedClientId || lineItems.some((i) => !i.serviceId) || subtotal <= 0}
+              className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium text-sm transition"
             >
-              {isLoading ? "Generating..." : "Generate Invoice"}
+              {isLoading ? "Generating..." : "Generate & Send Invoice"}
             </button>
           </div>
         </form>

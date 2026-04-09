@@ -38,7 +38,7 @@ const Video = ({ src }: { src: string }) => {
             src={src}
             className="w-full h-full object-cover"
             controls
-            autoPlay
+            autoPlay={false}
             loop
             muted
           />

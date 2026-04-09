@@ -122,7 +122,7 @@ export default function BookingModal({
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
                   <strong>Next Steps:</strong> After selecting a family member and scheduling,
-                  you'll fill out an intake form and proceed to payment.
+                  you'll fill out a short intake form before your consultation.
                 </p>
               </div>
 

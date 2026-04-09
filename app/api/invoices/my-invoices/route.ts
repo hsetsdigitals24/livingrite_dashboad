@@ -8,33 +8,29 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const status = searchParams.get("status");
+    const filter = searchParams.get("status"); // "PAID", "SENT", or null for all
 
-    // Fetch invoices for current user's bookings
+    let statusFilter: any = undefined;
+
+    if (filter === "PAID") {
+      statusFilter = { status: "PAID" };
+    } else if (filter === "SENT") {
+      // "unpaid" = anything not paid or cancelled
+      statusFilter = { status: { in: ["SENT", "VIEWED", "GENERATED", "OVERDUE"] } };
+    }
+
     const invoices = await prisma.invoice.findMany({
       where: {
-        booking: {
-          userId: session.user.id,
-        },
-        ...(status && { status: status as any }),
+        clientId: session.user.id,
+        ...statusFilter,
       },
       include: {
-        booking: {
-          select: {
-            id: true,
-            clientName: true,
-            clientEmail: true,
-          },
-        },
+        service: { select: { id: true, title: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -42,9 +38,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(invoices);
   } catch (error) {
     console.error("Error fetching invoices:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch invoices" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch invoices" }, { status: 500 });
   }
 }

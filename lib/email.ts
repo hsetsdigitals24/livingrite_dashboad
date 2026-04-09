@@ -845,3 +845,138 @@ export async function sendTicketCommentNotificationEmail(
 
   return await transporter.sendMail(mailOptions);
 } 
+/**
+ * Send invoice notification with bank account payment details to client
+ */
+export async function sendInvoiceWithBankDetails(
+  clientEmail: string,
+  clientName: string,
+  invoiceNumber: string,
+  amount: number,
+  totalAmount: number,
+  currency: string = 'NGN',
+  services: { title: string; amount: number }[],
+  dueAt: Date | null,
+  paymentSettings: {
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    bankCode?: string;
+    additionalInfo?: string;
+  }
+) {
+  if (!clientEmail) throw new Error('Client email is required');
+
+  const serviceRows = services.length > 0
+    ? services.map(s => `
+        <tr>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${s.title}</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${currency} ${s.amount.toLocaleString()}</td>
+        </tr>`).join('')
+    : `<tr><td style="padding: 8px 12px;" colspan="2">Service</td><td style="padding: 8px 12px; text-align: right;">${currency} ${amount.toLocaleString()}</td></tr>`;
+
+  const dueDate = dueAt ? new Date(dueAt).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) : 'On receipt';
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Care'} <${process.env.SMTP_FROM}>`,
+    to: clientEmail,
+    replyTo: process.env.SMTP_FROM,
+    subject: `Invoice ${invoiceNumber} - Payment of ${currency} ${totalAmount.toLocaleString()} Due`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+        <div style="background-color: #0d9488; padding: 24px 32px; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 22px;">LivingRite Care</h1>
+          <p style="color: #99f6e4; margin: 4px 0 0; font-size: 14px;">Healthcare Invoice</p>
+        </div>
+
+        <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="margin: 0 0 16px;">Dear <strong>${clientName}</strong>,</p>
+          <p style="color: #4b5563; margin: 0 0 24px;">Please find your invoice details below. Kindly make payment to the bank account provided at the bottom of this email.</p>
+
+          <!-- Invoice Meta -->
+          <div style="background: #f9fafb; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Invoice Number:</td>
+                <td style="padding: 4px 0; font-weight: 600; text-align: right;">${invoiceNumber}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Invoice Date:</td>
+                <td style="padding: 4px 0; text-align: right;">${new Date().toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Due Date:</td>
+                <td style="padding: 4px 0; font-weight: 600; color: #dc2626; text-align: right;">${dueDate}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Services Table -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+            <thead>
+              <tr style="background: #f3f4f6;">
+                <th style="padding: 10px 12px; text-align: left; font-size: 12px; color: #6b7280; text-transform: uppercase;">Service</th>
+                <th style="padding: 10px 12px; text-align: right; font-size: 12px; color: #6b7280; text-transform: uppercase;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${serviceRows}
+            </tbody>
+            <tfoot>
+              <tr style="background: #f0fdfa;">
+                <td style="padding: 12px; font-weight: 700; font-size: 15px;">Total Due</td>
+                <td style="padding: 12px; font-weight: 700; font-size: 18px; color: #0d9488; text-align: right;">${currency} ${totalAmount.toLocaleString()}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- Bank Account Details -->
+          <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 8px; padding: 20px; margin-top: 24px;">
+            <h3 style="color: #065f46; margin: 0 0 16px; font-size: 15px; display: flex; align-items: center;">
+              🏦 &nbsp; Payment Account Details
+            </h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #4b5563; font-size: 13px; width: 140px;">Bank Name:</td>
+                <td style="padding: 6px 0; font-weight: 600;">${paymentSettings.bankName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #4b5563; font-size: 13px;">Account Name:</td>
+                <td style="padding: 6px 0; font-weight: 600;">${paymentSettings.accountName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #4b5563; font-size: 13px;">Account Number:</td>
+                <td style="padding: 6px 0; font-weight: 700; font-size: 16px; color: #065f46; letter-spacing: 1px;">${paymentSettings.accountNumber}</td>
+              </tr>
+              ${paymentSettings.bankCode ? `<tr>
+                <td style="padding: 6px 0; color: #4b5563; font-size: 13px;">Sort Code:</td>
+                <td style="padding: 6px 0; font-weight: 600;">${paymentSettings.bankCode}</td>
+              </tr>` : ''}
+              ${paymentSettings.additionalInfo ? `<tr>
+                <td colspan="2" style="padding: 12px 0 0; color: #4b5563; font-size: 13px;">${paymentSettings.additionalInfo}</td>
+              </tr>` : ''}
+            </table>
+          </div>
+
+          <p style="color: #6b7280; font-size: 13px; margin-top: 24px;">
+            After making payment, please use <strong>${invoiceNumber}</strong> as your payment reference. 
+            Our team will confirm and update your invoice status once payment is received.
+          </p>
+
+          <p style="color: #6b7280; font-size: 13px;">
+            You can view your invoices at any time from your 
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/client/invoices" style="color: #0d9488;">client dashboard</a>.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+            LivingRite Care &bull; If you have any questions about this invoice, please contact us.
+          </p>
+        </div>
+      </div>
+    `,
+    text: `Invoice ${invoiceNumber} from LivingRite Care\n\nDear ${clientName},\n\nAmount Due: ${currency} ${totalAmount.toLocaleString()}\nDue Date: ${dueDate}\n\nPayment Details:\nBank: ${paymentSettings.bankName}\nAccount Name: ${paymentSettings.accountName}\nAccount Number: ${paymentSettings.accountNumber}\n${paymentSettings.bankCode ? `Sort Code: ${paymentSettings.bankCode}\n` : ''}${paymentSettings.additionalInfo || ''}\n\nPlease use ${invoiceNumber} as your payment reference.`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}

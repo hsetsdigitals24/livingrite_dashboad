@@ -5,29 +5,18 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/bookings/list
- * Get list of bookings for admin to select from (e.g., for generating invoices)
- * Supports filtering by invoiceStatus: "no-invoice" to show only bookings without invoices
- */
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Only admins can access this endpoint
     if (!session?.user?.id || session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Only admins can access this endpoint' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Only admins can access this endpoint' }, { status: 403 });
     }
 
     const searchParams = req.nextUrl.searchParams;
     const invoiceStatus = searchParams.get('invoiceStatus');
 
     const where: any = {};
-
-    // Filter bookings without invoices
     if (invoiceStatus === 'no-invoice') {
       where.invoice = null;
     }
@@ -36,18 +25,7 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         service: {
-          select: {
-            id: true,
-            title: true,
-            basePrice: true,
-          },
-        },
-        payment: {
-          select: {
-            id: true,
-            amount: true,
-            currency: true,
-          },
+          select: { id: true, title: true, basePrice: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -59,14 +37,14 @@ export async function GET(req: NextRequest) {
         id: booking.id,
         clientName: booking.clientName,
         clientEmail: booking.clientEmail,
+        scheduledAt: booking.scheduledAt,
+        status: booking.status,
         service: booking.service,
-        payment: booking.payment,
+        calcomId: booking.calcomId,
       })),
     });
   } catch (error) {
     console.error('Error fetching bookings list:', error);
-    const message =
-      error instanceof Error ? error.message : 'Failed to fetch bookings';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
   }
 }

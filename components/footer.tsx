@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Facebook, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const footerLinks = {
@@ -119,7 +126,9 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-              <span className="text-gray-900 hover:text-primary transition-colors text-sm"><Link href="/auth/admin">Admin</Link></span>
+            <span className="text-gray-900 hover:text-primary transition-colors text-sm">
+              <Link href="/auth/admin">Admin</Link>
+            </span>
           </div>
 
           {/* Newsletter Column */}
@@ -156,28 +165,30 @@ export function Footer() {
               </Button>
             </div>
           </div>
-        <div>
-        </div>
+          <div></div>
         </div>
 
         {/* Social Links & Copyright */}
         <div className="flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-gray-800 animate-slide-up animation-delay-500">
           <div className="flex items-center gap-4">
             <Link
-              href={`https://www.facebook.com/livingritecare/${process.env.NEXT_PUBLIC_FACEBOOK}`}
+              target="_target"
+              href={`https://www.facebook.com/${process.env.NEXT_PUBLIC_FACEBOOK}`}
               className="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary/20 hover:text-primary flex items-center justify-center transition-all duration-300 text-gray-400"
               aria-label="Facebook"
             >
               <Facebook className="h-5 w-5" />
             </Link>
             <Link
-              href={`https://www.x.com/livingritecare/${process.env.NEXT_PUBLIC_TWITTER}`}
+              target="_target"
+              href={`https://www.instagram.com/${process.env.NEXT_PUBLIC_INSTAGRAM}`}
               className="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary/20 hover:text-primary flex items-center justify-center transition-all duration-300 text-gray-400"
-              aria-label="Twitter"
+              aria-label="Instagram"
             >
-              <Twitter className="h-5 w-5" />
+              <Instagram className="h-5 w-5" />
             </Link>
             <Link
+              target="_target"
               href={`https://www.linkedin.com/company/${process.env.NEXT_PUBLIC_LINKEDIN}`}
               className="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary/20 hover:text-primary flex items-center justify-center transition-all duration-300 text-gray-400"
               aria-label="LinkedIn"

@@ -16,7 +16,7 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
                      {label: "Patients", icon: Users, id: "patients"},
                      { label: "Clients", icon: Users, id: "clients" },
                      { label: "Caregivers", icon: Users, id: "caregivers" },
-                     { label: "Caregiver Allow List", icon: ShieldCheck, id: "caregiver-allow-list" },
+                     { label: "Allow List", icon: ShieldCheck, id: "caregiver-allow-list" },
                      { label: "Invoices", icon: FileText, id: "invoices" },
                      { label: "Reports", icon: TrendingUp, id: "reports" },
                      { label: "Tickets", icon: MessageSquare, id: "tickets" },

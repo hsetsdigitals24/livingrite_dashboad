@@ -35,7 +35,7 @@ export function HeroSection() {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('/main-hero.jpg')`,
+          backgroundImage: `url('/main-hero1.jpg')`,
           transform: `translateY(${scrollY * 0.5}px)`,
           transition: 'transform 0.1s ease-out',
         }}
@@ -43,72 +43,7 @@ export function HeroSection() {
       
       {/* White overlay for text contrast */}
       <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-white/70" />
-
-      {/* Animated Background Elements */}
-      {/* <div className="absolute inset-0 opacity-40"> */}
-        {/* Primary Gradient Orb - Top Left */}
-        {/* <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-[#00b2ec] via-[#00b2ec]/50 to-transparent rounded-full blur-3xl opacity-20 animate-blob"></div> */}
-
-        {/* Secondary Gradient Orb - Top Right */}
-        {/* <div className="absolute -top-16 right-0 w-80 h-80 bg-gradient-to-bl from-[#e50d92] via-[#e50d92]/40 to-transparent rounded-full blur-3xl opacity-15 animate-blob animation-delay-4000"></div> */}
-
-        {/* Accent Orb - Bottom Left */}
-        {/* <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-tr from-[#00b2ec]/30 to-transparent rounded-full blur-3xl opacity-10 animate-blob animation-delay-8000"></div> */}
-
-        {/* Accent Orb Grid Lines */}
-        {/* <svg
-          className="absolute inset-0 w-full h-full opacity-30 pointer-events-none"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient
-              id="heroGradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#00b2ec" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#e50d92" stopOpacity="0.2" />
-            </linearGradient>
-            <filter id="heroGlow">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          
-          <circle
-            cx="10%"
-            cy="15%"
-            r="150"
-            fill="none"
-            stroke="url(#heroGradient)"
-            strokeWidth="1.5"
-            filter="url(#heroGlow)"
-          />
-          <circle
-            cx="90%"
-            cy="60%"
-            r="180"
-            fill="none"
-            stroke="url(#heroGradient)"
-            strokeWidth="1.5"
-            filter="url(#heroGlow)"
-          />
-          <circle
-            cx="50%"
-            cy="95%"
-            r="120"
-            fill="none"
-            stroke="url(#heroGradient)"
-            strokeWidth="1.5"
-            filter="url(#heroGlow)"
-          />
-        </svg> */}
-      {/* </div> */}
+ 
 
       {/* Interactive cursor glow effect */}
       <div

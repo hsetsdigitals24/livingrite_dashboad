@@ -94,8 +94,8 @@ export async function POST(request: NextRequest) {
         totalAmount,
         currency: "NGN",
         status: "GENERATED",
-        servicesData: servicesData || null,
-        paymentNote: paymentNote || null,
+        services: servicesData || null,
+        notes: paymentNote || null,
         dueAt: dueAt ? new Date(dueAt) : null,
       },
       include: {

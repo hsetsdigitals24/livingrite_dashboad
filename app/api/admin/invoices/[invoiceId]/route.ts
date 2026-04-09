@@ -168,7 +168,18 @@ export async function POST(
 
     // Send email to client with payment details
     try {
-      await sendInvoiceEmail(invoice, adminSettings);
+      if (invoice.client?.email) {
+        const invoiceLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/client/invoices/${invoiceId}`;
+        
+        await sendInvoiceEmail(
+          invoice.client.email,
+          invoice.client.name || "Valued Customer",
+          invoice.invoiceNumber,
+          invoice.totalAmount,
+          invoice.currency || "NGN",
+          invoiceLink
+        );
+      }
 
       // Update invoice status to SENT
       const updatedInvoice = await prisma.invoice.update({

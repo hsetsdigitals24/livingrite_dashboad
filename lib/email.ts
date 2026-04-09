@@ -980,3 +980,96 @@ export async function sendInvoiceWithBankDetails(
 
   return await transporter.sendMail(mailOptions);
 }
+
+/**
+ * Send overdue invoice reminder email to client
+ */
+export async function sendOverdueInvoiceReminder(
+  email: string,
+  clientName: string,
+  invoiceNumber: string,
+  totalAmount: number,
+  currency: string,
+  dueDate: Date,
+  invoiceLink: string,
+  daysPastDue: number
+) {
+  if (!email) throw new Error('Email is required');
+
+  const formattedAmount = totalAmount.toLocaleString();
+  const dueDateStr = new Date(dueDate).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const mailOptions = {
+    from: `${process.env.SMTP_FROM_NAME || 'LivingRite Care'} <${process.env.SMTP_FROM}>`,
+    to: email,
+    replyTo: process.env.SMTP_FROM,
+    subject: `⚠️ Payment Reminder: Invoice ${invoiceNumber} is ${daysPastDue} days overdue`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #0d9488 0%, #059669 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Payment Reminder</h1>
+          <p style="margin: 10px 0 0; opacity: 0.95;">Invoice ${invoiceNumber}</p>
+        </div>
+
+        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none;">
+          <p style="color: #1f2937; font-size: 16px; margin: 0 0 20px;">Hi ${clientName},</p>
+
+          <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px;">
+            <p style="color: #92400e; margin: 0; font-weight: 600;">Your invoice is now ${daysPastDue} day${daysPastDue !== 1 ? 's' : ''} overdue.</p>
+          </div>
+
+          <p style="color: #4b5563; font-size: 14px; margin: 20px 0;">
+            We haven't received payment for the invoice below. Please settle this payment as soon as possible to avoid any service interruptions.
+          </p>
+
+          <div style="background: white; border: 1px solid #e5e7eb; padding: 20px; border-radius: 6px; margin: 20px 0;">
+            <table style="width: 100%; font-size: 14px; color: #4b5563;">
+              <tr>
+                <td style="padding: 8px 0; font-weight: 600; color: #1f2937;">Invoice Number:</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600;">${invoiceNumber}</td>
+              </tr>
+              <tr style="border-top: 1px solid #e5e7eb;">
+                <td style="padding: 8px 0; font-weight: 600; color: #1f2937;">Amount Due:</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #d97706;">${currency} ${formattedAmount}</td>
+              </tr>
+              <tr style="border-top: 1px solid #e5e7eb;">
+                <td style="padding: 8px 0; font-weight: 600; color: #1f2937;">Due Date:</td>
+                <td style="padding: 8px 0; text-align: right;">${dueDateStr}</td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="color: #4b5563; font-size: 14px; margin: 20px 0;">
+            To view your invoice and payment options, click the button below:
+          </p>
+
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${invoiceLink}" style="display: inline-block; background: linear-gradient(135deg, #0d9488 0%, #059669 100%); color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">
+              View Invoice & Pay
+            </a>
+          </div>
+
+          <p style="color: #6b7280; font-size: 13px; margin: 20px 0;">
+            If you've already processed this payment, please disregard this notice. Your payment may take a few business days to reflect in our system.
+          </p>
+
+          <p style="color: #6b7280; font-size: 13px; margin: 20px 0;">
+            If you have any questions about this invoice or need to make payment arrangements, please don't hesitate to contact us.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+            LivingRite Care &bull; Professional Healthcare Services
+          </p>
+        </div>
+      </div>
+    `,
+    text: `Payment Reminder: Invoice ${invoiceNumber} is ${daysPastDue} days overdue\n\nDear ${clientName},\n\nWe haven't received payment for invoice ${invoiceNumber}. Please settle this payment as soon as possible.\n\nInvoice Number: ${invoiceNumber}\nAmount Due: ${currency} ${formattedAmount}\nDue Date: ${dueDateStr}\n\nView your invoice and payment options: ${invoiceLink}\n\nIf you've already processed this payment, please disregard this notice.\n\nThank you,\nLivingRite Care`,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}

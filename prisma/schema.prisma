@@ -800,6 +800,20 @@ model PaymentSettings {
   @@map("payment_settings")
 }
 
+model AdminSettings {
+  id                    String   @id @default(cuid())
+  paymentAccountName    String   @default("")
+  paymentAccountNumber  String   @default("")
+  paymentBankName       String   @default("")
+  paymentBankCode       String?
+  paymentCurrency       String   @default("NGN")
+  paymentInstructions   String?
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
+
+  @@map("admin_settings")
+}
+
 model Reminder {
   id            String         @id @default(cuid())
   bookingId     String

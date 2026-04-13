@@ -1,7 +1,6 @@
-import { type SchemaTypeDefinition } from 'sanity'
-import {postType} from './post' 
-import {commentType} from './comments'
+import { testimonialSchema } from './testimonial'
 
-export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [postType, commentType],
+// Add all your schema types here
+export const schema = {
+  types: [testimonialSchema],
 }

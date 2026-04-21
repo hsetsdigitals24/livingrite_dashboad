@@ -171,7 +171,7 @@ export const testimonialSchema = defineType({
     defineField({
       name: 'isVerified',
       title: 'Verified Testimonial',
-      description: 'Mark as verified once you have confirmed the client's identity.',
+      description: "Mark as verified once you have confirmed the client's identity.",
       type: 'boolean',
       initialValue: false,
     }),

@@ -287,7 +287,6 @@ const PopupSettingsPage = () => {
             </div>
           </>
         )}
-      </div>
 
       {(popupModalMode === "create" || popupModalMode === "edit") && (
         <PopupForm

@@ -129,25 +129,26 @@ const PopupSettingsPage = () => {
 //   console.log("Current popups state:", popups[0]);
 
   return (
-    <div>
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Landing Page Popups</h2>
-          <button
-            onClick={handleCreatePopup}
-            className="bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            + Create Popup
-          </button>
-        </div>
+    <div className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <h2 className="text-lg sm:text-xl font-semibold">Landing Page Popups</h2>
+        <button
+          onClick={handleCreatePopup}
+          className="w-full sm:w-auto bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          + Create Popup
+        </button>
+      </div>
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <p className="text-gray-500">Loading popups...</p>
           </div>
         ) : (
-          <div className="overflow-x-auto border border-gray-200 rounded-lg">
-            <table className="min-w-full bg-white">
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto">
+              <table className="min-w-full bg-white">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
@@ -237,7 +238,54 @@ const PopupSettingsPage = () => {
                 )}
               </tbody>
             </table>
-          </div>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="md:hidden space-y-3">
+              {popups && popups.length > 0 ? (
+                popups.map((popup) => (
+                  <div key={popup.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm line-clamp-2">{popup.title}</p>
+                        <p className="text-xs text-gray-500 mt-1">{popup.actionButtonText}</p>
+                      </div>
+                      <span className={`flex-shrink-0 px-2 py-1 rounded text-xs font-medium ${
+                        popup.isActive
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {popup.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-gray-500">Order</p>
+                        <p className="font-semibold">{popup.displayOrder}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Displays</p>
+                        <p className="font-semibold">{popup.popupCount}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-2 border-t">
+                      <button onClick={() => handleEditPopup(popup.id)} className="flex-1 px-3 py-1.5 text-xs border border-blue-300 text-blue-600 rounded hover:bg-blue-50">
+                        Edit
+                      </button>
+                      <button onClick={() => handleTogglePopup(popup)} className="flex-1 px-3 py-1.5 text-xs border border-orange-300 text-orange-600 rounded hover:bg-orange-50">
+                        {popup.isActive ? 'Disable' : 'Enable'}
+                      </button>
+                      <button onClick={() => handleDeletePopup(popup.id)} className="flex-1 px-3 py-1.5 text-xs border border-red-300 text-red-600 rounded hover:bg-red-50">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-gray-500 py-8">No popups found</p>
+              )}
+            </div>
+          </>
         )}
       </div>
 

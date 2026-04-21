@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ResponsiveTable } from '@/components/admin/ResponsiveTable';
 import {
   BarChart,
   Bar,
@@ -365,117 +366,121 @@ const PipelineSection = () => {
 
       {/* Inquiries Tab */}
       {activeTab === 'inquiries' && (
-        <Card className="p-6 overflow-x-auto">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Inquiries</h3>
-          <table className="w-full text-sm">
-            <thead className="border-b bg-gray-50">
-              <tr>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Name</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Email</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Source</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Status</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Date</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {inquiries.map((inquiry) => (
-                <tr key={inquiry.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{inquiry.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{inquiry.email}</td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">
-                    {inquiry.inquirySource || 'N/A'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(inquiry.status)}`}>
-                      {inquiry.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">
-                    {new Date(inquiry.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    {inquiry.status === 'NEW' && (
-                      <div className="flex gap-1">
-                        <Button
-                          onClick={() => handleInquiryQualify(inquiry.id)}
-                          className="bg-green-500 text-white hover:bg-green-600 text-xs py-1 px-2"
-                        >
-                          Qualify
-                        </Button>
-                        <Button
-                          onClick={() => handleInquiryDisqualify(inquiry.id)}
-                          className="bg-red-500 text-white hover:bg-red-600 text-xs py-1 px-2"
-                        >
-                          Disqualify
-                        </Button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              {
+                label: 'Name',
+                key: 'name',
+              },
+              {
+                label: 'Email',
+                key: 'email',
+              },
+              {
+                label: 'Source',
+                key: 'inquirySource',
+                render: (val) => (
+                  <span className="text-xs">{val || 'N/A'}</span>
+                ),
+              },
+              {
+                label: 'Status',
+                key: 'status',
+                render: (val) => (
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(val)}`}>
+                    {val}
+                  </span>
+                ),
+              },
+              {
+                label: 'Date',
+                key: 'createdAt',
+                render: (val) => new Date(val).toLocaleDateString(),
+              },
+            ]}
+            data={inquiries}
+            isLoading={loading}
+            emptyMessage="No inquiries found"
+            rowActions={(inquiry) =>
+              inquiry.status === 'NEW' ? (
+                <div className="flex gap-1">
+                  <Button
+                    onClick={() => handleInquiryQualify(inquiry.id)}
+                    className="bg-green-500 text-white hover:bg-green-600 text-xs py-1 px-2"
+                  >
+                    Qualify
+                  </Button>
+                  <Button
+                    onClick={() => handleInquiryDisqualify(inquiry.id)}
+                    className="bg-red-500 text-white hover:bg-red-600 text-xs py-1 px-2"
+                  >
+                    Disqualify
+                  </Button>
+                </div>
+              ) : null
+            }
+          />
         </Card>
       )}
 
       {/* Proposals Tab */}
       {activeTab === 'proposals' && (
-        <Card className="p-6 overflow-x-auto">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Proposals</h3>
-          <table className="w-full text-sm">
-            <thead className="border-b bg-gray-50">
-              <tr>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Client</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Amount</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Status</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Sent</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {proposals.map((proposal) => (
-                <tr key={proposal.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {proposal.booking.clientName}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {proposal.totalAmount
-                      ? `₦${proposal.totalAmount.toLocaleString()}`
-                      : 'N/A'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(proposal.status)}`}>
-                      {proposal.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">
-                    {proposal.sentAt
-                      ? new Date(proposal.sentAt).toLocaleDateString()
-                      : 'Not sent'}
-                  </td>
-                  <td className="px-4 py-3">
-                    {proposal.status === 'DRAFT' && (
-                      <Button
-                        onClick={() => handleProposalSend(proposal.id)}
-                        className="bg-blue-500 text-white hover:bg-blue-600 text-xs py-1 px-2"
-                      >
-                        Send
-                      </Button>
-                    )}
-                    {proposal.status === 'SENT' && (
-                      <Button
-                        onClick={() => handleProposalAccept(proposal.id)}
-                        className="bg-green-500 text-white hover:bg-green-600 text-xs py-1 px-2"
-                      >
-                        Accept
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              {
+                label: 'Client',
+                key: 'booking',
+                render: (_, row) => row.booking?.clientName || 'N/A',
+              },
+              {
+                label: 'Amount',
+                key: 'totalAmount',
+                render: (val) =>
+                  val ? `₦${val.toLocaleString()}` : 'N/A',
+              },
+              {
+                label: 'Status',
+                key: 'status',
+                render: (val) => (
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(val)}`}>
+                    {val}
+                  </span>
+                ),
+              },
+              {
+                label: 'Sent',
+                key: 'sentAt',
+                render: (val) =>
+                  val
+                    ? new Date(val).toLocaleDateString()
+                    : 'Not sent',
+              },
+            ]}
+            data={proposals}
+            isLoading={loading}
+            emptyMessage="No proposals found"
+            rowActions={(proposal) =>
+              proposal.status === 'DRAFT' ? (
+                <Button
+                  onClick={() => handleProposalSend(proposal.id)}
+                  className="bg-blue-500 text-white hover:bg-blue-600 text-xs py-1 px-2"
+                >
+                  Send
+                </Button>
+              ) : proposal.status === 'SENT' ? (
+                <Button
+                  onClick={() => handleProposalAccept(proposal.id)}
+                  className="bg-green-500 text-white hover:bg-green-600 text-xs py-1 px-2"
+                >
+                  Accept
+                </Button>
+              ) : null
+            }
+          />
         </Card>
       )}
 

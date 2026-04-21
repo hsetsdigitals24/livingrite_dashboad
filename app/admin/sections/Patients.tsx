@@ -3,14 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ResponsiveTable } from '@/components/admin/ResponsiveTable';
 import {
   ChevronLeft,
   ChevronRight,
@@ -163,7 +156,7 @@ export default function Patients() {
 
       {/* Search and Filter */}
       <Card className="p-4">
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <input
@@ -180,7 +173,7 @@ export default function Patients() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="createdAt">Date Created</option>
             <option value="firstName">First Name</option>
@@ -188,9 +181,9 @@ export default function Patients() {
           </select>
           <button
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            {sortOrder === 'asc' ? '↑' : '↓'}
+            Sort by{" "}{sortOrder === 'asc' ? '↑' : '↓'}
           </button>
         </div>
       </Card>
@@ -231,132 +224,130 @@ export default function Patients() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold">Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Gender</TableHead>
-                    <TableHead>Age</TableHead>
-                    <TableHead>Caregiver</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {patients.map((patient) => {
-                    const age = patient.dateOfBirth
-                      ? new Date().getFullYear() -
-                        new Date(patient.dateOfBirth).getFullYear()
+            <ResponsiveTable
+              columns={[
+                {
+                  label: 'Name',
+                  key: 'firstName',
+                  render: (val, row) => `${row.firstName} ${row.lastName}`,
+                },
+                {
+                  label: 'Email',
+                  key: 'email',
+                  render: (val) => val || '-',
+                },
+                {
+                  label: 'Phone',
+                  key: 'phone',
+                  render: (val) => val || '-',
+                },
+                {
+                  label: 'Gender',
+                  key: 'biologicalGender',
+                  render: (val) => val || '-',
+                },
+                {
+                  label: 'Age',
+                  key: 'dateOfBirth',
+                  render: (val) => {
+                    return val
+                      ? new Date().getFullYear() - new Date(val).getFullYear()
                       : '-';
-
-                    return (
-                      <TableRow
-                        key={patient.id}
-                        className="hover:bg-gray-50 border-b"
-                      >
-                        <TableCell className="font-medium">
-                          {patient.firstName} {patient.lastName}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {patient.email || '-'}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {patient.phone || '-'}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {patient.biologicalGender || '-'}
-                        </TableCell>
-                        <TableCell className="text-sm">{age}</TableCell>
-                        <TableCell className="text-sm">
-                          {patient.caregivers.length > 0 ? (
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                              {patient.caregivers[0].caregiver.name ||
-                                patient.caregivers[0].caregiver.email}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400 text-xs">Unassigned</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleViewDetails(patient)}
-                              className="p-2 hover:bg-blue-100 rounded text-blue-600"
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleEditPatient(patient)}
-                              className="p-2 hover:bg-yellow-100 rounded text-yellow-600"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeletePatient(patient)}
-                              className="p-2 hover:bg-red-100 rounded text-red-600"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                  },
+                },
+                {
+                  label: 'Caregiver',
+                  key: 'caregivers',
+                  render: (val) => {
+                    if (val && val.length > 0) {
+                      return (
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block">
+                          {val[0].caregiver.name || val[0].caregiver.email}
+                        </span>
+                      );
+                    }
+                    return <span className="text-gray-400 text-xs">Unassigned</span>;
+                  },
+                },
+              ]}
+              data={patients}
+              isLoading={loading}
+              emptyMessage="No patients found. Create one to get started."
+              rowActions={(patient) => (
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => handleViewDetails(patient)}
+                    className="p-2 hover:bg-blue-100 rounded text-blue-600"
+                    title="View Details"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleEditPatient(patient)}
+                    className="p-2 hover:bg-yellow-100 rounded text-yellow-600"
+                    title="Edit"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeletePatient(patient)}
+                    className="p-2 hover:bg-red-100 rounded text-red-600"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            />
 
             {/* Pagination */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+                <div className="text-sm text-gray-600">
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+                  {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage(Math.max(1, currentPage - 1))
+                    }
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <Button
+                        key={page}
+                        variant={page === currentPage ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={
+                          page === currentPage
+                            ? 'bg-blue-600 text-white'
+                            : ''
+                        }
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage(Math.max(1, currentPage - 1))
-                  }
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <Button
-                      key={page}
-                      variant={page === currentPage ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className={
-                        page === currentPage
-                          ? 'bg-blue-600 text-white'
-                          : ''
-                      }
-                    >
-                      {page}
-                    </Button>
-                  )
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            )}
           </>
         )}
       </Card>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AlertCircle, Eye, Plus, CheckCircle2, Mail } from "lucide-react";
+import { ResponsiveTable } from "@/components/admin/ResponsiveTable";
 import { GenerateInvoiceForm } from "../components/GenerateInvoiceForm";
 
 interface InvoiceService {
@@ -195,74 +196,92 @@ export default function InvoicesSection() {
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  {["Invoice #", "Client", "Services", "Amount", "Status", "Created", "Due", "Actions"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {invoices.map((invoice) => (
-                  <tr key={invoice.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
-                      {invoice.invoiceNumber}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{getClientName(invoice)}</div>
-                      <div className="text-xs text-gray-500">{getClientEmail(invoice)}</div>
-                    </td>
-                    <td className="px-4 py-3 max-w-[180px]">
-                      <span className="text-gray-600 text-xs line-clamp-2">{getServicesSummary(invoice)}</span>
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
-                      ₦{invoice.totalAmount.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[invoice.status] || STATUS_COLORS.DRAFT}`}>
-                        {invoice.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(invoice.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {invoice.dueAt ? new Date(invoice.dueAt).toLocaleDateString() : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        {invoice.status !== "PAID" && invoice.status !== "CANCELLED" && (
-                          <button
-                            onClick={() => handleMarkAsPaid(invoice.id)}
-                            disabled={markingAsPaid === invoice.id}
-                            className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg disabled:opacity-50 transition"
-                            title="Mark as Paid"
-                          >
-                            {markingAsPaid === invoice.id ? (
-                              <div className="w-4 h-4 rounded-full border-2 border-green-600 border-t-transparent animate-spin" />
-                            ) : (
-                              <CheckCircle2 className="w-4 h-4" />
-                            )}
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setSelectedInvoice(invoice)}
-                          className="p-1.5 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition"
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ResponsiveTable
+            columns={[
+              {
+                label: "Invoice #",
+                key: "invoiceNumber",
+                render: (val) => <span className="font-semibold">{val}</span>,
+              },
+              {
+                label: "Client",
+                key: "client",
+                render: (_, row) => (
+                  <div>
+                    <div className="font-medium text-gray-900">{getClientName(row)}</div>
+                    <div className="text-xs text-gray-500">{getClientEmail(row)}</div>
+                  </div>
+                ),
+              },
+              {
+                label: "Services",
+                key: "services",
+                render: (_, row) => (
+                  <span className="text-gray-600 text-xs line-clamp-2">
+                    {getServicesSummary(row)}
+                  </span>
+                ),
+              },
+              {
+                label: "Amount",
+                key: "totalAmount",
+                render: (val) => (
+                  <span className="font-semibold">₦{val.toLocaleString()}</span>
+                ),
+              },
+              {
+                label: "Status",
+                key: "status",
+                render: (val) => (
+                  <span
+                    className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      STATUS_COLORS[val] || STATUS_COLORS.DRAFT
+                    }`}
+                  >
+                    {val}
+                  </span>
+                ),
+              },
+              {
+                label: "Created",
+                key: "createdAt",
+                render: (val) => new Date(val).toLocaleDateString(),
+              },
+              {
+                label: "Due",
+                key: "dueAt",
+                render: (val) => (val ? new Date(val).toLocaleDateString() : "—"),
+              },
+            ]}
+            data={invoices}
+            isLoading={isLoading}
+            emptyMessage="No invoices found"
+            rowActions={(invoice) => (
+              <div className="flex gap-1">
+                {invoice.status !== "PAID" && invoice.status !== "CANCELLED" && (
+                  <button
+                    onClick={() => handleMarkAsPaid(invoice.id)}
+                    disabled={markingAsPaid === invoice.id}
+                    className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg disabled:opacity-50 transition"
+                    title="Mark as Paid"
+                  >
+                    {markingAsPaid === invoice.id ? (
+                      <div className="w-4 h-4 rounded-full border-2 border-green-600 border-t-transparent animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => setSelectedInvoice(invoice)}
+                  className="p-1.5 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition"
+                  title="View Details"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          />
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -270,14 +289,20 @@ export default function InvoicesSection() {
               <span className="text-gray-500">Page {currentPage} of {totalPages}</span>
               <div className="flex gap-1">
                 <button
-                  onClick={() => { setCurrentPage(p => p - 1); fetchInvoices(currentPage - 1); }}
+                  onClick={() => {
+                    setCurrentPage((p) => p - 1);
+                    fetchInvoices(currentPage - 1);
+                  }}
                   disabled={currentPage === 1}
                   className="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-white disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
-                  onClick={() => { setCurrentPage(p => p + 1); fetchInvoices(currentPage + 1); }}
+                  onClick={() => {
+                    setCurrentPage((p) => p + 1);
+                    fetchInvoices(currentPage + 1);
+                  }}
                   disabled={currentPage === totalPages}
                   className="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-white disabled:opacity-50"
                 >

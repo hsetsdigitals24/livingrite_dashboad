@@ -165,20 +165,20 @@ export function GenerateInvoiceForm({ isOpen, onClose, onSuccess }: GenerateInvo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl max-w-full md:max-w-2xl w-full max-h-[92vh] overflow-y-auto my-8">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
+        <div className="flex justify-between items-center p-4 sm:p-6 border-b sticky top-0 bg-white z-10">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Generate Invoice</h3>
-            <p className="text-sm text-gray-500 mt-0.5">Select a client and services to bill</p>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900">Generate Invoice</h3>
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Select a client and services to bill</p>
           </div>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 flex-shrink-0">
+            <X className="w-4 sm:w-5 h-4 sm:h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 flex gap-2 text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />

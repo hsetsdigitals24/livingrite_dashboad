@@ -136,8 +136,8 @@ export default function CaregiverPatientDetailsModal({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-2xl mx-4 p-8">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <Card className="w-full max-w-full md:max-w-2xl p-6 sm:p-8 my-8">
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
           </div>
@@ -148,9 +148,9 @@ export default function CaregiverPatientDetailsModal({
 
   if (error || !patient) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-2xl mx-4 p-8">
-          <div className="flex items-start gap-3">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <Card className="w-full max-w-full md:max-w-2xl my-8">
+          <div className="flex items-start gap-3 p-4 sm:p-6">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-red-900">Error</h3>
@@ -170,26 +170,26 @@ export default function CaregiverPatientDetailsModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <Card className="w-full max-w-4xl my-8">
+      <Card className="w-full max-w-full md:max-w-4xl my-8">
         {/* Header */}
-        <div className="border-b p-6 flex items-start justify-between">
+        <div className="border-b p-4 sm:p-6 flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Patient Details</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900\">Patient Details</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
               {patient.firstName} {patient.lastName}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-md transition"
+            className="p-1 hover:bg-gray-100 rounded-md transition flex-shrink-0\"
             title="Close"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 sm:w-6 h-5 sm:h-6" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="border-b flex gap-1 px-6 pt-4">
+        <div className="border-b overflow-x-auto flex gap-1 px-4 sm:px-6 pt-4\">
           {[
             { id: 'overview', label: 'Overview', icon: Heart },
             { id: 'vitals', label: 'Latest Vitals', icon: Heart },
@@ -207,7 +207,7 @@ export default function CaregiverPatientDetailsModal({
                     fetchFiles();
                   }
                 }}
-                className={`pb-3 px-4 font-medium text-sm flex items-center gap-2 border-b-2 transition ${
+                className={`pb-3 px-3 sm:px-4 font-medium text-xs sm:text-sm flex items-center gap-2 border-b-2 transition ${
                   activeTab === tab.id
                     ? 'border-blue-600 text-blue-600'
                     : 'border-transparent text-gray-600 hover:text-gray-900'

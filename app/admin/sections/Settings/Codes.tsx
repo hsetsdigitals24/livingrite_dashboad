@@ -92,28 +92,26 @@ const CodesSection = () => {
 
 
     return (
-           <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Invitation Codes</h2>
-            <div className="flex gap-3">
-              <div className="flex items-center gap-2">
-                <label htmlFor="expiry" className="text-sm font-medium text-gray-700">
-                  Expires in (days):
-                </label>
-                <input
-                  id="expiry"
-                  type="number"
-                  min="1"
-                  max="365"
-                  value={expiryDays}
-                  onChange={(e) => setExpiryDays(parseInt(e.target.value))}
-                  className="w-16 px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+           <div className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+            <h2 className="text-lg sm:text-xl font-semibold">Invitation Codes</h2>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <label htmlFor="expiry" className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">
+                Expires in (days):
+              </label>
+              <input
+                id="expiry"
+                type="number"
+                min="1"
+                max="365"
+                value={expiryDays}
+                onChange={(e) => setExpiryDays(parseInt(e.target.value))}
+                className="w-full sm:w-20 px-3 py-1.5 sm:py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
               <button
                 onClick={handleGenerateCode}
                 disabled={generatingCode}
-                className="bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto bg-blue-600 text-white font-medium px-4 py-1.5 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
               >
                 {generatingCode ? 'Generating...' : '+ Generate Code'}
               </button>
@@ -122,20 +120,20 @@ const CodesSection = () => {
 
             {/* Code Statistics */}
           {codes.length > 0 && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600">Active Codes</p>
-                <p className="text-2xl font-bold text-green-600">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-600">Active Codes</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">
                   {codes.filter((c) => !c.isUsed && new Date(c.expiresAt) > new Date()).length}
                 </p>
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600">Used Codes</p>
-                <p className="text-2xl font-bold text-blue-600">{codes.filter((c) => c.isUsed).length}</p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-600">Used Codes</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">{codes.filter((c) => c.isUsed).length}</p>
               </div>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600">Expired Codes</p>
-                <p className="text-2xl font-bold text-red-600">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-600">Expired Codes</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">
                   {codes.filter((c) => !c.isUsed && new Date(c.expiresAt) < new Date()).length}
                 </p>
               </div>
@@ -147,8 +145,10 @@ const CodesSection = () => {
               <p className="text-gray-500">Loading codes...</p>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-gray-200 rounded-lg">
-              <table className="min-w-full bg-white">
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto">
+                <table className="min-w-full bg-white">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
@@ -231,7 +231,56 @@ const CodesSection = () => {
                   )}
                 </tbody>
               </table>
-            </div>
+              </div>
+
+              {/* Mobile Card Layout */}
+              <div className="md:hidden space-y-3">
+                {codes.length > 0 ? (
+                  codes.map((code) => {
+                    const isExpired = new Date(code.expiresAt) < new Date();
+                    return (
+                      <div key={code.id} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="font-mono font-semibold text-gray-900 text-xs break-all">{code.code}</p>
+                          <span className={`flex-shrink-0 px-2 py-1 rounded text-xs font-medium ${
+                            isExpired
+                              ? 'bg-red-100 text-red-800'
+                              : code.isUsed
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-green-100 text-green-800'
+                          }`}>
+                            {isExpired ? 'Expired' : code.isUsed ? 'Used' : 'Active'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <p className="text-gray-500">Expires</p>
+                            <p className="font-medium">{new Date(code.expiresAt).toLocaleDateString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Created</p>
+                            <p className="font-medium">{new Date(code.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        {code.usedBy && (
+                          <div className="text-xs">
+                            <p className="text-gray-500">Used by: {code.usedBy}</p>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => handleDeleteCode(code.id)}
+                          className="w-full px-3 py-2 text-xs border border-red-300 text-red-600 rounded hover:bg-red-50 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-center text-gray-500 py-8 text-sm">No invitation codes found</p>
+                )}
+              </div>
+            </>
           )}
         </div>
     );

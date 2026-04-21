@@ -196,10 +196,10 @@ export default function CaregiverAllowList() {
   const totalPages = Math.ceil(total / LIMIT);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Caregiver Allow List</h2>
-        <p className="text-gray-600">Manage the list of approved caregivers for signup</p>
+        <h2 className="text-xl sm:text-2xl font-bold mb-2">Caregiver Allow List</h2>
+        <p className="text-sm sm:text-base text-gray-600">Manage the list of approved caregivers for signup</p>
       </div>
 
       {/* Message Alert */}
@@ -216,9 +216,9 @@ export default function CaregiverAllowList() {
       )}
 
       {/* Add Single Email Section */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">Add Email to Allow List</h3>
-        <form onSubmit={handleAddEmail} className="flex gap-2">
+      <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+        <h3 className="text-base sm:text-lg font-semibold mb-4">Add Email to Allow List</h3>
+        <form onSubmit={handleAddEmail} className="flex flex-col sm:flex-row gap-2">
           <Input
             type="email"
             placeholder="caregiver@example.com"
@@ -233,9 +233,9 @@ export default function CaregiverAllowList() {
       </div>
 
       {/* Bulk Operations Section */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">Bulk Operations</h3>
-        <div className="flex gap-4">
+      <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+        <h3 className="text-base sm:text-lg font-semibold mb-4">Bulk Operations</h3>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Import from CSV
@@ -268,9 +268,9 @@ export default function CaregiverAllowList() {
       </div>
 
       {/* Filters Section */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">Filters</h3>
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+        <h3 className="text-base sm:text-lg font-semibold mb-4">Filters</h3>
+        <div className="flex flex-col gap-3 sm:gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Search Email
@@ -306,9 +306,10 @@ export default function CaregiverAllowList() {
         </div>
       </div>
 
-      {/* Entries Table */}
+      {/* Entries Table - Responsive with card layout on mobile */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -411,9 +412,9 @@ export default function CaregiverAllowList() {
       </div>
 
       {/* Info Box */}
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <h4 className="font-semibold text-blue-900 mb-2">How it works:</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-200">
+        <h4 className="font-semibold text-sm sm:text-base text-blue-900 mb-2">How it works:</h4>
+        <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
           <li>• Add caregiver emails individually or import from CSV</li>
           <li>• Only caregivers on this list can signup and choose a title (RN or DR)</li>
           <li>• Remove emails to prevent signup access</li>

@@ -112,8 +112,8 @@ export default function PatientDetailsModal({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-4xl p-8 text-center">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <Card className="w-full max-w-full md:max-w-4xl p-6 sm:p-8 text-center my-8">
           <p className="text-gray-600">Loading patient details...</p>
         </Card>
       </div>
@@ -122,10 +122,10 @@ export default function PatientDetailsModal({
 
   if (error || !patient) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <Card className="w-full max-w-4xl">
-          <div className="flex justify-between items-center p-6 border-b">
-            <h2 className="text-xl font-bold">Patient Details</h2>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <Card className="w-full max-w-full md:max-w-4xl my-8">
+          <div className="flex justify-between items-center p-4 sm:p-6 border-b">
+            <h2 className="text-lg sm:text-xl font-bold">Patient Details</h2>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
               <X className="w-5 h-5" />
             </button>
@@ -147,15 +147,15 @@ export default function PatientDetailsModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <Card className="w-full max-w-full md:max-w-4xl max-h-[90vh] overflow-y-auto my-8">
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold">
+              <h2 className="text-xl sm:text-2xl font-bold">
                 {patient.firstName} {patient.lastName}
               </h2>
-              <p className="text-sm text-gray-600">{patient.email || 'No email'}</p>
+              <p className="text-xs sm:text-sm text-gray-600">{patient.email || 'No email'}</p>
             </div>
             <button
               onClick={onClose}
@@ -166,7 +166,7 @@ export default function PatientDetailsModal({
           </div>
 
           {/* Quick Info */}
-          <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 grid grid-cols-4 gap-4">
+          <div className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <div>
               <p className="text-xs text-gray-600">Age</p>
               <p className="text-lg font-semibold">{age}</p>
@@ -190,7 +190,7 @@ export default function PatientDetailsModal({
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-200 px-6">
+          <div className="border-b border-gray-200 overflow-x-auto flex gap-1 px-4 sm:px-6 pt-3 sm:pt-4">
             <div className="flex gap-8">
               {(
                 [
@@ -217,7 +217,7 @@ export default function PatientDetailsModal({
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
@@ -225,7 +225,7 @@ export default function PatientDetailsModal({
                   <h3 className="font-semibold text-gray-900 mb-3">
                     Medical Information
                   </h3>
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <p className="text-sm text-gray-600">Medical Conditions</p>
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -254,7 +254,7 @@ export default function PatientDetailsModal({
                   <h3 className="font-semibold text-gray-900 mb-3">
                     Emergency Contact
                   </h3>
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <p className="text-sm text-gray-600">Contact Name</p>
                       <p className="text-lg font-medium mt-2">

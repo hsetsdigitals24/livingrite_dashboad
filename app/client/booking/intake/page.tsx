@@ -152,7 +152,7 @@ function IntakeFormContent() {
       <div className="space-y-5">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Current Concerns <span className="text-red-500">*</span>
+            {`Current Concerns (coMorbidities)`} <span className="text-red-500">*</span>
           </label>
           <textarea
             value={intakeData.currentConcerns}

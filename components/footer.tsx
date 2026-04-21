@@ -24,10 +24,10 @@ const footerLinks = {
   ],
   company: [
     { name: "About Us", href: "/about" },
-    { name: "Our Team", href: "/team" },
-    { name: "Careers", href: "/careers" },
-    { name: "Blog", href: "/blogs" },
-    { name: "Press", href: "/press" },
+    { name: "Our Team", href: "/team" }, 
+    { name: "Blog", href: "/blogs" }, 
+    { name: "Support", href: "/support" },
+    { name: "Admin", href: "/auth/admin" },
   ],
   resources: [
     // { name: "Care Guides", href: "/care-guides" },
@@ -126,9 +126,6 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-            <span className="text-gray-900 hover:text-primary transition-colors text-sm">
-              <Link href="/auth/admin">Admin</Link>
-            </span>
           </div>
 
           {/* Newsletter Column */}

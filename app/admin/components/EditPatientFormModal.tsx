@@ -180,7 +180,7 @@ export default function EditPatientForm({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <Card className="w-full max-w-2xl my-8">
+      <Card className="w-full max-w-full md:max-w-2xl my-8">
         {/* Header */}
         <div className="border-b p-6 flex items-start justify-between">
           <div>

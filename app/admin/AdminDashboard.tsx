@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
@@ -28,22 +28,45 @@ function SectionFallback() {
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Close sidebar when section changes on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Header />
+      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="flex">
+      <div className="flex relative">
         {/* Sidebar */}
         <Sidebar
           activeSection={activeSection}
           setActiveSection={setActiveSection}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
         />
 
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-20 top-16"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Main Content */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-8">
+        <main className="flex-1 overflow-auto w-full">
+          <div className="p-4 sm:p-6 lg:p-8">
             <Suspense fallback={<SectionFallback />}>
               {activeSection === "pipeline" && <PipelineSection />}
               {activeSection === "consultations" && <ConsultationsSection />}

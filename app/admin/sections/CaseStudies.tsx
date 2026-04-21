@@ -321,12 +321,12 @@ export default function CaseStudiesSection() {
   const featuredCount = caseStudies.filter((cs) => cs.featured).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Case Studies</h1>
-          <p className="text-gray-600 mt-2">Manage case studies and client success stories</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Case Studies</h1>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">Manage case studies and client success stories</p>
         </div>
         <button
           onClick={() => handleOpenForm()}
@@ -338,24 +338,24 @@ export default function CaseStudiesSection() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-600 font-medium">Approved</p>
-          <p className="text-3xl font-bold text-green-600 mt-2">{approvedCount}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+          <p className="text-xs sm:text-sm text-gray-600 font-medium">Approved</p>
+          <p className="text-2xl sm:text-3xl font-bold text-green-600 mt-1 sm:mt-2">{approvedCount}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-600 font-medium">Pending</p>
-          <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingCount}</p>
+        <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+          <p className="text-xs sm:text-sm text-gray-600 font-medium">Pending</p>
+          <p className="text-2xl sm:text-3xl font-bold text-yellow-600 mt-1 sm:mt-2">{pendingCount}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-600 font-medium">Featured</p>
-          <p className="text-3xl font-bold text-blue-600 mt-2">{featuredCount}</p>
+        <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+          <p className="text-xs sm:text-sm text-gray-600 font-medium">Featured</p>
+          <p className="text-2xl sm:text-3xl font-bold text-blue-600 mt-1 sm:mt-2">{featuredCount}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg shadow p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select
@@ -421,11 +421,11 @@ export default function CaseStudiesSection() {
       {/* Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center">
-            <p className="text-gray-600">Loading case studies...</p>
+          <div className="p-8 sm:p-12 text-center">
+            <p className="text-sm sm:text-base text-gray-600">Loading case studies...</p>
           </div>
         ) : caseStudies.length === 0 ? (
-          <div className="p-12 text-center">
+          <div className="p-8 sm:p-12 text-center">
             <p className="text-gray-600">No case studies found</p>
           </div>
         ) : (

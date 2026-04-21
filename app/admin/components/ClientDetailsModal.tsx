@@ -100,8 +100,8 @@ export default function ClientDetailsModal({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-2xl mx-4 p-8">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <Card className="w-full max-w-full md:max-w-2xl p-6 sm:p-8 my-8">
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
           </div>
@@ -112,9 +112,9 @@ export default function ClientDetailsModal({
 
   if (error || !client) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-2xl mx-4 p-8">
-          <div className="flex items-start gap-3">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <Card className="w-full max-w-full md:max-w-2xl my-8">
+          <div className="flex items-start gap-3 p-4 sm:p-6">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-red-900">Error</h3>
@@ -134,11 +134,11 @@ export default function ClientDetailsModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <Card className="w-full max-w-4xl my-8">
+      <Card className="w-full max-w-full md:max-w-4xl my-8">
         {/* Header */}
-        <div className="border-b p-6 flex items-start justify-between">
+        <div className="border-b p-4 sm:p-6 flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Client Details</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Client Details</h2>
             <p className="text-sm text-gray-600 mt-1">{client.email}</p>
           </div>
           <button
@@ -151,7 +151,7 @@ export default function ClientDetailsModal({
         </div>
 
         {/* Tabs */}
-        <div className="border-b flex gap-1 px-6 pt-4">
+        <div className="border-b overflow-x-auto flex gap-1 px-4 sm:px-6 pt-4">
           {[
             { id: 'overview', label: 'Overview', icon: Globe },
             { id: 'family', label: 'Family Members', icon: Users },
@@ -177,7 +177,7 @@ export default function ClientDetailsModal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -438,7 +438,7 @@ export default function ClientDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t p-6 flex justify-end gap-3">
+        <div className="border-t p-4 sm:p-6 flex justify-end gap-3">
           <button
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium"

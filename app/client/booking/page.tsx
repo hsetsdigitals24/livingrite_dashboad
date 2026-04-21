@@ -37,17 +37,11 @@ export default function Booking() {
     })();
   }, []); 
 
-  return (
-    <div className="flex w-full h-screen flex-col justify-center items-center">
-      <Cal
-        namespace="30min"
-       calLink="liviingritecare/30min"
-        style={{ width: "100%", height: "100%", overflow: "scroll" }}
-        config={{
-          layout: "month_view",
-          useSlotsViewOnSmallScreen: "true",
-        }}
-      />
-    </div>
-  );
+   return <Cal namespace="30min"
+    calLink="liviingritecare/30min"
+    style={{width:"100%",height:"100%",overflow:"scroll"}}
+    config={{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}}
+    
+    
+  />;
 }

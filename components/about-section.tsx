@@ -79,7 +79,7 @@ export function AboutSection() {
                 <div className="text-sm text-gray-600 font-light">Years Experience</div>
               </div>
               <div className="group/stat">
-                <div className="text-4xl font-black text-[#e50d92] group-hover/stat:text-[#00b2ec] transition-colors duration-300 mb-2">2000+</div>
+                <div className="text-4xl font-black text-[#e50d92] group-hover/stat:text-[#00b2ec] transition-colors duration-300 mb-2">50+</div>
                 <div className="text-sm text-gray-600 font-light">Families Served</div>
               </div>
             </div>

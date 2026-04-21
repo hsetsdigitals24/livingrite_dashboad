@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AlertCircle, Search, X, ChevronLeft, ChevronRight, Loader, Calendar, Clock } from "lucide-react";
+import { ResponsiveTable } from "@/components/admin/ResponsiveTable";
 
 interface Booking {
   id: string;
@@ -159,73 +160,72 @@ export default function ConsultationsSection() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    {["Client", "Event", "Scheduled", "Status", "Intake", "Action"].map((h) => (
-                      <th key={h} className="px-5 py-3 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide whitespace-nowrap">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {consultations.map((c) => {
-                    const { date, time } = formatDateTime(c.scheduledAt);
-                    const hasIntake = false; // intake is stored on booking.intakeFormData — not returned in list
+            <ResponsiveTable
+              columns={[
+                {
+                  label: "Client",
+                  key: "clientName",
+                  render: (_, row) => (
+                    <div>
+                      <p className="font-medium text-gray-900">{row.clientName}</p>
+                      <p className="text-xs text-gray-500">{row.clientEmail}</p>
+                    </div>
+                  ),
+                },
+                {
+                  label: "Event",
+                  key: "eventTitle",
+                  render: (val) => val || "—",
+                },
+                {
+                  label: "Scheduled",
+                  key: "scheduledAt",
+                  render: (val) => {
+                    const { date, time } = formatDateTime(val);
                     return (
-                      <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-4">
-                          <p className="font-medium text-gray-900">{c.clientName}</p>
-                          <p className="text-xs text-gray-500">{c.clientEmail}</p>
-                        </td>
-                        <td className="px-5 py-4 text-gray-600 max-w-[160px] truncate">
-                          {c.eventTitle || "—"}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-1.5 text-gray-700">
-                            <Calendar className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                            <span>{date}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-gray-500 mt-0.5">
-                            <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                            <span className="text-xs">{time}</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <StatusBadge status={c.status} />
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex flex-wrap gap-1">
-                            <EmailFlag sent={c.confirmationSent} label="Conf" />
-                            <EmailFlag sent={c.reminderSent}     label="Remind" />
-                            <EmailFlag sent={c.thankYouSent}     label="Thanks" />
-                            <EmailFlag sent={c.followUpSent}     label="Follow" />
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <button
-                            onClick={() => setSelected(c)}
-                            className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-medium hover:bg-teal-700 transition-colors"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
+                      <div>
+                        <div className="flex items-center gap-1.5 text-gray-700">
+                          <Calendar className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                          <span>{date}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-gray-500 mt-0.5">
+                          <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                          <span className="text-xs">{time}</span>
+                        </div>
+                      </div>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {consultations.length === 0 && (
-              <div className="text-center py-14">
-                <Calendar className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No consultations found</p>
-                <p className="text-gray-400 text-xs mt-1">Try adjusting your filters</p>
-              </div>
-            )}
+                  },
+                },
+                {
+                  label: "Status",
+                  key: "status",
+                  render: (val) => <StatusBadge status={val} />,
+                },
+                {
+                  label: "Intake",
+                  key: "confirmationSent",
+                  render: (_, row) => (
+                    <div className="flex flex-wrap gap-1">
+                      <EmailFlag sent={row.confirmationSent} label="Conf" />
+                      <EmailFlag sent={row.reminderSent} label="Remind" />
+                      <EmailFlag sent={row.thankYouSent} label="Thanks" />
+                      <EmailFlag sent={row.followUpSent} label="Follow" />
+                    </div>
+                  ),
+                },
+              ]}
+              data={consultations}
+              isLoading={false}
+              emptyMessage="No consultations found"
+              rowActions={(row) => (
+                <button
+                  onClick={() => setSelected(row)}
+                  className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-medium hover:bg-teal-700 transition-colors"
+                >
+                  View
+                </button>
+              )}
+            />
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (

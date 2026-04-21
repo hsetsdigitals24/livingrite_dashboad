@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ResponsiveTable } from '@/components/admin/ResponsiveTable';
 
 interface Caregiver {
   id: string;
@@ -108,95 +109,69 @@ export default function CaregiversSection() {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-200 rounded-lg">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                License
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Specialization
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Experience
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Patients
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Joined
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {caregivers.length > 0 ? (
-              caregivers.map((caregiver) => (
-                <tr
-                  key={caregiver.id}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    {caregiver.name || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {caregiver.email || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {caregiver.caregiverProfile?.licenseNumber || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {caregiver.caregiverProfile?.specialization?.length ? (
-                      <div className="flex flex-wrap gap-1">
-                        {caregiver.caregiverProfile.specialization.slice(0, 2).map((spec, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
-                          >
-                            {spec}
-                          </span>
-                        ))}
-                        {caregiver.caregiverProfile.specialization.length > 2 && (
-                          <span className="inline-block px-2 py-1 text-gray-600 text-xs">
-                            +{caregiver.caregiverProfile.specialization.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      'N/A'
+      <ResponsiveTable
+        columns={[
+          { label: 'Name', key: 'name', render: (val) => val || 'N/A' },
+          { label: 'Email', key: 'email', render: (val) => val || 'N/A' },
+          {
+            label: 'License',
+            key: 'caregiverProfile',
+            render: (_, row) => row.caregiverProfile?.licenseNumber || 'N/A',
+          },
+          {
+            label: 'Specialization',
+            key: 'caregiverProfile',
+            render: (_, row) => {
+              const specs = row.caregiverProfile?.specialization;
+              if (specs && specs.length > 0) {
+                return (
+                  <div className="flex flex-wrap gap-1">
+                    {specs.slice(0, 2).map((spec: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
+                      >
+                        {spec}
+                      </span>
+                    ))}
+                    {specs.length > 2 && (
+                      <span className="inline-block px-2 py-1 text-gray-600 text-xs">
+                        +{specs.length - 2} more
+                      </span>
                     )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {caregiver.caregiverProfile?.yearsOfExperience
-                      ? `${caregiver.caregiverProfile.yearsOfExperience} yrs`
-                      : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {caregiver.patientsAsCaregiver.length}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(caregiver.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                  No caregivers found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                  </div>
+                );
+              }
+              return 'N/A';
+            },
+          },
+          {
+            label: 'Experience',
+            key: 'caregiverProfile',
+            render: (_, row) => {
+              const years = row.caregiverProfile?.yearsOfExperience;
+              return years ? `${years} yrs` : 'N/A';
+            },
+          },
+          {
+            label: 'Patients',
+            key: 'patientsAsCaregiver',
+            render: (val) => (
+              <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                {val?.length || 0}
+              </span>
+            ),
+          },
+          {
+            label: 'Joined',
+            key: 'createdAt',
+            render: (val) => new Date(val).toLocaleDateString(),
+          },
+        ]}
+        data={caregivers}
+        isLoading={loading}
+        emptyMessage="No caregivers found"
+      />
 
       {/* Pagination Controls */}
       <div className="flex items-center justify-between">

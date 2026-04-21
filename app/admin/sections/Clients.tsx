@@ -3,14 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ResponsiveTable } from '@/components/admin/ResponsiveTable';
 import {
   ChevronLeft,
   ChevronRight,
@@ -171,174 +164,156 @@ export default function Clients() {
             </p>
           </div>
         ) : (
-          <>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50 border-b">
-                    <TableHead
-                      className="cursor-pointer hover:bg-gray-100 transition"
-                      onClick={() => handleSort('name')}
-                    >
-                      <div className="flex items-center gap-2">
-                        Name
-                        {sortBy === 'name' && (
-                          <span className="text-blue-600">
-                            {sortOrder === 'asc' ? '↑' : '↓'}
+          <div>
+            <ResponsiveTable
+              columns={[
+                {
+                  label: 'Name',
+                  key: 'name',
+                  render: (val, row) => (
+                    <div className="flex items-center gap-3">
+                      {row.image ? (
+                        <img
+                          src={row.image}
+                          alt={row.name || 'Client'}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-semibold text-blue-700">
+                            {(row.name || 'U').charAt(0).toUpperCase()}
                           </span>
-                        )}
-                      </div>
-                    </TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead className="text-center">Family Members</TableHead>
-                    <TableHead className="text-center">Bookings</TableHead>
-                    <TableHead className="text-center">Auth Methods</TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-gray-100 transition"
-                      onClick={() => handleSort('createdAt')}
-                    >
-                      <div className="flex items-center gap-2">
-                        Joined
-                        {sortBy === 'createdAt' && (
-                          <span className="text-blue-600">
-                            {sortOrder === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clients.map((client) => (
-                    <TableRow key={client.id} className="border-b hover:bg-gray-50 transition">
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {client.image ? (
-                            <img
-                              src={client.image}
-                              alt={client.name || 'Client'}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                              <span className="text-xs font-semibold text-blue-700">
-                                {(client.name || 'U').charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {client.name || 'Unnamed'}
-                            </p>
-                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-gray-600 text-sm">
-                          <Mail className="w-4 h-4 text-gray-400" />
-                          {client.email || 'N/A'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-gray-600 text-sm">
-                          <Phone className="w-4 h-4 text-gray-400" />
-                          {client.phone || 'N/A'}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                          {client.familyMemberAssignments.length}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                          {client.bookings.length}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          {client.accounts.map((account) => (
+                      )}
+                      <p className="font-medium text-gray-900">{val || 'Unnamed'}</p>
+                    </div>
+                  ),
+                },
+                {
+                  label: 'Email',
+                  key: 'email',
+                  render: (val) => (
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      {val || 'N/A'}
+                    </div>
+                  ),
+                },
+                {
+                  label: 'Phone',
+                  key: 'phone',
+                  render: (val) => (
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      {val || 'N/A'}
+                    </div>
+                  ),
+                },
+                {
+                  label: 'Family Members',
+                  key: 'familyMemberAssignments',
+                  render: (val) => (
+                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium inline-block">
+                      {val?.length || 0}
+                    </span>
+                  ),
+                },
+                {
+                  label: 'Bookings',
+                  key: 'bookings',
+                  render: (val) => (
+                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-block">
+                      {val?.length || 0}
+                    </span>
+                  ),
+                },
+                {
+                  label: 'Auth Methods',
+                  key: 'accounts',
+                  render: (val) => (
+                    <div className="flex items-center justify-center gap-1 flex-wrap">
+                      {val && val.length > 0
+                        ? val.map((account: any) => (
                             <span
                               key={account.provider}
                               className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded capitalize"
                             >
                               {account.provider}
                             </span>
-                          ))}
-                          {client.accounts.length === 0 && (
-                            <span className="text-xs text-gray-400">None</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-600 text-sm">
-                        {new Date(client.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <button
-                          onClick={() => handleViewDetails(client)}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition text-blue-600 hover:text-blue-700"
-                          title="View Details"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                          ))
+                        : <span className="text-xs text-gray-400">None</span>}
+                    </div>
+                  ),
+                },
+                {
+                  label: 'Joined',
+                  key: 'createdAt',
+                  render: (val) => new Date(val).toLocaleDateString(),
+                },
+              ]}
+              data={clients}
+              isLoading={loading}
+              emptyMessage="No clients found"
+              rowActions={(row) => (
+                <button
+                  onClick={() => handleViewDetails(row)}
+                  className="p-2 hover:bg-blue-50 rounded-lg transition text-blue-600 hover:text-blue-700"
+                  title="View Details"
+                >
+                  <Eye className="w-5 h-5" />
+                </button>
+              )}
+            />
 
             {/* Pagination */}
-            <div className="border-t px-6 py-4 flex items-center justify-between bg-gray-50">
-              <div className="text-sm text-gray-600">
-                Showing <span className="font-medium">{startIndex}</span> to{' '}
-                <span className="font-medium">{endIndex}</span> of{' '}
-                <span className="font-medium">{totalItems}</span> clients
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1 || loading}
-                  className="flex items-center gap-2"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
-                </Button>
-
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }).map((_, idx) => (
-                    <button
-                      key={idx + 1}
-                      onClick={() => setCurrentPage(idx + 1)}
-                      className={`w-8 h-8 rounded-lg font-medium transition ${
-                        currentPage === idx + 1
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      {idx + 1}
-                    </button>
-                  ))}
+            {totalPages > 1 && (
+              <div className="border-t px-6 py-4 flex items-center justify-between bg-gray-50">
+                <div className="text-sm text-gray-600">
+                  Showing <span className="font-medium">{startIndex}</span> to{' '}
+                  <span className="font-medium">{endIndex}</span> of{' '}
+                  <span className="font-medium">{totalItems}</span> clients
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages || loading}
-                  className="flex items-center gap-2"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1 || loading}
+                    className="flex items-center gap-2"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }).map((_, idx) => (
+                      <button
+                        key={idx + 1}
+                        onClick={() => setCurrentPage(idx + 1)}
+                        className={`w-8 h-8 rounded-lg font-medium transition ${
+                          currentPage === idx + 1
+                            ? 'bg-blue-600 text-white'
+                            : 'border border-gray-300 text-gray-700 hover:border-gray-400'
+                        }`}
+                      >
+                        {idx + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages || loading}
+                    className="flex items-center gap-2"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          </>
+            )}
+          </div>
         )}
       </Card>
 

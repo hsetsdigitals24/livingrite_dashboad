@@ -181,10 +181,10 @@ export default function EditPatientForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold">Edit Patient</h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <Card className="w-full max-w-full md:max-w-2xl max-h-[90vh] overflow-y-auto my-8">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold">Edit Patient</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -193,7 +193,7 @@ export default function EditPatientForm({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -206,7 +206,7 @@ export default function EditPatientForm({
             <h3 className="font-semibold text-gray-900 mb-4">
               Personal Information
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   First Name *
@@ -299,7 +299,7 @@ export default function EditPatientForm({
             <h3 className="font-semibold text-gray-900 mb-4">
               Health Information
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Height (cm)
@@ -373,7 +373,7 @@ export default function EditPatientForm({
             <h3 className="font-semibold text-gray-900 mb-4">
               Emergency Contact
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Contact Name
@@ -451,7 +451,7 @@ export default function EditPatientForm({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-end border-t pt-6">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end border-t pt-6">
             <Button
               type="button"
               variant="outline"

@@ -81,22 +81,22 @@ export default function PaymentSettingsSection() {
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-4 sm:p-8 text-center">
         <div className="animate-spin inline-block w-6 h-6 border-4 border-teal-600 border-t-transparent rounded-full"></div>
-        <p className="mt-3 text-gray-500">Loading payment settings...</p>
+        <p className="mt-3 text-sm sm:text-base text-gray-500">Loading payment settings...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-teal-100 rounded-lg">
+    <div className="max-w-full md:max-w-2xl space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+        <div className="p-2 bg-teal-100 rounded-lg flex-shrink-0">
           <Building2 className="w-5 h-5 text-teal-600" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900">Bank Account Details</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-900">Bank Account Details</h3>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
             These details will be included in every invoice email sent to clients.
           </p>
         </div>
@@ -115,9 +115,9 @@ export default function PaymentSettingsSection() {
         </div>
       )}
 
-      <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
             Bank Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -125,12 +125,12 @@ export default function PaymentSettingsSection() {
             value={settings.bankName}
             onChange={(e) => setSettings((p) => ({ ...p, bankName: e.target.value }))}
             placeholder="e.g. First Bank of Nigeria"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
             Account Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -138,12 +138,12 @@ export default function PaymentSettingsSection() {
             value={settings.accountName}
             onChange={(e) => setSettings((p) => ({ ...p, accountName: e.target.value }))}
             placeholder="e.g. LivingRite Care Limited"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
             Account Number <span className="text-red-500">*</span>
           </label>
           <input
@@ -151,12 +151,12 @@ export default function PaymentSettingsSection() {
             value={settings.accountNumber}
             onChange={(e) => setSettings((p) => ({ ...p, accountNumber: e.target.value }))}
             placeholder="e.g. 0123456789"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-mono tracking-wider"
+            className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-mono tracking-wider"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
             Sort Code / Bank Code{' '}
             <span className="text-gray-400 font-normal">(optional)</span>
           </label>
@@ -165,21 +165,21 @@ export default function PaymentSettingsSection() {
             value={settings.bankCode}
             onChange={(e) => setSettings((p) => ({ ...p, bankCode: e.target.value }))}
             placeholder="e.g. 011"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
             Additional Payment Instructions{' '}
             <span className="text-gray-400 font-normal">(optional)</span>
           </label>
           <textarea
             value={settings.additionalInfo}
             onChange={(e) => setSettings((p) => ({ ...p, additionalInfo: e.target.value }))}
-            placeholder="e.g. Please use your invoice number as the payment reference. For transfers from international accounts, please contact us first."
+            placeholder="e.g. Please use your invoice number as the payment reference..."
             rows={3}
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm resize-none"
+            className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm resize-none"
           />
         </div>
       </div>

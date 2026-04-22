@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import { Header } from "@/components/header";
 import { FloatingContactWidget } from "@/components/FloatingContactWidget";
 import { Footer } from "@/components/footer";
+import { GoogleAnalytics } from '@next/third-parties/google'
 // import { SanityLive } from "@/sanity/lib/live";
 
 // const inter = Inter({ subsets: ['latin'] })
@@ -48,6 +49,7 @@ export default function RootLayout({
           <FloatingContactWidget />
           <Footer />
           {/* <SanityLive /> */}
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
         </Providers>
       </body>
     </html>

@@ -49,7 +49,7 @@ export default function RootLayout({
           <FloatingContactWidget />
           <Footer />
           {/* <SanityLive /> */}
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID!} />
         </Providers>
       </body>
     </html>

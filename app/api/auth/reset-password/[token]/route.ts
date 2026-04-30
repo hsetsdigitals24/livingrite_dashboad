@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { use } from "react";
 
 export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }) {
     const { password, confirmPassword } = await request.json();
+    // console.log("Received password reset request with token:", await params.then(p => p.token));
+
 
     if (!password || !confirmPassword) {
         return new Response(

@@ -2,8 +2,9 @@
 
 import { redirect, usePathname } from "next/navigation";
 import logo from "../../../public/logo.png";
-import { Bell, Search, LogOut, Menu, X } from "lucide-react";
+import { Bell, Search, LogOut, Menu, X, HomeIcon } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
 import { useEffect } from "react";
 
 interface HeaderProps {
@@ -40,9 +41,10 @@ const Header = ({ sidebarOpen, setSidebarOpen }: HeaderProps) => {
 
           {/* Logo/Title */}
           <div className="flex-1 sm:flex-none">
-            <h1 className="text-lg sm:text-xl font-bold text-gray-700 whitespace-nowrap">
+            <h1 className="text-lg pb-4 sm:text-xl font-bold text-gray-700 whitespace-nowrap">
               Admin Center
             </h1>
+            <Link href="/" className="flex gap-2"><HomeIcon className="w-5 h-5 text-gray-700" /> Home</Link>
             <div
               className="bg-contain bg-no-repeat w-full h-full hidden"
               style={{ backgroundImage: `url('${logo.src}')` }}
@@ -50,14 +52,14 @@ const Header = ({ sidebarOpen, setSidebarOpen }: HeaderProps) => {
           </div>
 
           {/* Search Bar - Hidden on mobile */}
-          <div className="relative hidden md:block flex-1 max-w-xs lg:max-w-sm">
+          {/* <div className="relative hidden md:block flex-1 max-w-xs lg:max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search..."
               className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Right Side Items */}

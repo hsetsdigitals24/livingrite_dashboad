@@ -1,10 +1,11 @@
 import { sendPasswordResetEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-import {randomUUID} from "crypto"
+import { randomUUID } from "crypto"
 
 
 export async function POST(request: Request) {
     const { email } = await request.json();
+
     if (!email) {
         return new Response(JSON.stringify({ error: 'Email is required' }), {
             status: 400,
@@ -18,7 +19,8 @@ export async function POST(request: Request) {
             token: randomUUID(),
             expiresAt: new Date(Date.now() + 3600 * 1000) // Token expires in 1 hour
         }
-    }); 
+    });
+    console.log("Received password reset request for email:", response.email, "with token:", response.token);
 
     const resetLink = `${process.env.NEXTAUTH_URL}/auth/reset-password/${response.token}`;
 

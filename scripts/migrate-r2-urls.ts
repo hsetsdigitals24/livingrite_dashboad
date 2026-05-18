@@ -81,7 +81,7 @@ async function migrateStringArray(
 ): Promise<Counter> {
   const c = counter();
   const rows = await delegate.findMany({
-    where: { [field]: { hasSome: undefined } } as any,
+    where: { [field]: { isEmpty: false } } as any,
     select: { id: true, [field]: true } as any,
   });
   for (const row of rows) {

@@ -1,76 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { v4 as uuidv4 } from 'uuid';
+import { r2 } from '@/lib/r2';
+import { prisma } from '@/lib/prisma';
+import { requireRole, requireAnyPatientAccess } from '@/lib/api-auth';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const SIGNED_URL_EXPIRY = 3600; // 1 hour in seconds
 
-// Initialize S3 client for Cloudflare R2
-const s3Client = new S3Client({
-  region: 'auto',
-  endpoint: process.env.R2_PUBLIC_URL,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+];
 
 /**
- * Generates a signed URL for accessing an uploaded file
- * @param key - The S3 object key
- * @param expirySeconds - URL expiration time in seconds (default: 1 hour)
- * @returns Signed URL string
+ * POST /api/files/upload
+ * Upload a patient document to R2 and persist a File record. The stored `url`
+ * points to an internal redirector (/api/files/serve/[id]) so the link never
+ * expires — the redirector re-signs on each request.
+ *
+ * Form fields:
+ *   - file: required, the binary
+ *   - patientId: required, the patient this file belongs to
  */
-async function getSignedFileUrl(
-  key: string,
-  expirySeconds: number = SIGNED_URL_EXPIRY
-): Promise<string> {
+export async function POST(req: NextRequest) {
   try {
-    const command = new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: key,
-    });
+    const auth = await requireRole('ADMIN', 'CLIENT', 'CAREGIVER');
+    if (auth.response) return auth.response;
+    const { session } = auth;
 
-    const signedUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: expirySeconds,
-    });
-
-    return signedUrl;
-  } catch (error) {
-    console.error('Failed to generate signed URL:', error);
-    throw new Error('Failed to generate signed URL');
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Parse form data
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const folder = formData.get('folder') as string;
+    const formData = await req.formData();
+    const file = formData.get('file') as File | null;
+    const patientId = formData.get('patientId') as string | null;
 
     if (!file) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    if (!patientId) {
       return NextResponse.json(
-        { error: 'No file provided' },
+        { error: 'patientId is required' },
         { status: 400 }
       );
     }
 
-    // Validate file
-    if (!file.type.startsWith('image/')) {
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Only image files are allowed' },
+        { error: `Unsupported file type: ${file.type}` },
         { status: 400 }
       );
     }
@@ -82,47 +66,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '');
-    const filename = `${timestamp}-${randomString}-${originalName}`;
+    const accessDenied = await requireAnyPatientAccess(patientId, session, { write: true });
+    if (accessDenied) return accessDenied;
 
-    // Create key with folder if provided
-    const key = folder ? `${folder}/${filename}` : filename;
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const key = `patient-files/${patientId}/${uuidv4()}-${safeName}`;
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload to R2
-    const command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: key,
+        Body: buffer,
+        ContentType: file.type,
+      })
+    );
+
+    const record = await prisma.file.create({
+      data: {
+        filename: key,
+        originalName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        patientId,
+        // Placeholder; rewritten below once we know the record id. The two-step
+        // dance is needed because the redirector URL embeds the file's id.
+        url: '',
+      },
     });
 
-    await s3Client.send(command);
-
-    // Generate signed URL
-    const signedUrl = await getSignedFileUrl(key);
+    const url = `/api/files/serve/${record.id}`;
+    const updated = await prisma.file.update({
+      where: { id: record.id },
+      data: { url },
+    });
 
     return NextResponse.json(
       {
-        url: signedUrl,
-        filename,
-        size: file.size,
-        type: file.type,
-        expiresIn: SIGNED_URL_EXPIRY,
+        id: updated.id,
+        url: updated.url,
+        filename: updated.originalName,
+        size: updated.size,
+        type: updated.mimeType,
       },
       { status: 201 }
     );
   } catch (error) {
     console.error('File upload error:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload file' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
   }
 }

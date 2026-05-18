@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { prisma } from '@/lib/prisma';
 import { r2 } from '@/lib/r2';
 import { requireRole, requireAnyPatientAccess } from '@/lib/api-auth';
 
-export async function DELETE(
+const SIGNED_URL_EXPIRY = 3600; // 1 hour
+
+/**
+ * GET /api/files/serve/[fileId]
+ * Authorize the requester for the file's patient, mint a short-lived signed R2
+ * URL, and 302 to it. Stored File.url points here so links don't go stale.
+ */
+export async function GET(
   _req: Request,
   { params }: { params: Promise<{ fileId: string }> }
 ) {
@@ -14,39 +22,30 @@ export async function DELETE(
 
   const { fileId } = await params;
 
-  if (!fileId) {
-    return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
-  }
-
   const fileRecord = await prisma.file.findUnique({
     where: { id: fileId },
-    select: { id: true, filename: true, patientId: true },
+    select: { filename: true, patientId: true },
   });
 
   if (!fileRecord) {
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }
 
-  // A file without a patientId is an unowned upload — refuse to delete via this
-  // endpoint rather than risk anonymous deletion. Such files should be cleaned
-  // up by an admin tool.
   if (!fileRecord.patientId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const accessDenied = await requireAnyPatientAccess(fileRecord.patientId, session, {
-    write: true,
-  });
+  const accessDenied = await requireAnyPatientAccess(fileRecord.patientId, session);
   if (accessDenied) return accessDenied;
 
-  await r2.send(
-    new DeleteObjectCommand({
+  const signedUrl = await getSignedUrl(
+    r2,
+    new GetObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: fileRecord.filename,
-    })
+    }),
+    { expiresIn: SIGNED_URL_EXPIRY }
   );
 
-  await prisma.file.delete({ where: { id: fileId } });
-
-  return NextResponse.json({ message: 'File deleted' });
+  return NextResponse.redirect(signedUrl, 302);
 }

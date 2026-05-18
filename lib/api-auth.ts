@@ -80,3 +80,23 @@ export async function requireCaregiverAssignment(
 
   return null;
 }
+
+/**
+ * Assert the current user is allowed to act on the given patient, regardless
+ * of role. ADMIN passes unconditionally; CLIENT must have a FamilyMemberAssignment
+ * (optionally with EDIT-level access when `write: true`); CAREGIVER must have an
+ * active PatientCaregiverAssignment.
+ */
+export async function requireAnyPatientAccess(
+  patientId: string,
+  session: AuthedSession,
+  options: { write?: boolean } = {}
+): Promise<NextResponse | null> {
+  const { id: userId, role } = session.user;
+
+  if (role === 'ADMIN') return null;
+  if (role === 'CLIENT') return requirePatientAccess(patientId, userId, options);
+  if (role === 'CAREGIVER') return requireCaregiverAssignment(patientId, userId);
+
+  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}

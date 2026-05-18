@@ -22,36 +22,48 @@ export default function PopupDisplay() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if popup has been dismissed by user
+    // Honor the 30-day dismissal window. The flag used to be checked alone,
+    // which made dismissals permanent — the expiry date was written but never
+    // read.
     const isDismissed = localStorage.getItem('livingrite_popup_dismissed');
+    const dismissalDateStr = localStorage.getItem('livingrite_popup_dismissal_date');
     if (isDismissed) {
-      setIsLoading(false);
-      return;
+      const expiry = dismissalDateStr ? new Date(dismissalDateStr).getTime() : 0;
+      if (expiry && Date.now() < expiry) {
+        setIsLoading(false);
+        return;
+      }
+      // Expired (or missing date from older clients) — clear and continue.
+      localStorage.removeItem('livingrite_popup_dismissed');
+      localStorage.removeItem('livingrite_popup_dismissal_date');
     }
 
     // Track if we've shown popup this session
     const hasShown = localStorage.getItem('livingrite_popup_shown');
-    
+
     // Wait 5 seconds before showing popup (let page load fully)
     const timer = setTimeout(async () => {
       try {
         const response = await fetch('/api/popups', {
           cache: 'no-store',
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           if (data.popup) {
             setPopup(data.popup);
-            // Increment popup count
-            await fetch(`/api/popups/${data.popup.id}/increment`, {
-              method: 'PATCH',
-            }).catch(err => console.error('Failed to increment popup count:', err));
-            
-            // Only auto-show if first visit this session
+
+            // Only auto-show if first visit this session. Increment fires
+            // only when we actually display the popup, so popupCount tracks
+            // real impressions instead of background fetches.
             if (!hasShown) {
               setIsVisible(true);
               localStorage.setItem('livingrite_popup_shown', 'true');
+              fetch(`/api/popups/${data.popup.id}/increment`, {
+                method: 'PATCH',
+              }).catch((err) =>
+                console.error('Failed to increment popup count:', err)
+              );
             } else {
               setIsVisible(false);
             }
@@ -69,9 +81,7 @@ export default function PopupDisplay() {
 
   const handleDismiss = () => {
     setIsVisible(false);
-    // Mark as dismissed - won't show again for 30 days
     localStorage.setItem('livingrite_popup_dismissed', 'true');
-    // Also set expiry
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 30);
     localStorage.setItem('livingrite_popup_dismissal_date', expiryDate.toISOString());

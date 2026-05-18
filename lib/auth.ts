@@ -71,14 +71,14 @@ export const authOptions: NextAuthOptions = {
                 email: user.email!,
                 name: user.name || profile?.name || "Google User",
                 role: "CLIENT", // Default role for Google signups
-                emailVerificaion: true, // Google email is pre-verified
+                emailVerifiedFlag: true, // Google email is pre-verified
               },
             })
-          } else if (!dbUser.emailVerificaion) {
+          } else if (!dbUser.emailVerifiedFlag) {
             // Mark existing user's email as verified if they use Google
             await prisma.user.update({
               where: { id: dbUser.id },
-              data: { emailVerificaion: true },
+              data: { emailVerifiedFlag: true },
             })
           }
 

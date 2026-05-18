@@ -50,138 +50,85 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify patient exists
-    const patient = await prisma.patient.findUnique({
-      where: { id: patientId },
-    });
-
-    if (!patient) {
-      return NextResponse.json(
-        { error: 'Patient not found' },
-        { status: 404 }
-      );
-    }
-
-    if (role === 'CLIENT') {
-      // Client sending to caregiver - verify client has access to patient
-      const familyAssignment = await prisma.familyMemberAssignment.findUnique({
-        where: {
-          patientId_clientId: {
-            patientId,
-            clientId: senderId,
-          },
-        },
-      });
-
-      if (!familyAssignment) {
-        return NextResponse.json(
-          { error: 'You do not have access to this patient' },
-          { status: 403 }
-        );
-      }
-
-      // Verify caregiver is assigned to patient
-      const caregiverAssignment =
-        await prisma.patientCaregiverAssignment.findUnique({
-          where: {
-            patientId_caregiverId: {
-              patientId,
-              caregiverId: finalRecipientId,
-            },
-          },
-        });
-
-      if (!caregiverAssignment) {
-        return NextResponse.json(
-          { error: 'Caregiver is not assigned to this patient' },
-          { status: 403 }
-        );
-      }
-    } else if (role === 'CAREGIVER') {
-      // Caregiver sending to client - verify caregiver is assigned to patient
-      const caregiverAssignment =
-        await prisma.patientCaregiverAssignment.findUnique({
-          where: {
-            patientId_caregiverId: {
-              patientId,
-              caregiverId: senderId,
-            },
-          },
-        });
-
-      if (!caregiverAssignment) {
-        return NextResponse.json(
-          { error: 'You are not assigned to this patient' },
-          { status: 403 }
-        );
-      }
-
-      // Verify client has access to patient
-      const familyAssignment = await prisma.familyMemberAssignment.findUnique({
-        where: {
-          patientId_clientId: {
-            patientId,
-            clientId: finalRecipientId,
-          },
-        },
-      });
-
-      if (!familyAssignment) {
-        return NextResponse.json(
-          { error: 'Client does not have access to this patient' },
-          { status: 403 }
-        );
-      }
-    }
-
-    // Get or create conversation
+    // Resolve the (clientId, caregiverId) pair up-front so we can batch every
+    // independent validation query into a single round-trip.
     const clientId = role === 'CLIENT' ? senderId : finalRecipientId;
     const caregiverId = role === 'CAREGIVER' ? senderId : finalRecipientId;
 
-    let conversation = await prisma.conversation.findUnique({
-      where: {
-        patientId_clientId_caregiverId: {
-          patientId,
-          clientId,
-          caregiverId,
-        },
-      },
-    });
+    const [patient, familyAssignment, caregiverAssignment, existingConversation] =
+      await Promise.all([
+        prisma.patient.findUnique({
+          where: { id: patientId },
+          select: { id: true },
+        }),
+        prisma.familyMemberAssignment.findUnique({
+          where: { patientId_clientId: { patientId, clientId } },
+          select: { id: true },
+        }),
+        prisma.patientCaregiverAssignment.findUnique({
+          where: { patientId_caregiverId: { patientId, caregiverId } },
+          select: { id: true },
+        }),
+        prisma.conversation.findUnique({
+          where: {
+            patientId_clientId_caregiverId: { patientId, clientId, caregiverId },
+          },
+        }),
+      ]);
 
-    if (!conversation) {
-      conversation = await prisma.conversation.create({
-        data: {
-          patientId,
-          clientId,
-          caregiverId,
-          lastMessageAt: new Date(),
-        },
-      });
+    if (!patient) {
+      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
     }
 
-    // Create the message
-    const message = await prisma.message.create({
-      data: {
-        conversationId: conversation.id,
-        senderId,
-        content: content.trim(),
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
+    if (!familyAssignment) {
+      return NextResponse.json(
+        {
+          error:
+            role === 'CLIENT'
+              ? 'You do not have access to this patient'
+              : 'Client does not have access to this patient',
         },
-      },
-    });
+        { status: 403 }
+      );
+    }
 
-    // Update conversation's lastMessageAt
-    await prisma.conversation.update({
-      where: { id: conversation.id },
-      data: { lastMessageAt: new Date() },
-    });
+    if (!caregiverAssignment) {
+      return NextResponse.json(
+        {
+          error:
+            role === 'CAREGIVER'
+              ? 'You are not assigned to this patient'
+              : 'Caregiver is not assigned to this patient',
+        },
+        { status: 403 }
+      );
+    }
+
+    const now = new Date();
+    const conversation =
+      existingConversation ??
+      (await prisma.conversation.create({
+        data: { patientId, clientId, caregiverId, lastMessageAt: now },
+      }));
+
+    // Create the message and bump the conversation's lastMessageAt in parallel
+    // — they share no dependency.
+    const [message] = await Promise.all([
+      prisma.message.create({
+        data: {
+          conversationId: conversation.id,
+          senderId,
+          content: content.trim(),
+        },
+        include: {
+          sender: { select: { id: true, name: true, image: true } },
+        },
+      }),
+      prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { lastMessageAt: now },
+      }),
+    ]);
 
     return NextResponse.json(message, { status: 201 });
   } catch (error) {

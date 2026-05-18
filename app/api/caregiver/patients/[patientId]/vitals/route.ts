@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
+import { requireRole, requireCaregiverAssignment } from '@/lib/api-auth';
 
 // POST: Create vitals for a patient
 export async function POST(
@@ -9,33 +8,15 @@ export async function POST(
   { params }: { params: Promise<{ patientId: string }>  }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role !== 'CAREGIVER') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await requireRole('CAREGIVER');
+    if (auth.response) return auth.response;
+    const { session } = auth;
 
     const { patientId } = await params;
     const { temperature, bloodPressure, heartRate } = await req.json();
 
-    // Verify caregiver has access to this patient
-    const assignment = await prisma.patientCaregiverAssignment.findFirst({
-      where: {
-        patientId,
-        caregiverId: session.user.id,
-        unassignedAt: null,
-      },
-    });
-
-    if (!assignment) {
-      return NextResponse.json(
-        { error: 'Patient not assigned to you' },
-        { status: 403 }
-      );
-    }
+    const accessDenied = await requireCaregiverAssignment(patientId, session.user.id);
+    if (accessDenied) return accessDenied;
 
     // Validate input
     if (!temperature || !bloodPressure || !heartRate) {

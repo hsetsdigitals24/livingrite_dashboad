@@ -9,16 +9,36 @@ export async function GET(req: NextRequest) {
     const calcomId = searchParams.get('calcomId');
     const clientEmail = searchParams.get('clientEmail');
 
+    // Limit returned fields — callers only need the booking summary, not the
+    // full record (intake form JSON, every reminder flag, etc.).
+    const bookingSelect = {
+      id: true,
+      calcomId: true,
+      status: true,
+      scheduledAt: true,
+      timezone: true,
+      clientName: true,
+      clientEmail: true,
+      clientPhone: true,
+      eventTitle: true,
+      meetingUri: true,
+      serviceId: true,
+      patientId: true,
+      createdAt: true,
+    } as const;
+
     let booking;
 
     if (calcomId) {
       booking = await prisma.booking.findUnique({
         where: { calcomId },
+        select: bookingSelect,
       });
     } else if (clientEmail) {
       booking = await prisma.booking.findFirst({
         where: { clientEmail },
         orderBy: { createdAt: 'desc' },
+        select: bookingSelect,
       });
     } else {
       return NextResponse.json(

@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       where: { id: user.id },
       data: {
         emailVerified: new Date(),
-        emailVerificaion: true,
+        emailVerifiedFlag: true,
       },
     })
 

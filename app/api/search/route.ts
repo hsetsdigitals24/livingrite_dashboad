@@ -11,10 +11,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results: [] })
     }
 
-    // Use a simpler pattern matching approach that's more reliable
-    const pattern = q.toLowerCase().trim()
-    
-    const query = `*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc) {
+    const pattern = q.trim()
+    // GROQ wildcard match handles word-prefix matching case-insensitively, so we
+    // push the filter to Sanity instead of loading every post and filtering here.
+    const wildcardPattern = `*${pattern}*`
+
+    const query = `*[_type == "post" && !(_id in path("drafts.**")) && (title match $pattern || excerpt match $pattern || category match $pattern)] | order(publishedAt desc)[0...20] {
       _id,
       title,
       excerpt,
@@ -28,15 +30,8 @@ export async function GET(request: NextRequest) {
       "image": image
     }`
 
-    const allPosts = await client.fetch(query)
+    const filteredPosts = await client.fetch(query, { pattern: wildcardPattern })
 
-    // Client-side filtering for more reliable search
-    const filteredPosts = allPosts.filter((post: any) => {
-      const searchableText = `${post.title || ''} ${post.excerpt || ''} ${post.category || ''}`.toLowerCase()
-      return searchableText.includes(pattern)
-    })
-
-    // Transform results
     const results = filteredPosts.map((post: any) => ({
       id: post._id,
       slug: post.slug || '',

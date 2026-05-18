@@ -92,15 +92,15 @@ export default function PopupForm({
       if (selectedFile) {
         const fileFormData = new FormData();
         fileFormData.append('file', selectedFile);
-        fileFormData.append('folder', 'popups');
 
-        const uploadResponse = await fetch('/api/files/upload', {
+        const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
           body: fileFormData,
         });
 
         if (!uploadResponse.ok) {
-          throw new Error('Failed to upload image');
+          const uploadError = await uploadResponse.json().catch(() => ({}));
+          throw new Error(uploadError.error || 'Failed to upload image');
         }
 
         const uploadData = await uploadResponse.json();

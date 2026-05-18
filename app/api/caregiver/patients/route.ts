@@ -39,86 +39,73 @@ export async function GET(req: Request) {
         }
       : {};
 
-    // Fetch patients assigned to this caregiver
-    const patients = await prisma.patient.findMany({
-      where: {
-        ...searchFilter,
-        status: 'ACTIVE',
-        caregivers: {
-          some: {
-            caregiverId,
-            unassignedAt: null, // Only active assignments
-          },
+    const caregiverFilter = {
+      ...searchFilter,
+      caregivers: {
+        some: {
+          caregiverId,
+          unassignedAt: null,
         },
       },
-      include: {
-        caregivers: {
-          where: {
-            caregiverId,
-          },
-          select: {
-            id: true,
-            assignedAt: true,
-            notes: true,
-          },
-        },
-        familyMembers: {
-          select: {
-            id: true,
-            clientId: true,
-            client: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-        vitals: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-        dailyLogs: {
-          orderBy: { date: 'desc' },
-          take: 1,
-        },
-        medicalAppointments: {
-          orderBy: { date: 'desc' },
-          take: 1,
-        },
-        bookings: {
-          orderBy: { scheduledAt: 'desc' },
-          take: 5,
-          include: {
-            service: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
-      skip,
-      take: limit,
-    });
+    };
 
-    // Get total count for pagination
-    const total = await prisma.patient.count({
-      where: {
-        ...searchFilter,
-        caregivers: {
-          some: {
-            caregiverId,
-            unassignedAt: null,
+    // Run list and count in parallel — they don't depend on each other.
+    const [patients, total] = await Promise.all([
+      prisma.patient.findMany({
+        where: { ...caregiverFilter, status: 'ACTIVE' },
+        include: {
+          caregivers: {
+            where: { caregiverId },
+            select: {
+              id: true,
+              assignedAt: true,
+              notes: true,
+            },
+          },
+          familyMembers: {
+            select: {
+              id: true,
+              clientId: true,
+              client: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          vitals: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+          dailyLogs: {
+            orderBy: { date: 'desc' },
+            take: 1,
+          },
+          medicalAppointments: {
+            orderBy: { date: 'desc' },
+            take: 1,
+          },
+          bookings: {
+            orderBy: { scheduledAt: 'desc' },
+            take: 5,
+            include: {
+              service: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
           },
         },
-      },
-    });
+        orderBy: { [sortBy]: sortOrder },
+        skip,
+        take: limit,
+      }),
+      prisma.patient.count({ where: caregiverFilter }),
+    ]);
 
     return NextResponse.json({
       patients,

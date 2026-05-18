@@ -100,33 +100,14 @@ export async function PATCH(
   { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const auth = await requireRole('CLIENT');
+    if (auth.response) return auth.response;
+    const { session } = auth;
 
     const { patientId } = await params;
 
-    // Verify user has access to this patient
-    const familyMember = await prisma.familyMemberAssignment.findUnique({
-      where: {
-        patientId_clientId: {
-          patientId,
-          clientId: session.user.id,
-        },
-      },
-    });
-
-    if (!familyMember) {
-      return NextResponse.json(
-        { error: 'Access denied' },
-        { status: 403 }
-      );
-    }
+    const accessDenied = await requirePatientAccess(patientId, session.user.id);
+    if (accessDenied) return accessDenied;
 
     const data = await req.json();
 

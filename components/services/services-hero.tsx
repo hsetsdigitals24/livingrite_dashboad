@@ -189,7 +189,7 @@ export function ServicesHero() {
                           >
                             Book consultation
                           </Button>
-                        </Link>
+                        </BookingLink>
                       </div>
                     </div>
 

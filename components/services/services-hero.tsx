@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroImage from "@/public/service-hero.jpg";
+import { BookingLink } from "@/components/BookingLink";
 
 const services = [
   {

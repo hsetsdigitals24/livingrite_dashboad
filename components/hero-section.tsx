@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRightFromCircle, ChevronDown, Heart } from "lucide-react";
 import { BookingLink } from "@/components/BookingLink";
+import Link from "next/link";
 // import heroImage from '@/public/service-hero.jpg'
 
 export function HeroSection() {

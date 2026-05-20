@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
+import { BookingLink } from "@/components/BookingLink"
 
 interface ServiceDetailProps {
   title: string
@@ -329,6 +330,7 @@ export function ServiceDetail({ slug }: { slug: string }) {
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </BookingLink>
+        </div>
 
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8 mb-20">

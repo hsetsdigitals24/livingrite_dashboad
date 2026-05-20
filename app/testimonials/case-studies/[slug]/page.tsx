@@ -8,6 +8,7 @@ import {
   Heart,
 } from "lucide-react";
 import { notFound } from "next/navigation";
+import { BookingLink } from "@/components/BookingLink";
 
 interface CaseStudy {
   id: string;

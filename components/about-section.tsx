@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ArrowUpRightFromCircle } from "lucide-react";
-import Link from "next/link";
+import { BookingLink } from "@/components/BookingLink";
 import sectionImage from "@/public/african-nurse-caring-for-elderly-patient-at-home--.jpg";
 const values = [
   "Hospital-trained nurses with years of experience",
@@ -84,8 +84,7 @@ export function AboutSection() {
               </div>
             </div>
 
-            <Link
-              href="/client/booking"
+            <BookingLink
               className="inline-flex items-center gap-2 animate-slide-up animation-delay-700 group/cta"
             >
               <Button
@@ -95,7 +94,7 @@ export function AboutSection() {
                 Start Your Recovery Plan
                 <ArrowUpRightFromCircle className="ml-2 h-5 w-5 group-hover/cta:translate-x-1 group-hover/cta:translate-y-[-2px] transition-transform duration-300" />
               </Button>
-            </Link>
+            </BookingLink>
           </div>
         </div>
       </div>

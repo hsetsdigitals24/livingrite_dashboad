@@ -10,6 +10,7 @@ import {
   Calendar,
   MessageSquare,
 } from "lucide-react";
+import { BOOKING_LINK } from "@/lib/booking-link";
 
 interface CombinedNavProps {
   role?: string | undefined | null;
@@ -57,7 +58,7 @@ export function CombinedNav({ role }: CombinedNavProps) {
     }, 
     {
       label: "Book Service",
-      href: "/client/booking",
+      href: BOOKING_LINK,
       icon: Calendar,
     },
     {
@@ -87,6 +88,8 @@ export function CombinedNav({ role }: CombinedNavProps) {
             
             <Link
               href={item.href}
+              target={item.href.startsWith("http") ? "_blank" : undefined}
+              rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 role && role !== "ADMIN"
                   ? "text-white hover:text-slate-200"

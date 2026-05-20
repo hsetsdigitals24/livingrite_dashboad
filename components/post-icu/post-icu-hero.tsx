@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import heroImage from "@/public/service-hero.jpg"
-import Link from "next/link"
+import { BookingLink } from "@/components/BookingLink"
 
 export function PostICUHero() {
   return (
@@ -40,17 +40,12 @@ export function PostICUHero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animation-delay-500">
-            <Link
-              href="/client/booking"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block"
-            >
+            <BookingLink className="inline-block">
               <Button size="lg" className="text-base rounded-br-2xl rounded-tl-xl font-semibold bg-accent hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group">
                 Start Recovery Today
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-            </Link>
+            </BookingLink>
           </div>
         </div>
       </div>

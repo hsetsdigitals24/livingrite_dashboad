@@ -328,7 +328,7 @@ export function ServicesGrid() {
           <p className="text-gray-600 mb-6">
             Ready to experience compassionate, professional healthcare?
           </p>
-          <Link href="/client/booking" className="flex items-center mx-auto w-min cursor-pointer">
+          <BookingLink className="flex items-center mx-auto w-min cursor-pointer">
             <Button
               size="lg"
               className="text-base font-semibold bg-primary hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group"
@@ -336,7 +336,7 @@ export function ServicesGrid() {
               Book Your Free Consultation
               <ArrowUpRightFromCircle className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-          </Link>
+          </BookingLink>
         </div>
       </div>
     </section>

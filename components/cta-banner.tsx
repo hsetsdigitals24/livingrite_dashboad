@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowUpRightFromCircle, CheckCircle, Phone, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { BookingLink } from "@/components/BookingLink";
 
 export function CTABanner() {
   return (
@@ -68,7 +68,7 @@ export function CTABanner() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animation-delay-500">
-                <Link href="/client/booking" className="group/btn">
+                <BookingLink className="group/btn">
                   <Button
                     size="lg"
                     className="w-full sm:w-auto bg-gradient-to-r from-[#00b2ec] to-[#0088b8] hover:from-[#0088b8] hover:to-[#00b2ec] text-white shadow-xl shadow-[#00b2ec]/30 hover:shadow-2xl hover:shadow-[#00b2ec]/50 hover:scale-105 transition-all duration-300 rounded-full px-10 font-semibold text-base"
@@ -78,7 +78,7 @@ export function CTABanner() {
                       <ArrowUpRightFromCircle className="h-5 w-5 group-hover/btn:translate-x-1 group-hover/btn:translate-y-[-2px] transition-transform duration-300" />
                     </span>
                   </Button>
-                </Link>
+                </BookingLink>
                 <a href="tel:+234" className="group/btn">
                   <Button
                     size="lg"

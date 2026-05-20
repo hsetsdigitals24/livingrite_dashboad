@@ -181,12 +181,7 @@ export function ServicesHero() {
                             Learn more
                           </Button>
                         </Link>
-                        <Link
-                          href="/client/booking"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-block"
-                        >
+                        <BookingLink className="inline-block">
                           <Button
                             size="lg"
                             variant="outline"

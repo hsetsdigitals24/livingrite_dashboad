@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, ReactElement } from "react"
 import { ChevronDown, Search, Share2, FileText, Lightbulb, Clock, Users, TrendingUp, Calendar, Cross, CreditCard, Ambulance, ScreenShare, Handshake, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { BookingLink } from "@/components/BookingLink"
 
 // FAQ Schema for SEO
 const generateFaqSchema = (categories: FaqCategory[]) => {
@@ -449,9 +449,9 @@ export default function FAQsPage() {
 
           {/* Quick CTA */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            <Link href="/client/booking" className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition inline-block">
+            <BookingLink className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition inline-block">
               Schedule Free Consultation
-            </Link>
+            </BookingLink>
             
           </div>
         </div>
@@ -555,9 +555,9 @@ export default function FAQsPage() {
             <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-white/20 hover:border-white/40 transition">
               <h3 className="font-bold text-lg text-white mb-2">Book a consultation</h3>
               <p className="text-sm text-blue-50 mb-4">Get a free 30-minute assessment from our qualified experts.</p>
-              <button className="inline-block text-sm bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium">
+              <BookingLink className="inline-block text-sm bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium">
                 Book Now
-              </button>
+              </BookingLink>
             </div>
           </div>
         </div>

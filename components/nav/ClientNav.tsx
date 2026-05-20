@@ -8,6 +8,7 @@ import {
   MessageSquare, 
   LibraryBig,
 } from "lucide-react";
+import { BOOKING_LINK } from "@/lib/booking-link";
 
 /**
  * Client Navigation Links
@@ -32,7 +33,7 @@ export function ClientNav() {
     },
     {
       label: "Book Service",
-      href: "/client/booking",
+      href: BOOKING_LINK,
       icon: Calendar,
     },
     {
@@ -50,6 +51,8 @@ export function ClientNav() {
           <Link
             key={item.label}
             href={item.href}
+            target={item.href.startsWith("http") ? "_blank" : undefined}
+            rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
             className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <Icon className="h-4 w-4" />

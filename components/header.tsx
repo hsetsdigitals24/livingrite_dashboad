@@ -181,14 +181,14 @@ export function Header() {
               <RoleAwareUserMenu />
             ) : (
               <>
-                <Link href="/client/booking">
+                <BookingLink>
                   <Button
                     size="lg"
                     className="font-semibold rounded-full bg-primary hover:shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all duration-300"
                   >
                     Book Consultation
                   </Button>
-                </Link>
+                </BookingLink>
                 <Link href="/auth/signin">
                      <button
                     //  variant="outline"
@@ -334,15 +334,14 @@ export function Header() {
                 </Link>
 
                 <div className="pt-4 border-t border-gray-200 space-y-2">
-                  <Link
-                    href="/portal/booking"
+                  <BookingLink
                     onClick={() => setMobileMenuOpen(false)}
                     className="block"
                   >
                     <Button className="w-full rounded-full font-semibold bg-primary hover:bg-primary/90">
                       Book Consultation
                     </Button>
-                  </Link>
+                  </BookingLink>
                   <Link
                     href="/auth/signin"
                     onClick={() => setMobileMenuOpen(false)}

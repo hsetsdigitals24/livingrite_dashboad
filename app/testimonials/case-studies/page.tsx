@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Filter } from "lucide-react";
+import { BookingLink } from "@/components/BookingLink";
 
 export const metadata: Metadata = {
   title: "Case Studies | LivingRite Care",

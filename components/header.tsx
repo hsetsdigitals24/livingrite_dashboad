@@ -15,6 +15,7 @@ import logo from "@/public/logo.png";
 import Image from "next/image";
 import { useUserRole } from "@/hooks/useUserRole";
 import { RoleAwareUserMenu } from "./RoleAwareUserMenu";
+import { BookingLink } from "@/components/BookingLink";
 // import { AdminNav } from "./nav/AdminNav";
 // import { CombinedNav } from "./nav/CombinedNav";
 // import { MobileCombinedNav } from "./nav/MobileCombinedNav";

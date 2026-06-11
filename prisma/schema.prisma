@@ -1120,9 +1120,12 @@ model Testimonial {
   clientImage   String?             // avatar/photo URL
   rating        Int                 // 1-5 stars
   content       String              // quote/review text
+  shortQuote    String?             // optional 1-line preview used by the widget
+  clientLocation String?            // e.g. "Lagos, Nigeria"
   videoUrl      String?             // YouTube/Vimeo embed URL
   serviceId     String?
   featured      Boolean             @default(false)
+  showOnWidget  Boolean             @default(false) // curated set shown in the homepage/About widget
   status        TestimonialStatus   @default(PENDING)
   approvedBy    String?
   approvedAt    DateTime?
@@ -1136,6 +1139,7 @@ model Testimonial {
   @@index([status])
   @@index([serviceId])
   @@index([featured])
+  @@index([showOnWidget])
   @@index([createdAt])
   @@map("testimonials")
 }

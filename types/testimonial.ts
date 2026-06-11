@@ -1,34 +1,53 @@
-export interface TestimonialMediaItem {
-  mediaType: 'photo' | 'video'
-  driveUrl: string
-  caption?: string
-}
-
+/**
+ * Frontend-facing testimonial shape.
+ * Mirrors the Prisma `Testimonial` model with the `service` relation flattened
+ * to `serviceName` for display.
+ */
 export interface Testimonial {
-  _id: string
+  id: string
   clientName: string
-  slug: string
-  clientRole?: string
-  clientLocation?: string
-  avatarUrl?: string
-  avatarImage?: { asset?: { url?: string } }
-  quote: string
-  shortQuote?: string
+  clientTitle?: string | null
+  clientLocation?: string | null
+  clientImage?: string | null
   rating: number
-  serviceReceived?: string
-  publishedAt?: string
-  isVerified?: boolean
+  content: string
+  shortQuote?: string | null
+  videoUrl?: string | null
   featured?: boolean
-  tags?: string[]
-  mediaItems?: TestimonialMediaItem[]
+  showOnWidget?: boolean
+  serviceName?: string | null
 }
 
-export const SERVICE_LABELS: Record<string, string> = {
-  'post-stroke': 'Post-Stroke Recovery',
-  icu: 'ICU / Critical Care',
-  physiotherapy: 'Physiotherapy',
-  palliative: 'Palliative Care',
-  'home-nursing': 'Home Nursing',
-  'wound-care': 'Wound Care',
-  other: 'Other',
+/** Shape returned by Prisma queries that `include: { service: true }`. */
+export interface TestimonialWithService {
+  id: string
+  clientName: string
+  clientTitle: string | null
+  clientLocation: string | null
+  clientImage: string | null
+  rating: number
+  content: string
+  shortQuote: string | null
+  videoUrl: string | null
+  featured: boolean
+  showOnWidget: boolean
+  service?: { id: string; title: string } | null
+}
+
+/** Map a Prisma testimonial (with service relation) to the frontend shape. */
+export function toTestimonial(t: TestimonialWithService): Testimonial {
+  return {
+    id: t.id,
+    clientName: t.clientName,
+    clientTitle: t.clientTitle,
+    clientLocation: t.clientLocation,
+    clientImage: t.clientImage,
+    rating: t.rating,
+    content: t.content,
+    shortQuote: t.shortQuote,
+    videoUrl: t.videoUrl,
+    featured: t.featured,
+    showOnWidget: t.showOnWidget,
+    serviceName: t.service?.title ?? null,
+  }
 }

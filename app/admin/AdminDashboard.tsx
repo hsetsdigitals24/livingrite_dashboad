@@ -16,6 +16,7 @@ const TicketsSection = lazy(() => import("./sections/Tickets"));
 const InvoicesSection = lazy(() => import("./sections/Invoices"));
 const ReportsSection = lazy(() => import("./sections/Reports"));
 const CaseStudiesSection = lazy(() => import("./sections/CaseStudies"));
+const TestimonialsSection = lazy(() => import("./sections/Testimonials"));
 const CaregiverAllowList = lazy(() => import("./sections/CaregiverAllowList"));
 
 function SectionFallback() {
@@ -77,6 +78,7 @@ export default function AdminDashboard() {
               {activeSection === "invoices" && <InvoicesSection />}
               {activeSection === "tickets" && <TicketsSection />}
               {activeSection === "case-studies" && <CaseStudiesSection />}
+              {activeSection === "testimonials" && <TestimonialsSection />}
               {activeSection === "settings" && <SettingsSection />}
               {activeSection === "reports" && <ReportsSection />}
               {activeSection === "overview" && <OverviewSection />}

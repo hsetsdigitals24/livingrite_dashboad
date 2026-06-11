@@ -1,11 +1,8 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import type { Testimonial } from '@/types/testimonial'
-import { SERVICE_LABELS } from '@/types/testimonial'
-
-const PAGE_SIZE = 9
 
 // ─── Stars ────────────────────────────────────────────────────────────────────
 function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
@@ -25,7 +22,7 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 function Avatar({ t, size = 56 }: { t: Testimonial; size?: number }) {
   const [err, setErr] = useState(false)
-  const src = t.avatarUrl || t.avatarImage?.asset?.url || null
+  const src = t.clientImage || null
   const initials = t.clientName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
 
   if (!src || err) {
@@ -44,11 +41,61 @@ function Avatar({ t, size = 56 }: { t: Testimonial; size?: number }) {
   )
 }
 
+// ─── Video embed (toggled) ──────────────────────────────────────────────────────
+function getYoutubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
+    /youtube\.com\/embed\/([^&\n?#]+)/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ]
+  for (const p of patterns) {
+    const m = url.match(p)
+    if (m && m[1]) return m[1]
+  }
+  return null
+}
+
+function VideoTestimonial({ url }: { url: string }) {
+  const [open, setOpen] = useState(false)
+  const ytId = getYoutubeId(url)
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 text-sm font-medium text-[#00b2ec] hover:underline focus:outline-none"
+      >
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+        </svg>
+        Watch video testimonial
+      </button>
+    )
+  }
+
+  return (
+    <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-gray-100 bg-black">
+      {ytId ? (
+        <iframe
+          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1`}
+          title="Video testimonial"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+        />
+      ) : (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <video src={url} controls autoPlay className="w-full h-full object-contain" />
+      )}
+    </div>
+  )
+}
+
 // ─── Testimonial card ─────────────────────────────────────────────────────────
 function TestimonialFullCard({ t, idx }: { t: Testimonial; idx: number }) {
   const [expanded, setExpanded] = useState(false)
-  const shouldTruncate = t.quote.length > 280
-  const displayQuote = shouldTruncate && !expanded ? t.quote.slice(0, 280) + '…' : t.quote
+  const shouldTruncate = t.content.length > 280
+  const displayQuote = shouldTruncate && !expanded ? t.content.slice(0, 280) + '…' : t.content
 
   return (
     <article
@@ -60,7 +107,7 @@ function TestimonialFullCard({ t, idx }: { t: Testimonial; idx: number }) {
           ? '0 8px 32px rgba(0,178,236,0.14)'
           : '0 2px 12px rgba(0,0,0,0.05)',
         animation: 'fadeUp 0.5s ease both',
-        animationDelay: `${(idx % PAGE_SIZE) * 60}ms`,
+        animationDelay: `${(idx % 9) * 60}ms`,
       }}
     >
       {/* Top accent */}
@@ -74,22 +121,12 @@ function TestimonialFullCard({ t, idx }: { t: Testimonial; idx: number }) {
         {/* Header row */}
         <div className="flex items-start justify-between gap-2">
           <Stars rating={t.rating} />
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {t.featured && (
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(0,178,236,0.1)', color: '#00b2ec' }}>
-                Featured
-              </span>
-            )}
-            {t.isVerified && (
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                Verified
-              </span>
-            )}
-          </div>
+          {t.featured && (
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0"
+              style={{ background: 'rgba(0,178,236,0.1)', color: '#00b2ec' }}>
+              Featured
+            </span>
+          )}
         </div>
 
         {/* Quote */}
@@ -103,48 +140,24 @@ function TestimonialFullCard({ t, idx }: { t: Testimonial; idx: number }) {
           )}
         </blockquote>
 
-        {/* Media preview (first photo only) */}
-        {t.mediaItems && t.mediaItems.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {t.mediaItems.slice(0, 3).map((m, i) =>
-              m.mediaType === 'photo' ? (
-                <a key={i} href={m.driveUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-100 hover:opacity-80 transition-opacity">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.driveUrl} alt={m.caption || 'Photo'} className="w-full h-full object-cover" />
-                </a>
-              ) : (
-                <a key={i} href={m.driveUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center hover:opacity-80 transition-opacity">
-                  <svg className="w-6 h-6 text-[#00b2ec]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                  </svg>
-                </a>
-              )
-            )}
-            {t.mediaItems.length > 3 && (
-              <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-500 font-medium">
-                +{t.mediaItems.length - 3}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Video testimonial */}
+        {t.videoUrl && <VideoTestimonial url={t.videoUrl} />}
 
         {/* Author */}
         <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
           <Avatar t={t} size={44} />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-gray-900 text-sm">{t.clientName}</p>
-            {(t.clientRole || t.clientLocation) && (
+            {(t.clientTitle || t.clientLocation) && (
               <p className="text-xs text-gray-500 truncate">
-                {[t.clientRole, t.clientLocation].filter(Boolean).join(' · ')}
+                {[t.clientTitle, t.clientLocation].filter(Boolean).join(' · ')}
               </p>
             )}
           </div>
-          {t.serviceReceived && (
+          {t.serviceName && (
             <span className="flex-shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
               style={{ background: 'rgba(0,178,236,0.08)', color: '#00b2ec' }}>
-              {SERVICE_LABELS[t.serviceReceived] || t.serviceReceived}
+              {t.serviceName}
             </span>
           )}
         </div>
@@ -153,69 +166,60 @@ function TestimonialFullCard({ t, idx }: { t: Testimonial; idx: number }) {
   )
 }
 
+// ─── Pagination link ────────────────────────────────────────────────────────────
+function PageLink({ page, current, children, disabled }: {
+  page: number; current?: boolean; children: React.ReactNode; disabled?: boolean
+}) {
+  if (disabled) {
+    return (
+      <span className="w-9 h-9 rounded-lg border flex items-center justify-center text-sm opacity-30"
+        style={{ borderColor: '#00b2ec', color: '#00b2ec' }}>
+        {children}
+      </span>
+    )
+  }
+  return (
+    <Link href={`/testimonials?page=${page}`} scroll
+      className="w-9 h-9 rounded-lg border flex items-center justify-center text-sm font-medium transition-all"
+      style={{
+        borderColor: current ? '#00b2ec' : '#e5e7eb',
+        background: current ? '#00b2ec' : 'white',
+        color: current ? 'white' : '#374151',
+      }}>
+      {children}
+    </Link>
+  )
+}
+
 // ─── Page client ──────────────────────────────────────────────────────────────
 export function TestimonialsPageClient({
   testimonials,
   totalCount,
+  avgRating,
+  page,
+  totalPages,
 }: {
   testimonials: Testimonial[]
   totalCount: number
+  avgRating: string
+  page: number
+  totalPages: number
 }) {
-  const [page, setPage] = useState(1)
-  const [filterService, setFilterService] = useState<string>('all')
-  const [filterRating, setFilterRating] = useState<number>(0)
-  const [searchQuery, setSearchQuery] = useState('')
+  const fiveStarCount = testimonials.filter((t) => t.rating === 5).length
 
-  // Available services from data
-  const availableServices = useMemo(() => {
-    const set = new Set(testimonials.map((t) => t.serviceReceived).filter(Boolean) as string[])
-    return Array.from(set)
-  }, [testimonials])
-
-  // Filtered
-  const filtered = useMemo(() => {
-    return testimonials.filter((t) => {
-      if (filterService !== 'all' && t.serviceReceived !== filterService) return false
-      if (filterRating > 0 && t.rating < filterRating) return false
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        if (
-          !t.clientName.toLowerCase().includes(q) &&
-          !t.quote.toLowerCase().includes(q) &&
-          !(t.clientLocation || '').toLowerCase().includes(q)
-        ) return false
-      }
-      return true
-    })
-  }, [testimonials, filterService, filterRating, searchQuery])
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
-  // Average rating
-  const avgRating = testimonials.length
-    ? (testimonials.reduce((s, t) => s + t.rating, 0) / testimonials.length).toFixed(1)
-    : '0'
-
-  function handleFilterChange(setter: (v: any) => void, value: any) {
-    setter(value)
-    setPage(1)
-  }
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1).filter(
+    (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1
+  )
 
   return (
     <div>
       {/* ── Hero banner ────────────────────────────────────────────── */}
       <div
         className="relative overflow-hidden py-20"
-        style={{
-          background: 'linear-gradient(135deg, #00b2ec 0%, #0077a8 55%, #005f88 100%)',
-        }}
+        style={{ background: 'linear-gradient(135deg, #00b2ec 0%, #0077a8 55%, #005f88 100%)' }}
       >
-        {/* Decorative circles */}
-        <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-10"
-          style={{ background: 'white' }} />
-        <div className="absolute -bottom-20 -left-10 w-56 h-56 rounded-full opacity-10"
-          style={{ background: '#e50d92' }} />
+        <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-10" style={{ background: 'white' }} />
+        <div className="absolute -bottom-20 -left-10 w-56 h-56 rounded-full opacity-10" style={{ background: '#e50d92' }} />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center text-white">
           <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4"
@@ -242,70 +246,26 @@ export function TestimonialsPageClient({
             </div>
             <div className="w-px bg-white/20" />
             <div>
-              <p className="text-3xl font-bold">
-                {testimonials.filter((t) => t.isVerified).length}
-              </p>
-              <p className="text-blue-200 text-sm">Verified Reviews</p>
+              <p className="text-3xl font-bold">{fiveStarCount}</p>
+              <p className="text-blue-200 text-sm">5-Star On This Page</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Filters ────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-20 shadow-sm" style={{ background: 'white', borderBottom: '1px solid #e8f4fa' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap gap-3 items-center">
-          {/* Search */}
-          <div className="relative flex-1 min-w-48">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="text" placeholder="Search testimonials…" value={searchQuery}
-              onChange={(e) => handleFilterChange(setSearchQuery, e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border outline-none focus:ring-2 focus:ring-[#00b2ec] focus:border-[#00b2ec]"
-              style={{ borderColor: '#d1d5db' }} />
-          </div>
-
-          {/* Service filter */}
-          <select value={filterService} onChange={(e) => handleFilterChange(setFilterService, e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg border outline-none focus:ring-2 focus:ring-[#00b2ec] cursor-pointer"
-            style={{ borderColor: '#d1d5db' }}>
-            <option value="all">All Services</option>
-            {availableServices.map((s) => (
-              <option key={s} value={s}>{SERVICE_LABELS[s] || s}</option>
-            ))}
-          </select>
-
-          {/* Rating filter */}
-          <select value={filterRating} onChange={(e) => handleFilterChange(setFilterRating, Number(e.target.value))}
-            className="px-3 py-2 text-sm rounded-lg border outline-none focus:ring-2 focus:ring-[#00b2ec] cursor-pointer"
-            style={{ borderColor: '#d1d5db' }}>
-            <option value={0}>All Ratings</option>
-            <option value={5}>5 Stars</option>
-            <option value={4}>4+ Stars</option>
-            <option value={3}>3+ Stars</option>
-          </select>
-
-          <span className="text-xs text-gray-400 ml-auto">
-            {filtered.length} result{filtered.length !== 1 ? 's' : ''}
-          </span>
-        </div>
-      </div>
-
       {/* ── Cards grid ─────────────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-        {paginated.length === 0 ? (
+        {testimonials.length === 0 ? (
           <div className="text-center py-24 text-gray-400">
             <svg className="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <p className="text-base font-medium">No testimonials match your filters.</p>
-            <button onClick={() => { setFilterService('all'); setFilterRating(0); setSearchQuery(''); setPage(1) }}
-              className="mt-3 text-sm text-[#00b2ec] hover:underline">Clear filters</button>
+            <p className="text-base font-medium">No testimonials yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginated.map((t, idx) => (
-              <TestimonialFullCard key={t._id} t={t} idx={idx} />
+            {testimonials.map((t, idx) => (
+              <TestimonialFullCard key={t.id} t={t} idx={idx} />
             ))}
           </div>
         )}
@@ -313,35 +273,20 @@ export function TestimonialsPageClient({
         {/* ── Pagination ─────────────────────────────────────────── */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-12">
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-              className="w-9 h-9 rounded-lg border flex items-center justify-center text-sm transition-all disabled:opacity-30 hover:bg-[#00b2ec] hover:border-[#00b2ec] hover:text-white"
-              style={{ borderColor: '#00b2ec', color: '#00b2ec' }}>
-              ‹
-            </button>
+            <PageLink page={page - 1} disabled={page === 1}>‹</PageLink>
 
-            {Array.from({ length: totalPages }).map((_, i) => {
-              const p = i + 1
-              const show = p === 1 || p === totalPages || Math.abs(p - page) <= 1
-              if (!show && (p === 2 || p === totalPages - 1)) return <span key={p} className="px-1 text-gray-300">…</span>
-              if (!show) return null
+            {pageNumbers.map((p, i) => {
+              const prev = pageNumbers[i - 1]
+              const gap = prev !== undefined && p - prev > 1
               return (
-                <button key={p} onClick={() => setPage(p)}
-                  className="w-9 h-9 rounded-lg border text-sm font-medium transition-all"
-                  style={{
-                    borderColor: page === p ? '#00b2ec' : '#e5e7eb',
-                    background: page === p ? '#00b2ec' : 'white',
-                    color: page === p ? 'white' : '#374151',
-                  }}>
-                  {p}
-                </button>
+                <React.Fragment key={p}>
+                  {gap && <span className="px-1 text-gray-300">…</span>}
+                  <PageLink page={p} current={p === page}>{p}</PageLink>
+                </React.Fragment>
               )
             })}
 
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-              className="w-9 h-9 rounded-lg border flex items-center justify-center text-sm transition-all disabled:opacity-30 hover:bg-[#00b2ec] hover:border-[#00b2ec] hover:text-white"
-              style={{ borderColor: '#00b2ec', color: '#00b2ec' }}>
-              ›
-            </button>
+            <PageLink page={page + 1} disabled={page === totalPages}>›</PageLink>
           </div>
         )}
 

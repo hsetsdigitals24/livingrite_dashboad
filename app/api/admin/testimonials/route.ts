@@ -8,6 +8,14 @@ const includeRelations = {
   approver: { select: { id: true, name: true, email: true } },
 };
 
+// clientImage is stored as a base64 data URI in the DB. Reject anything larger
+// than ~2MB so an oversized payload fails cleanly instead of bloating the row.
+const MAX_IMAGE_CHARS = 2 * 1024 * 1024;
+
+function imageTooLarge(clientImage: unknown): boolean {
+  return typeof clientImage === "string" && clientImage.length > MAX_IMAGE_CHARS;
+}
+
 /**
  * GET /api/admin/testimonials
  * List testimonials with filtering and pagination
@@ -111,6 +119,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (imageTooLarge(body.clientImage)) {
+      return NextResponse.json(
+        { error: "Image is too large. Please use a smaller photo." },
+        { status: 400 }
+      );
+    }
+
     const status = body.status || "APPROVED";
 
     const testimonial = await prisma.testimonial.create({
@@ -167,6 +182,13 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
+
+    if (imageTooLarge(body.clientImage)) {
+      return NextResponse.json(
+        { error: "Image is too large. Please use a smaller photo." },
+        { status: 400 }
+      );
+    }
 
     const data: any = {
       ...(body.clientName !== undefined && { clientName: body.clientName }),

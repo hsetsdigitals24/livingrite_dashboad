@@ -128,21 +128,53 @@ export default function TestimonialsSection() {
     }
   };
 
+  // Downscale + compress the chosen image entirely in the browser, then store it
+  // as a base64 data URI directly on the testimonial (saved to the DB with the
+  // rest of the data — no R2 upload). Keeping the longest side <= 400px and
+  // JPEG quality at 0.8 yields a small string (tens of KB), well under request
+  // body limits and cheap to query.
+  const MAX_DIMENSION = 400;
+  const JPEG_QUALITY = 0.8;
+
+  const fileToCompressedDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.onload = () => {
+          const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+          const width = Math.round(img.width * scale);
+          const height = Math.round(img.height * scale);
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Canvas not supported"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", JPEG_QUALITY));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+
   const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Please choose an image file");
+      return;
+    }
     try {
       setUploadingImage(true);
-      const body = new FormData();
-      body.append("file", file);
-
-      const response = await fetch("/api/upload", { method: "POST", body });
-      if (!response.ok) {
-        const e = await response.json().catch(() => ({}));
-        throw new Error(e.error || "Failed to upload image");
-      }
-      const data = await response.json();
-      setFormData((prev) => ({ ...prev, clientImage: data.url }));
+      const dataUrl = await fileToCompressedDataUrl(file);
+      setFormData((prev) => ({ ...prev, clientImage: dataUrl }));
     } catch (err) {
-      alert("Failed to upload image: " + (err instanceof Error ? err.message : "Unknown error"));
+      alert("Failed to process image: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
       setUploadingImage(false);
     }
@@ -606,7 +638,7 @@ export default function TestimonialsSection() {
                       disabled={uploadingImage}
                       className="flex-1"
                     />
-                    {uploadingImage && <span className="text-sm text-gray-600">Uploading...</span>}
+                    {uploadingImage && <span className="text-sm text-gray-600">Processing...</span>}
                   </div>
                   {formData.clientImage && (
                     <div className="flex items-center gap-2">

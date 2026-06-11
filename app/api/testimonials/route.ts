@@ -16,14 +16,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const serviceId = searchParams.get("service");
     const featured = searchParams.get("featured");
-<<<<<<< HEAD
     const widget = searchParams.get("widget");
     const pageParam = searchParams.get("page");
     const limitParam = searchParams.get("limit");
-=======
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10) || 50, 100);
-    const skip = Math.max(parseInt(searchParams.get("skip") || "0", 10) || 0, 0);
->>>>>>> e236575ff69b80fc5e3793acf3d4ac04ff91ccb1
 
     const where: any = { status: "APPROVED" };
     if (serviceId) where.serviceId = serviceId;
@@ -38,47 +33,19 @@ export async function GET(req: NextRequest) {
 
     const include = { service: { select: { id: true, title: true } } };
 
-<<<<<<< HEAD
-    // Paginated mode
+    // Paginated when page/limit are supplied, otherwise return all matches.
     const paginate = pageParam !== null || limitParam !== null;
     const page = Math.max(1, parseInt(pageParam || "1"));
-    const limit = Math.max(1, parseInt(limitParam || "9"));
+    const limit = Math.min(Math.max(1, parseInt(limitParam || "9")), 100);
 
-    const [rows, total] = await Promise.all([
+    // Compute stats in the database (aggregate + groupBy) instead of pulling
+    // every row into memory just to count by rating.
+    const [rows, aggregate, distributionRows] = await Promise.all([
       prisma.testimonial.findMany({
         where,
         include,
         orderBy,
         ...(paginate ? { skip: (page - 1) * limit, take: limit } : {}),
-      }),
-      prisma.testimonial.count({ where }),
-    ]);
-
-    const data = (rows as unknown as TestimonialWithService[]).map(toTestimonial);
-
-    // Stats are computed across all approved (matching filters), not just this page
-    const ratingRows = paginate
-      ? await prisma.testimonial.findMany({ where, select: { rating: true } })
-      : rows.map((r) => ({ rating: r.rating }));
-    const ratings = ratingRows.map((r) => r.rating);
-    const averageRating =
-      ratings.length > 0
-        ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
-        : "0";
-=======
-    // Push aggregate stats and distribution to the database instead of pulling
-    // every testimonial into memory just to count by rating.
-    const [testimonials, aggregate, distributionRows] = await Promise.all([
-      prisma.testimonial.findMany({
-        where,
-        include: { service: true },
-        orderBy: [
-          { featured: "desc" },
-          { displayOrder: "asc" },
-          { createdAt: "desc" },
-        ],
-        take: limit,
-        skip,
       }),
       prisma.testimonial.aggregate({
         where,
@@ -92,6 +59,8 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    const data = (rows as unknown as TestimonialWithService[]).map(toTestimonial);
+
     const ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number> = {
       1: 0, 2: 0, 3: 0, 4: 0, 5: 0,
     };
@@ -101,11 +70,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const totalReviews = aggregate._count._all;
+    const total = aggregate._count._all;
     const averageRating = aggregate._avg.rating
       ? aggregate._avg.rating.toFixed(1)
-      : 0;
->>>>>>> e236575ff69b80fc5e3793acf3d4ac04ff91ccb1
+      : "0";
 
     return NextResponse.json({
       success: true,
@@ -121,19 +89,8 @@ export async function GET(req: NextRequest) {
       },
       stats: {
         averageRating,
-<<<<<<< HEAD
         totalReviews: total,
-        ratingDistribution: {
-          5: ratings.filter((r) => r === 5).length,
-          4: ratings.filter((r) => r === 4).length,
-          3: ratings.filter((r) => r === 3).length,
-          2: ratings.filter((r) => r === 2).length,
-          1: ratings.filter((r) => r === 1).length,
-        },
-=======
-        totalReviews,
         ratingDistribution,
->>>>>>> e236575ff69b80fc5e3793acf3d4ac04ff91ccb1
       },
     });
   } catch (error) {

@@ -26,7 +26,7 @@ async function main() {
         password: hashedPassword,
         role: "ADMIN",
         emailVerified: new Date(),
-        emailVerificaion: true,
+        emailVerifiedFlag: true,
         phone: "+1 (555) 000-0000",
         image: null,
       },

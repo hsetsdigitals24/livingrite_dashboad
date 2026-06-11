@@ -3,6 +3,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { BookingLink } from "@/components/BookingLink";
 // import {
 //   Brain,
 //   Hospital,
@@ -171,14 +172,14 @@ export function ServicesSection() {
           <p className="text-gray-700 mb-8 text-lg font-light">
             Ready to experience professional home healthcare?
           </p>
-          <Link href="/client/booking">
+          <BookingLink>
             <Button
               size="lg"
               className="bg-gradient-to-r from-[#00b2ec] to-[#0088b8] hover:from-[#0088b8] hover:to-[#00b2ec] text-white shadow-xl shadow-[#00b2ec]/30 hover:shadow-2xl hover:shadow-[#00b2ec]/50 hover:scale-105 transition-all duration-300 rounded-full px-10 font-semibold text-base"
             >
               Schedule Your Care Today
             </Button>
-          </Link>
+          </BookingLink>
         </div>
       </div>
     </section>

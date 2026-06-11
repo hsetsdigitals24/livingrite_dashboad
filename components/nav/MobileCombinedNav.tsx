@@ -10,6 +10,7 @@ import {
   Calendar,
   MessageSquare,
 } from "lucide-react";
+import { BOOKING_LINK } from "@/lib/booking-link";
 
 interface MobileCombinedNavProps {
   role?: string | undefined | null;
@@ -89,7 +90,7 @@ export function MobileCombinedNav({ role, onLinkClick }: MobileCombinedNavProps)
     },
     {
       label: "Book Service",
-      href: "/client/booking",
+      href: BOOKING_LINK,
       icon: Calendar,
     },
     {
@@ -135,6 +136,8 @@ export function MobileCombinedNav({ role, onLinkClick }: MobileCombinedNavProps)
                 key={item.label}
                 href={item.href}
                 onClick={onLinkClick}
+                target={item.href.startsWith("http") ? "_blank" : undefined}
+                rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 className="flex items-center gap-2 py-2 px-4 rounded-lg hover:bg-primary/5 text-gray-700 text-sm"
               >
                 <Icon className="h-4 w-4" />

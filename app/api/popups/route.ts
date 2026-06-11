@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export const revalidate = 300; // ISR: revalidate every 5 minutes
+// Dynamic so admin toggles/edits surface on the landing page immediately. The
+// query is a single indexed findFirst — cheap enough to run per request.
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

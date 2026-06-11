@@ -1,63 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
+import { r2 } from '@/lib/r2';
+import { requireRole } from '@/lib/api-auth';
 
-// Initialize S3 client for Cloudflare R2
-const s3Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
-
+// Public-image upload endpoint: returns a permanent CDN URL backed by the
+// bucket's public-read configuration. Used for case studies, popups, and
+// profile images — not for patient documents (use /api/files/upload).
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
   'image/png',
   'image/gif',
   'image/webp',
+  'image/svg+xml',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
 ];
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
  * POST /api/upload
- * Upload a file to Cloudflare R2
- * Returns: { url: string }
+ * Upload a file to Cloudflare R2 and return its public URL.
+ * Returns: { url: string, filename: string }
  */
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const auth = await requireRole();
+    if (auth.response) return auth.response;
+    const { session } = auth;
 
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.' },
+        { error: `Unsupported file type: ${file.type}` },
         { status: 400 }
       );
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: 'File size exceeds 5MB limit' },
@@ -65,41 +56,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate unique filename
     const ext = file.name.split('.').pop();
     const filename = `${session.user.id}/${uuidv4()}.${ext}`;
 
-    // Convert file to buffer
     const buffer = await file.arrayBuffer();
 
-    // Upload to R2
-    const command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: filename,
-      Body: Buffer.from(buffer),
-      ContentType: file.type,
-      Metadata: {
-        'uploaded-by': session.user.id,
-        'upload-time': new Date().toISOString(),
-      },
-    });
-
-    await s3Client.send(command);
-
-    // Construct public URL
-    const publicUrl = `${process.env.R2_PUBLIC_URL}/${filename}`;
-
-    return NextResponse.json(
-      { url: publicUrl, filename },
-      { status: 200 }
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: filename,
+        Body: Buffer.from(buffer),
+        ContentType: file.type,
+        Metadata: {
+          'uploaded-by': session.user.id,
+          'upload-time': new Date().toISOString(),
+        },
+      })
     );
+
+    // Route through our redirector so the R2 bucket can stay private. The
+    // redirector signs and 302s on each request; tokens expire (1h) but the
+    // stored URL itself never goes stale.
+    const url = `/api/files/serve-public/${filename}`;
+
+    return NextResponse.json({ url, filename }, { status: 200 });
   } catch (error) {
     console.error('Error uploading file:', error);
-    const message =
-      error instanceof Error ? error.message : 'Failed to upload file';
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : 'Failed to upload file';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

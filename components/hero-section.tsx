@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRightFromCircle, ChevronDown, Heart } from "lucide-react";
+import { BookingLink } from "@/components/BookingLink";
 import Link from "next/link";
 // import heroImage from '@/public/service-hero.jpg'
 
@@ -96,10 +97,7 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-slide-up animation-delay-500">
-              <Link
-                href="/client/booking"
-                className="flex items-center group/btn"
-              >
+              <BookingLink className="flex items-center group/btn">
                 <Button
                   size="lg"
                   className="cursor-pointer text-base font-semibold bg-gradient-to-r from-[#00b2ec] to-[#0088b8] hover:from-[#0088b8] hover:to-[#00b2ec] text-white shadow-xl shadow-[#00b2ec]/30 hover:shadow-2xl hover:shadow-[#00b2ec]/50 hover:scale-105 transition-all duration-300 rounded-full px-8 group-hover/btn:gap-3 overflow-hidden relative"
@@ -109,7 +107,7 @@ export function HeroSection() {
                     <ArrowUpRightFromCircle className="h-5 w-5 group-hover/btn:translate-x-1 group-hover/btn:translate-y-[-2px] transition-transform" />
                   </span>
                 </Button>
-              </Link>
+              </BookingLink>
               <Link href="/training" className="flex items-center group/btn">
                 <Button
                   size="lg"

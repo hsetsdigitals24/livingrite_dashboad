@@ -1,6 +1,7 @@
 import TeamMemberCard from "@/components/team/TeamMemberCard"
 import { CTABanner } from "@/components/cta-banner"
 import Link from "next/link"
+import { BookingLink } from "@/components/BookingLink"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Heart, Handshake, Award, Lightbulb, Globe2 } from "lucide-react"
 
@@ -92,11 +93,11 @@ export default function TeamPage() {
 						</p>
 
 						<div className="flex flex-wrap gap-4 justify-center mt-8 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-							<Link href="/client/booking">
+							<BookingLink>
 								<Button size="lg" className="cursor-pointer bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg hover:shadow-primary/30 transition-all">
 									Start Your Journey
 								</Button>
-							</Link>
+							</BookingLink>
 							<Link href="/contact">
 								<Button size="lg" variant="outline" className="cursor-pointer border-2 hover:bg-gray-50 transition-all">
 									Get in Touch

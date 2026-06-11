@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
         name,
         password: hashedPassword,
         role,
-        emailVerificaion: false,
+        emailVerifiedFlag: false,
       },
     })
     

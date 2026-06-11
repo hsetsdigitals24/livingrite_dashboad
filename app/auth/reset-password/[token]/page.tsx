@@ -2,14 +2,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, use } from "react";
 
-const ResetPasswordPage = ({ params }: { params: { token: string } }) => {
+type Params = Promise<{ token: string }>;
+
+const ResetPasswordPage = ({ params }: { params: Params }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
-
+    const { token } = use(params);
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
@@ -26,7 +28,7 @@ const ResetPasswordPage = ({ params }: { params: { token: string } }) => {
         }
 
         try {
-            const response = await fetch(`/api/auth/reset-password/${params.token}`, {
+            const response = await fetch(`/api/auth/reset-password/${token}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ password, confirmPassword }),
@@ -65,7 +67,7 @@ const ResetPasswordPage = ({ params }: { params: { token: string } }) => {
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
                 <h2 className="text-2xl font-bold mb-6 text-center">Reset Your Password</h2>
-                
+
                 {error && (
                     <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                         {error}

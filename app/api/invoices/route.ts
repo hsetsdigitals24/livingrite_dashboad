@@ -117,7 +117,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send invoice email with bank account details
+    // Send invoice email with bank account details. The invoice has already been
+    // persisted, so we don't fail the request on email error — but we surface a
+    // warning so the caller (and admin UI) can show "invoice created, email failed"
+    // instead of falsely reporting success.
+    let emailWarning: string | null = null;
     if (client.email) {
       try {
         const paymentSettings = await (prisma as any).paymentSettings.findFirst();
@@ -135,15 +139,21 @@ export async function POST(req: NextRequest) {
             paymentSettings
           );
         } else {
-          console.warn('No payment settings configured — invoice email not sent');
+          emailWarning = 'Invoice email not sent: no payment settings configured';
+          console.warn(emailWarning);
         }
       } catch (emailErr) {
+        emailWarning = 'Invoice email failed to send';
         console.error('Failed to send invoice email:', emailErr);
-        // Don't fail the request if email fails
       }
+    } else {
+      emailWarning = 'Invoice email not sent: client has no email address on file';
     }
 
-    return NextResponse.json(invoice, { status: 201 });
+    return NextResponse.json(
+      emailWarning ? { ...invoice, _emailWarning: emailWarning } : invoice,
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error generating invoice:', error);
     return NextResponse.json({ error: 'Failed to generate invoice' }, { status: 500 });

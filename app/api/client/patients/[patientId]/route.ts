@@ -1,46 +1,33 @@
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { requireRole, requirePatientAccess } from "@/lib/api-auth";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const auth = await requireRole("CLIENT");
+    if (auth.response) return auth.response;
+    const { session } = auth;
 
-    if (!session || !session.user?.id || session.user?.role !== "CLIENT") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    let { patientId } = await params;
+    const { patientId } = await params;
 
-    // Verify client has access to this patient
-    const access = await prisma.familyMemberAssignment.findUnique({
-      where: {
-        patientId_clientId: {
-          patientId: patientId,
-          clientId: session.user.id,
-        },
-      },
-    });
+    const accessDenied = await requirePatientAccess(patientId, session.user.id);
+    if (accessDenied) return accessDenied;
 
-    if (!access) {
-      return NextResponse.json(
-        { error: "Access denied to this patient" },
-        { status: 403 }
-      );
-    }
-
-    // Get detailed patient information
+    // Get detailed patient information. Limits below cap worst-case payload size —
+    // older records are still available via dedicated history endpoints.
     const patient = await prisma.patient.findUnique({
       where: { id: patientId },
       include: {
         vitals: {
           orderBy: { recordedAt: "desc" },
+          take: 30,
         },
         dailyLogs: {
           orderBy: { date: "desc" },
+          take: 14,
           include: {
             sleepData: true,
             morningVitals: true,
@@ -60,12 +47,15 @@ export async function GET(
         },
         labResults: {
           orderBy: { date: "desc" },
+          take: 20,
         },
         medicalAppointments: {
           orderBy: { date: "desc" },
+          take: 20,
         },
         bookings: {
           orderBy: { scheduledAt: "desc" },
+          take: 20,
           include: {
             payment: true,
             service: true,
@@ -73,6 +63,7 @@ export async function GET(
         },
         files: {
           orderBy: { createdAt: "desc" },
+          take: 50,
         },
         familyMembers: true,
         caregivers: {
@@ -109,33 +100,14 @@ export async function PATCH(
   { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const auth = await requireRole('CLIENT');
+    if (auth.response) return auth.response;
+    const { session } = auth;
 
     const { patientId } = await params;
 
-    // Verify user has access to this patient
-    const familyMember = await prisma.familyMemberAssignment.findUnique({
-      where: {
-        patientId_clientId: {
-          patientId,
-          clientId: session.user.id,
-        },
-      },
-    });
-
-    if (!familyMember) {
-      return NextResponse.json(
-        { error: 'Access denied' },
-        { status: 403 }
-      );
-    }
+    const accessDenied = await requirePatientAccess(patientId, session.user.id);
+    if (accessDenied) return accessDenied;
 
     const data = await req.json();
 

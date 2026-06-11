@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroImage from "@/public/service-hero.jpg";
+import { BookingLink } from "@/components/BookingLink";
 
 const services = [
   {
@@ -181,12 +182,7 @@ export function ServicesHero() {
                             Learn more
                           </Button>
                         </Link>
-                        <Link
-                          href="/client/booking"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-block"
-                        >
+                        <BookingLink className="inline-block">
                           <Button
                             size="lg"
                             variant="outline"
@@ -194,7 +190,7 @@ export function ServicesHero() {
                           >
                             Book consultation
                           </Button>
-                        </Link>
+                        </BookingLink>
                       </div>
                     </div>
 

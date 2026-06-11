@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Filter } from "lucide-react";
+import { BookingLink } from "@/components/BookingLink";
 
 export const metadata: Metadata = {
   title: "Case Studies | LivingRite Care",
@@ -187,12 +188,11 @@ export default async function CaseStudiesPage({
               Our team of experienced healthcare professionals is dedicated to providing you with
               personalized care and support.
             </p>
-            <Link
-              href="/portal/booking"
+            <BookingLink
               className="inline-block bg-teal-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-teal-700 transition-colors"
             >
               Book Consultation Today
-            </Link>
+            </BookingLink>
           </div>
         </section>
       )}

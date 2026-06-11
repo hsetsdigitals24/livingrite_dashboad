@@ -20,7 +20,7 @@ interface CaregiverUser {
   phone: string | null;
   image: string | null;
   role: string;
-  emailVerificaion: boolean;
+  emailVerifiedFlag: boolean;
   createdAt: string;
   caregiverProfile: {
     id: string;

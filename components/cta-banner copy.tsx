@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { BookingLink } from "@/components/BookingLink";
 
 export function CTABanner() {
   return (
@@ -59,7 +60,7 @@ export function CTABanner() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animation-delay-600">
-            <Link href="/booking" className="flex items-center">
+            <BookingLink className="flex items-center">
               <Button
                 size="lg"
                 className="cursor-pointer text-base font-semibold bg-primary hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group"
@@ -67,7 +68,7 @@ export function CTABanner() {
                 Book Free Consultation
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-            </Link>
+            </BookingLink>
             <Link href="tel:+18001234567" className="flex items-center">
               <Button
                 size="lg"

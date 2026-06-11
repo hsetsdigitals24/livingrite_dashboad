@@ -17,6 +17,9 @@ const nextConfig = {
       },
     ],
   },
+  env: {
+    NEXT_PUBLIC_BOOKING_LINK: process.env.BOOKING_LINK,
+  },
 };
 
 export default nextConfig;

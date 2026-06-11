@@ -21,7 +21,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  emailVerificaion  Boolean @default(false)
+  emailVerifiedFlag Boolean @default(false)
   // Pipeline tracking
   conversionStage ClientConversionStage @default(PROSPECT)
   inquiryDate     DateTime?
@@ -322,6 +322,7 @@ model Booking {
   reminders Reminder[]
   proposal  Proposal?
 
+  @@index([userId])
   @@index([clientEmail])
   @@index([scheduledAt])
   @@index([status])

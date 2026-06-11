@@ -26,7 +26,12 @@ export async function GET(req: NextRequest) {
         date: { gte: new Date() },
       },
       orderBy: { date: 'asc' },
-      include: {
+      select: {
+        id: true,
+        date: true,
+        provider: true,
+        reason: true,
+        notes: true,
         patient: { select: { firstName: true, lastName: true } },
       },
     });

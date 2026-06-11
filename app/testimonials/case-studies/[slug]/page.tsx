@@ -8,6 +8,7 @@ import {
   Heart,
 } from "lucide-react";
 import { notFound } from "next/navigation";
+import { BookingLink } from "@/components/BookingLink";
 
 interface CaseStudy {
   id: string;
@@ -376,12 +377,11 @@ export default async function CaseStudyPage({
               <p className="text-sm text-teal-50 mb-6">
                 Let us help you achieve similar results.
               </p>
-              <Link
-                href="/portal/booking"
+              <BookingLink
                 className="inline-block w-full bg-white text-teal-600 font-semibold py-3 rounded-lg hover:bg-teal-50 transition-colors"
               >
                 Book Consultation
-              </Link>
+              </BookingLink>
             </div>
           </aside>
         </div>
@@ -435,12 +435,11 @@ export default async function CaseStudyPage({
             Connect with our healthcare professionals today and let us help you achieve
             your wellness goals.
           </p>
-          <Link
-            href="/portal/booking"
+          <BookingLink
             className="inline-block bg-white text-teal-600 px-8 py-4 rounded-full font-semibold hover:bg-teal-50 transition-colors"
           >
             Schedule Your Consultation
-          </Link>
+          </BookingLink>
         </div>
       </section>
     </article>

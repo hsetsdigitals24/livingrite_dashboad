@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import heroImage from "@/public/service-hero.jpg";
-import Link from "next/link";
+import { BookingLink } from "@/components/BookingLink";
 
 interface ServiceHeroProps {
   title: string;
@@ -50,12 +50,12 @@ export function ServiceHero({
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-            <Link href="/client/booking" className="flex items-center">
+            <BookingLink className="flex items-center">
               <Button size="lg" className="group rounded-br-2xl rounded-tl-xl bg-primary hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300">
                 Book a Consultation
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>{" "}
-            </Link>
+              </Button>
+            </BookingLink>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
-import { r2 } from '@/lib/r2';
+import { r2, r2PublicUrl } from '@/lib/r2';
 import { requireRole } from '@/lib/api-auth';
 
 // Public-image upload endpoint: returns a permanent CDN URL backed by the
@@ -74,10 +74,9 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    // Route through our redirector so the R2 bucket can stay private. The
-    // redirector signs and 302s on each request; tokens expire (1h) but the
-    // stored URL itself never goes stale.
-    const url = `/api/files/serve-public/${filename}`;
+    // Permanent, direct public URL — the bucket is publicly readable at
+    // R2_PUBLIC_URL, so this link never expires and needs no signing.
+    const url = r2PublicUrl(filename);
 
     return NextResponse.json({ url, filename }, { status: 200 });
   } catch (error) {

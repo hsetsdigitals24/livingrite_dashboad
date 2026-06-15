@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
-import { r2 } from '@/lib/r2';
+import { r2, r2PublicUrl } from '@/lib/r2';
 import { prisma } from '@/lib/prisma';
 import { requireRole, requireAnyPatientAccess } from '@/lib/api-auth';
 
@@ -83,6 +83,39 @@ export async function POST(req: NextRequest) {
       })
     );
 
+    // When PATIENT_FILES_PUBLIC is enabled, store a permanent, direct public
+    // URL (the key is known up front, so no second write is needed).
+    //
+    // ⚠️ This bypasses the auth-gated /api/files/serve/[id] redirector, making
+    // patient documents readable by anyone with the URL. Set the flag to "false"
+    // to keep them private (served via the access-controlled redirector).
+    const patientFilesPublic = process.env.PATIENT_FILES_PUBLIC === 'true';
+
+    if (patientFilesPublic) {
+      const record = await prisma.file.create({
+        data: {
+          filename: key,
+          originalName: file.name,
+          mimeType: file.type,
+          size: file.size,
+          patientId,
+          url: r2PublicUrl(key),
+        },
+      });
+
+      return NextResponse.json(
+        {
+          id: record.id,
+          url: record.url,
+          filename: record.originalName,
+          size: record.size,
+          type: record.mimeType,
+        },
+        { status: 201 }
+      );
+    }
+
+    // Private path: store an auth-gated redirector URL that embeds the record id.
     const record = await prisma.file.create({
       data: {
         filename: key,
@@ -90,16 +123,13 @@ export async function POST(req: NextRequest) {
         mimeType: file.type,
         size: file.size,
         patientId,
-        // Placeholder; rewritten below once we know the record id. The two-step
-        // dance is needed because the redirector URL embeds the file's id.
         url: '',
       },
     });
 
-    const url = `/api/files/serve/${record.id}`;
     const updated = await prisma.file.update({
       where: { id: record.id },
-      data: { url },
+      data: { url: `/api/files/serve/${record.id}` },
     });
 
     return NextResponse.json(

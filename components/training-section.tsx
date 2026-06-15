@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Clock, User, ArrowRight, BookOpen } from "lucide-react";
+import {
+  Clock,
+  User,
+  ArrowRight,
+  BookOpen,
+  Stethoscope,
+  Dumbbell,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Training {
@@ -63,7 +70,9 @@ export function TrainingSection() {
             </span>
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
-            Our comprehensive training programs equip caregivers with the knowledge and skills needed to provide exceptional, compassionate care.
+            Our comprehensive training programs equip caregivers with the
+            knowledge and skills needed to provide exceptional, compassionate
+            care.
           </p>
         </div>
 
@@ -107,8 +116,12 @@ export function TrainingSection() {
                         <Clock className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 uppercase font-semibold">Duration</p>
-                        <p className="text-lg font-bold text-gray-900">{training.duration} weeks</p>
+                        <p className="text-xs text-gray-500 uppercase font-semibold">
+                          Duration
+                        </p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {training.duration} weeks
+                        </p>
                       </div>
                     </div>
                   )}
@@ -118,8 +131,12 @@ export function TrainingSection() {
                         <User className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 uppercase font-semibold">Instructor</p>
-                        <p className="text-lg font-bold text-gray-900">{training.instructor}</p>
+                        <p className="text-xs text-gray-500 uppercase font-semibold">
+                          Instructor
+                        </p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {training.instructor}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -148,18 +165,32 @@ export function TrainingSection() {
 
         {/* Training Grid */}
         <div className="mt-16 animate-slide-up animation-delay-400">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8">More Training Programs</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-8">
+            More Training Programs
+          </h3>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: "📚", title: "Basic Care Skills", desc: "Essential care techniques and patient hygiene" },
-              { icon: "🏥", title: "Medical Procedures", desc: "Safe handling of medical equipment and monitoring" },
-              { icon: "💪", title: "Physical Support", desc: "Safe moving, lifting, and mobility assistance" },
+              {
+                Icon: BookOpen,
+                title: "Basic Care Skills",
+                desc: "Essential care techniques and patient hygiene",
+              },
+              {
+                Icon: Stethoscope,
+                title: "Medical Procedures",
+                desc: "Safe handling of medical equipment and monitoring",
+              },
+              {
+                Icon: Dumbbell,
+                title: "Physical Support",
+                desc: "Safe moving, lifting, and mobility assistance",
+              },
             ].map((program, idx) => (
               <div
                 key={idx}
                 className="p-8 rounded-2xl border-2 border-[#00b2ec]/30 bg-white/80 hover:border-[#e50d92]/50 hover:shadow-xl hover:shadow-[#e50d92]/20 transition-all duration-300 group/card"
               >
-                <div className="text-4xl mb-4">{program.icon}</div>
+                <program.Icon className="h-10 w-10 mb-4 text-[#00b2ec]" />
                 <h4 className="text-xl font-bold text-gray-900 mb-3 group-hover/card:text-[#00b2ec] transition-colors">
                   {program.title}
                 </h4>

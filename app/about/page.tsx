@@ -7,6 +7,10 @@ export const metadata: Metadata = {
     'Learn about LivingRite Care — our mission, our team, and why families across Nigeria trust us for expert home healthcare.',
 }
 
+// ISR: keep the Prisma-backed testimonial widget fresh. The admin testimonials
+// API also revalidates this path on demand for instant updates.
+export const revalidate = 60
+
 export default function AboutPage() {
   return (
     <main className="min-h-screen">

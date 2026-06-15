@@ -1,8 +1,6 @@
-
-
-
 "use client";
 
+import Link from "next/link";
 import Video from "./Video";
 
 const Youtube = () => {
@@ -35,7 +33,10 @@ const Youtube = () => {
 
             {/* Description */}
             <p className="text-lg text-gray-600 mb-8 leading-relaxed font-light">
-              We've been providing compassionate, professional home healthcare services for over a decade. Our trained caregivers and medical staff are committed to delivering the highest quality care right in your home.
+              We've been providing compassionate, professional home healthcare
+              services for over a decade. Our trained caregivers and medical
+              staff are committed to delivering the highest quality care right
+              in your home.
             </p>
 
             {/* Feature Points */}
@@ -44,17 +45,20 @@ const Youtube = () => {
                 {
                   icon: "✓",
                   title: "Expert Healthcare Professionals",
-                  description: "Hospital-trained nurses and caregivers with years of experience",
+                  description:
+                    "Hospital-trained nurses and caregivers with years of experience",
                 },
                 {
                   icon: "✓",
                   title: "Personalized Care Plans",
-                  description: "Customized treatment programs tailored to your specific needs",
+                  description:
+                    "Customized treatment programs tailored to your specific needs",
                 },
                 {
                   icon: "✓",
                   title: "24/7 Support Available",
-                  description: "Round-the-clock assistance and emergency response",
+                  description:
+                    "Round-the-clock assistance and emergency response",
                 },
               ].map((feature, index) => (
                 <div
@@ -65,8 +69,12 @@ const Youtube = () => {
                     {feature.icon}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
-                    <p className="text-sm text-gray-600">{feature.description}</p>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -74,9 +82,14 @@ const Youtube = () => {
 
             {/* CTA Button */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="px-8 py-3 bg-gradient-to-r from-[#00b2ec] to-[#0088b8] hover:from-[#0088b8] hover:to-[#00b2ec] text-white font-semibold rounded-full shadow-lg shadow-[#00b2ec]/30 hover:shadow-xl hover:shadow-[#00b2ec]/50 transition-all duration-300 hover:scale-105">
-                Schedule a Consultation
-              </button>
+              <Link
+                href="https://cal.com/livingrite-care-health-services/30min"
+                className="flex items-center justify-center gap-2"
+              >
+                <button className="px-8 py-3 bg-gradient-to-r from-[#00b2ec] to-[#0088b8] hover:from-[#0088b8] hover:to-[#00b2ec] text-white font-semibold rounded-full shadow-lg shadow-[#00b2ec]/30 hover:shadow-xl hover:shadow-[#00b2ec]/50 transition-all duration-300 hover:scale-105">
+                  Schedule a Consultation
+                </button>
+              </Link>
               <button className="px-8 py-3 border border-[#00b2ec]/40 text-[#0088b8] font-semibold rounded-full hover:bg-[#00b2ec]/5 hover:border-[#00b2ec]/60 transition-all duration-300">
                 Learn More
               </button>

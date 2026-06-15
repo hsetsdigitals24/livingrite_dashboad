@@ -8,6 +8,10 @@ import PopupDisplay from "@/components/PopupDisplay"
 import Youtube from "@/components/Youtube"
 import { TestimonialWidgetServer } from "@/components/TestimonialWidgetServer"
 
+// ISR: re-render so the Prisma-backed testimonial widget stays fresh. The admin
+// testimonials API also revalidates this path on demand for instant updates.
+export const revalidate = 60
+
 export default function HomePage() {
   return (
     <main className="min-h-screen"> 

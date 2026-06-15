@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+// Pages that read testimonials from Prisma and are statically/ISR rendered.
+// Revalidate them on every mutation so admin changes show up immediately.
+function revalidateTestimonialPages() {
+  try {
+    revalidatePath("/");
+    revalidatePath("/about");
+    revalidatePath("/testimonials");
+  } catch (err) {
+    // A revalidation hiccup must never fail the API response.
+    console.error("Failed to revalidate testimonial pages:", err);
+  }
+}
 
 const includeRelations = {
   service: { select: { id: true, title: true } },
@@ -152,6 +166,8 @@ export async function POST(req: NextRequest) {
       include: includeRelations,
     });
 
+    revalidateTestimonialPages();
+
     return NextResponse.json({ success: true, data: testimonial });
   } catch (error) {
     console.error("Error creating testimonial:", error);
@@ -225,6 +241,8 @@ export async function PATCH(req: NextRequest) {
       include: includeRelations,
     });
 
+    revalidateTestimonialPages();
+
     return NextResponse.json({ success: true, data: testimonial });
   } catch (error) {
     console.error("Error updating testimonial:", error);
@@ -255,6 +273,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     await prisma.testimonial.delete({ where: { id } });
+
+    revalidateTestimonialPages();
 
     return NextResponse.json({
       success: true,

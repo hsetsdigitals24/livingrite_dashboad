@@ -20,24 +20,38 @@ import { BookingLink } from "@/components/BookingLink";
 // import { CombinedNav } from "./nav/CombinedNav";
 // import { MobileCombinedNav } from "./nav/MobileCombinedNav";
 
+// Shared public-facing link data — used by BOTH the desktop and mobile menus so
+// the two can never drift out of sync.
+const serviceLinks = [
+  { label: "All Services", href: "/services" },
+  { label: "Neurorehabilitation Care", href: "/services/neurorehabilitation" },
+  { label: "Post-ICU Care", href: "/services/post-icu-care" },
+  { label: "Post-Surgical Care", href: "/services/post-surgical-care" },
+  { label: "End-of-Life & Palliative Care", href: "/services/end-of-life-care" },
+  { label: "Geriatric Care", href: "/services/geriatric-care" },
+  { label: "Chronic Wound Care", href: "/services/chronic-wound-care" },
+  { label: "Home Medical Consultations", href: "/services/home-medical-consultations" },
+  { label: "Routine Laboratory Services", href: "/services/routine-laboratory-services" },
+  { label: "Physiotherapy Services", href: "/services/physiotherapy-services" },
+  { label: "Postpartum Care", href: "/services/postpartum-care" },
+];
+
+const publicLinks = [
+  { label: "Testimonials", href: "/testimonials" },
+  { label: "Blogs", href: "/blogs" },
+];
+
+const whoWeAreLinks = [
+  { label: "About Us", href: "/about" },
+  { label: "Our Team", href: "/team" },
+  { label: "FAQs", href: "/faqs" },
+];
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { role, isAuthenticated, isLoading } = useUserRole();
   const pathname = usePathname();
-
-  const publicLinks = [
-    {
-      label: "Testimonials",
-      href: "/testimonials",
-      // icon: BookOpen,
-    },
-    {
-      label: "Blogs",
-      href: "/blogs",
-      // icon: BookOpen,
-    }
-  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,53 +101,11 @@ export function Header() {
                 <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/services">All Services</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/neurorehabilitation">
-                    Neurorehabilitation Care
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/post-icu-care">Post-ICU Care</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/post-surgical-care">
-                    Post-Surgical Care
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/end-of-life-care">
-                    End-of-Life & Palliative Care
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/geriatric-care">Geriatric Care</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/chronic-wound-care">
-                    Chronic Wound Care
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/home-medical-consultations">
-                    Home Medical Consultations
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/routine-laboratory-services">
-                    Routine Laboratory Services
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/physiotherapy-services">
-                    Physiotherapy Services
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/services/postpartum-care">Postpartum Care</Link>
-                </DropdownMenuItem>
+                {serviceLinks.map((item) => (
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link href={item.href}>{item.label}</Link>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -159,17 +131,11 @@ export function Header() {
                 <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/about">About Us</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/team">
-                    Our Team
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/faqs">FAQs</Link>
-                </DropdownMenuItem> 
+                {whoWeAreLinks.map((item) => (
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link href={item.href}>{item.label}</Link>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -220,111 +186,61 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden animate-slide-up bg-white/98 backdrop-blur-sm border-t border-gray-200 py-4">
-            
-              // Public mobile menu for unauthenticated users
+              {/* Public mobile menu — mirrors the desktop public links */}
               <div className="flex flex-col gap-2">
+                <Link
+                  href="/"
+                  className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="w-full flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5">
                     Services
                     <ChevronDown className="h-4 w-4 ml-auto" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48 ml-4">
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/neurorehabilitation"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Neurorehabilitation Care
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/post-icu-care"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Post-ICU Care
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/post-surgical-care"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Post-Surgical Care
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/end-of-life-care"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        End-of-Life & Palliative Care
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/geriatric-care"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Geriatric Care
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/chronic-wound-care"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Chronic Wound Care
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/home-medical-consultations"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Home Medical Consultations
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/routine-laboratory-services"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Routine Laboratory Services
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/physiotherapy-services"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Physiotherapy Services
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/services/postpartum-care"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Postpartum Care
-                      </Link>
-                    </DropdownMenuItem>
+                    {serviceLinks.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Link
-                  href="/about"
-                  className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  About
-                </Link>
-                <Link
-                  href="/blogs"
-                  className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Blogs
-                </Link>
+                {publicLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="w-full flex items-center gap-1 text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5">
+                    Who We Are
+                    <ChevronDown className="h-4 w-4 ml-auto" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 ml-4">
+                    {whoWeAreLinks.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Link
                   href="/search"
                   className="text-gray-700 hover:text-primary transition-colors font-medium py-2 px-4 rounded-lg hover:bg-primary/5 flex items-center gap-2"

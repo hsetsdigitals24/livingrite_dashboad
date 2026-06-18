@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { prisma } from '@/lib/prisma';
-import { r2 } from '@/lib/r2';
+import { decompressFromBase64 } from '@/lib/file-storage';
 import { requireRole, requireAnyPatientAccess } from '@/lib/api-auth';
-
-const SIGNED_URL_EXPIRY = 3600; // 1 hour
 
 /**
  * GET /api/files/serve/[fileId]
- * Authorize the requester for the file's patient, mint a short-lived signed R2
- * URL, and 302 to it. Stored File.url points here so links don't go stale.
+ * Authorize the requester for the file's patient, then decompress the inline
+ * gzip+base64 bytes and stream them. Stored File.url points here.
  */
 export async function GET(
   _req: Request,
@@ -24,10 +20,10 @@ export async function GET(
 
   const fileRecord = await prisma.file.findUnique({
     where: { id: fileId },
-    select: { filename: true, patientId: true },
+    select: { data: true, mimeType: true, patientId: true },
   });
 
-  if (!fileRecord) {
+  if (!fileRecord || !fileRecord.data) {
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }
 
@@ -38,14 +34,13 @@ export async function GET(
   const accessDenied = await requireAnyPatientAccess(fileRecord.patientId, session);
   if (accessDenied) return accessDenied;
 
-  const signedUrl = await getSignedUrl(
-    r2,
-    new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: fileRecord.filename,
-    }),
-    { expiresIn: SIGNED_URL_EXPIRY }
-  );
+  const buffer = decompressFromBase64(fileRecord.data);
 
-  return NextResponse.redirect(signedUrl, 302);
+  return new NextResponse(new Uint8Array(buffer), {
+    headers: {
+      'Content-Type': fileRecord.mimeType,
+      'Content-Length': String(buffer.length),
+      'Cache-Control': 'private, max-age=300',
+    },
+  });
 }

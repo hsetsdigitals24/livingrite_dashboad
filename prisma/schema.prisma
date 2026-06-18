@@ -378,6 +378,7 @@ model File {
   mimeType     String
   size         Int
   url          String
+  data         String?  @db.Text // gzip-compressed, base64-encoded file bytes
   patientId    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

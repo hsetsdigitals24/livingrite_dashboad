@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
-import { r2, r2PublicUrl } from '@/lib/r2';
+import { compressToBase64 } from '@/lib/file-storage';
+import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/api-auth';
 
-// Public-image upload endpoint: returns a permanent CDN URL backed by the
-// bucket's public-read configuration. Used for case studies, popups, and
+// Public-image upload endpoint: stores the bytes inline (gzip+base64) in the
+// database and returns a no-auth serve URL. Used for case studies, popups, and
 // profile images — not for patient documents (use /api/files/upload).
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -26,7 +26,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
  * POST /api/upload
- * Upload a file to Cloudflare R2 and return its public URL.
+ * Store a file inline in the database and return a public serve URL.
  * Returns: { url: string, filename: string }
  */
 export async function POST(req: NextRequest) {
@@ -57,28 +57,29 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = file.name.split('.').pop();
-    const filename = `${session.user.id}/${uuidv4()}.${ext}`;
+    const key = `${session.user.id}/${uuidv4()}.${ext}`;
 
-    const buffer = await file.arrayBuffer();
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const data = compressToBase64(buffer);
 
-    await r2.send(
-      new PutObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME!,
-        Key: filename,
-        Body: Buffer.from(buffer),
-        ContentType: file.type,
-        Metadata: {
-          'uploaded-by': session.user.id,
-          'upload-time': new Date().toISOString(),
-        },
-      })
-    );
+    // Store the bytes inline (gzip+base64) and serve via the no-auth redirector,
+    // which decompresses and streams them. Callers embed the returned URL
+    // directly in <img src> / content fields.
+    const record = await prisma.file.create({
+      data: {
+        filename: key,
+        originalName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        data,
+        url: '',
+      },
+    });
 
-    // Permanent, direct public URL — the bucket is publicly readable at
-    // R2_PUBLIC_URL, so this link never expires and needs no signing.
-    const url = r2PublicUrl(filename);
+    const url = `/api/files/serve-public/${record.id}`;
+    await prisma.file.update({ where: { id: record.id }, data: { url } });
 
-    return NextResponse.json({ url, filename }, { status: 200 });
+    return NextResponse.json({ url, filename: file.name }, { status: 200 });
   } catch (error) {
     console.error('Error uploading file:', error);
     const message = error instanceof Error ? error.message : 'Failed to upload file';

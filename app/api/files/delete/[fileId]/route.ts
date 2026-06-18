@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { prisma } from '@/lib/prisma';
-import { r2 } from '@/lib/r2';
 import { requireRole, requireAnyPatientAccess } from '@/lib/api-auth';
 
 export async function DELETE(
@@ -20,7 +18,7 @@ export async function DELETE(
 
   const fileRecord = await prisma.file.findUnique({
     where: { id: fileId },
-    select: { id: true, filename: true, patientId: true },
+    select: { id: true, patientId: true },
   });
 
   if (!fileRecord) {
@@ -39,13 +37,7 @@ export async function DELETE(
   });
   if (accessDenied) return accessDenied;
 
-  await r2.send(
-    new DeleteObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: fileRecord.filename,
-    })
-  );
-
+  // Deleting the row removes the inline file bytes too.
   await prisma.file.delete({ where: { id: fileId } });
 
   return NextResponse.json({ message: 'File deleted' });

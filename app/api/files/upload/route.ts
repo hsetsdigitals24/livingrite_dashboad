@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
-import { r2, r2PublicUrl } from '@/lib/r2';
+import { compressToBase64 } from '@/lib/file-storage';
 import { prisma } from '@/lib/prisma';
 import { requireRole, requireAnyPatientAccess } from '@/lib/api-auth';
 
@@ -23,9 +22,10 @@ const ALLOWED_MIME_TYPES = [
 
 /**
  * POST /api/files/upload
- * Upload a patient document to R2 and persist a File record. The stored `url`
- * points to an internal redirector (/api/files/serve/[id]) so the link never
- * expires — the redirector re-signs on each request.
+ * Upload a patient document and persist a File record with the gzip+base64
+ * encoded bytes stored inline in the database. The stored `url` points to an
+ * auth-gated redirector (/api/files/serve/[id]) that decompresses and streams
+ * the file on each request.
  *
  * Form fields:
  *   - file: required, the binary
@@ -73,49 +73,10 @@ export async function POST(req: NextRequest) {
     const key = `patient-files/${patientId}/${uuidv4()}-${safeName}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    const data = compressToBase64(buffer);
 
-    await r2.send(
-      new PutObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME!,
-        Key: key,
-        Body: buffer,
-        ContentType: file.type,
-      })
-    );
-
-    // When PATIENT_FILES_PUBLIC is enabled, store a permanent, direct public
-    // URL (the key is known up front, so no second write is needed).
-    //
-    // ⚠️ This bypasses the auth-gated /api/files/serve/[id] redirector, making
-    // patient documents readable by anyone with the URL. Set the flag to "false"
-    // to keep them private (served via the access-controlled redirector).
-    const patientFilesPublic = process.env.PATIENT_FILES_PUBLIC === 'true';
-
-    if (patientFilesPublic) {
-      const record = await prisma.file.create({
-        data: {
-          filename: key,
-          originalName: file.name,
-          mimeType: file.type,
-          size: file.size,
-          patientId,
-          url: r2PublicUrl(key),
-        },
-      });
-
-      return NextResponse.json(
-        {
-          id: record.id,
-          url: record.url,
-          filename: record.originalName,
-          size: record.size,
-          type: record.mimeType,
-        },
-        { status: 201 }
-      );
-    }
-
-    // Private path: store an auth-gated redirector URL that embeds the record id.
+    // Store the bytes inline (gzip+base64) and point the URL at the auth-gated
+    // redirector, which decompresses and streams the file on each request.
     const record = await prisma.file.create({
       data: {
         filename: key,
@@ -123,6 +84,7 @@ export async function POST(req: NextRequest) {
         mimeType: file.type,
         size: file.size,
         patientId,
+        data,
         url: '',
       },
     });

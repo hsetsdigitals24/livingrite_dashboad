@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { r2 } from '@/lib/r2';
-
-const SIGNED_URL_EXPIRY = 3600; // 1 hour
+import { prisma } from '@/lib/prisma';
+import { decompressFromBase64 } from '@/lib/file-storage';
 
 /**
  * GET /api/files/serve-public/[...key]
- * No auth — for assets that are referenced from public pages (popup images,
- * case-study covers, public profile images). Resolves the URL path to an R2
- * key, signs it, and 302s. Keeping this routed through us lets the underlying
- * bucket stay private; the URL still acts as the bearer.
+ * No auth — for assets referenced from public pages (popup images, case-study
+ * covers, public profile images). The first path segment is the File record id;
+ * the inline gzip+base64 bytes are decompressed and streamed.
  */
 export async function GET(
   _req: Request,
@@ -19,24 +15,27 @@ export async function GET(
   const { key: segments } = await params;
 
   if (!segments || segments.length === 0) {
-    return NextResponse.json({ error: 'Missing file key' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing file id' }, { status: 400 });
   }
 
-  const key = segments.map((s) => decodeURIComponent(s)).join('/');
+  const fileId = decodeURIComponent(segments[0]);
 
-  const signedUrl = await getSignedUrl(
-    r2,
-    new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: key,
-    }),
-    { expiresIn: SIGNED_URL_EXPIRY }
-  );
+  const fileRecord = await prisma.file.findUnique({
+    where: { id: fileId },
+    select: { data: true, mimeType: true },
+  });
 
-  // Cache the redirect at the edge for ~5 minutes. The destination signed URL
-  // is valid for an hour, so a 5-minute cache window guarantees followers won't
-  // hit an expired link. Use a shorter max-age than expiry to leave headroom.
-  const response = NextResponse.redirect(signedUrl, 302);
-  response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300');
-  return response;
+  if (!fileRecord || !fileRecord.data) {
+    return NextResponse.json({ error: 'File not found' }, { status: 404 });
+  }
+
+  const buffer = decompressFromBase64(fileRecord.data);
+
+  return new NextResponse(new Uint8Array(buffer), {
+    headers: {
+      'Content-Type': fileRecord.mimeType,
+      'Content-Length': String(buffer.length),
+      'Cache-Control': 'public, max-age=300, s-maxage=300',
+    },
+  });
 }

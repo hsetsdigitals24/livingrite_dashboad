@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
-import Cal, { getCalApi } from "@calcom/embed-react";
+import { InlineWidget, useCalendlyEventListener } from "react-calendly";
 import { useRouter } from "next/navigation";
+import { BOOKING_LINK } from "@/lib/booking-link";
+
+// Extract the invitee UUID from a Calendly invitee URI, e.g.
+// https://api.calendly.com/scheduled_events/XXX/invitees/<UUID>
+function getInviteeId(uri?: string): string | null {
+  if (!uri) return null;
+  const parts = uri.split("/").filter(Boolean);
+  return parts[parts.length - 1] || null;
+}
 
 interface Patient {
   id: string;
@@ -29,36 +38,14 @@ export default function BookingModal({
   );
   const [showCalendar, setShowCalendar] = useState(false);
 
-  useEffect(() => {
-    if (showCalendar && selectedPatient) {
-      (async function () {
-        const cal = await getCalApi({ namespace: "30min" });
-        cal("ui", {
-          cssVarsPerTheme: {
-            light: { "cal-brand": "#00b2ec" },
-            dark: { "cal-brand": "#00b2ec" },
-          },
-          hideEventTypeDetails: false,
-          layout: "month_view",
-        });
-
-        // Listen for successful booking
-        cal("on", {
-          action: "bookingSuccessful",
-          callback: async (data: any) => {
-            console.log("Booking successful:", data);
-
-            // Get booking ID and redirect to intake
-            const bookingId = data?.detail?.data?.booking.uid;
-
-            if (bookingId) {
-              router.push(`/client/booking/intake?bookingId=${bookingId}`);
-            }
-          },
-        });
-      })();
-    }
-  }, [showCalendar, selectedPatient, router]);
+  useCalendlyEventListener({
+    onEventScheduled: (e) => {
+      const bookingId = getInviteeId(e.data.payload.invitee?.uri);
+      if (bookingId) {
+        router.push(`/client/booking/intake?bookingId=${bookingId}`);
+      }
+    },
+  });
 
   if (!isOpen) return null;
 
@@ -152,16 +139,11 @@ export default function BookingModal({
                 </p>
               </div>
 
-              {/* Cal.com Calendar Embed */}
+              {/* Calendly Calendar Embed */}
               <div className="min-h-[600px] bg-gray-50 rounded-lg overflow-hidden">
-                <Cal
-                  namespace="30min"
-                  calLink="circle-of-three-technologies-obtkkx/30min"
-                  style={{ width: "100%", height: "100%", overflow: "scroll" }}
-                  config={{
-                    layout: "month_view",
-                    useSlotsViewOnSmallScreen: "true",
-                  }}
+                <InlineWidget
+                  url={BOOKING_LINK}
+                  styles={{ width: "100%", height: "100%", minHeight: "600px" }}
                 />
               </div>
 

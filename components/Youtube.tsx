@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Video from "./Video";
+import { BOOKING_LINK } from "@/lib/booking-link";
 
 const Youtube = () => {
   return (
@@ -83,7 +84,7 @@ const Youtube = () => {
             {/* CTA Button */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="https://cal.com/livingrite-care-health-services/30min"
+                href={BOOKING_LINK}
                 className="flex items-center justify-center gap-2"
               >
                 <button className="px-8 py-3 bg-gradient-to-r from-[#00b2ec] to-[#0088b8] hover:from-[#0088b8] hover:to-[#00b2ec] text-white font-semibold rounded-full shadow-lg shadow-[#00b2ec]/30 hover:shadow-xl hover:shadow-[#00b2ec]/50 transition-all duration-300 hover:scale-105">

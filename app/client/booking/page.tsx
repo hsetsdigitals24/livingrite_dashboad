@@ -1,47 +1,33 @@
 "use client";
 
-import Cal, { getCalApi } from "@calcom/embed-react";
-import { useEffect, useState } from "react";
+import { InlineWidget, useCalendlyEventListener } from "react-calendly";
 import { useRouter } from "next/navigation";
+import { BOOKING_LINK } from "@/lib/booking-link";
+
+// Extract the invitee UUID from a Calendly invitee URI, e.g.
+// https://api.calendly.com/scheduled_events/XXX/invitees/<UUID>
+function getInviteeId(uri?: string): string | null {
+  if (!uri) return null;
+  const parts = uri.split("/").filter(Boolean);
+  return parts[parts.length - 1] || null;
+}
 
 export default function Booking() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(false);
 
-  useEffect(() => {
-    (async function () {
-      const cal = await getCalApi({ namespace: "30min" });
-      cal("ui", {
-        cssVarsPerTheme: {
-          light: { "cal-brand": "#00b2ec" },
-          dark: { "cal-brand": "#00b2ec" },
-        },
-        hideEventTypeDetails: false,
-        layout: "month_view",
-      });
+  useCalendlyEventListener({
+    onEventScheduled: (e) => {
+      const bookingId = getInviteeId(e.data.payload.invitee?.uri);
+      if (bookingId) {
+        router.push(`/client/booking/intake?bookingId=${bookingId}`);
+      }
+    },
+  });
 
-      // Listen for successful booking
-      cal("on", {
-        action: "bookingSuccessful",
-        callback: async (data: any) => {
-          console.log("Booking successful:", data);
-
-          // Get email from data or from form
-          const bookingId = data?.detail?.data?.booking.uid;
-          
-          if (bookingId) {
-            router.push(`/client/booking/intake?bookingId=${bookingId}`); 
-          }
-        },
-      });
-    })();
-  }, []); 
-
-   return <Cal namespace="30min"
-    calLink="liviingritecare/30min"
-    style={{width:"100%",height:"100%",overflow:"scroll"}}
-    config={{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}}
-    
-    
-  />;
+  return (
+    <InlineWidget
+      url={BOOKING_LINK}
+      styles={{ width: "100%", height: "100%", minHeight: "700px" }}
+    />
+  );
 }

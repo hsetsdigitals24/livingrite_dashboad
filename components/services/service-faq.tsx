@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { BOOKING_LINK } from "@/lib/booking-link";
 
 interface ServiceFAQItem {
   question: string;
@@ -286,7 +287,7 @@ export function ServiceFAQ({ serviceType }: { serviceType: string }) {
               </p>
               <Link
                 target="_blank"
-                href="https://calendly.com/clientservices-livingritecare/30min"
+                href={BOOKING_LINK}
                 className="flex items-center w-fit mx-auto"
               >
                 <Button className="cursor-pointer bg-accent hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 group">

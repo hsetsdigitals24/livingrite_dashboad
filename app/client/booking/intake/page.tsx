@@ -37,20 +37,31 @@ function IntakeFormContent() {
   }, [bookingId]);
 
   const fetchBooking = async () => {
-    try {
-      const response = await fetch(`/api/bookings/${bookingId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setBooking(data);
-        if (data.intakeFormData && Object.keys(data.intakeFormData).length > 0) {
-          setIntakeData(data.intakeFormData);
+    // The Calendly webhook creates the booking record asynchronously, so the
+    // record may not exist for a moment after the redirect. Retry a few times
+    // before showing an error.
+    const maxAttempts = 6;
+    const delayMs = 2000;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await fetch(`/api/bookings/${bookingId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setBooking(data);
+          if (data.intakeFormData && Object.keys(data.intakeFormData).length > 0) {
+            setIntakeData(data.intakeFormData);
+          }
+          setError("");
+          return;
         }
-      } else {
-        setError("Booking not found");
+      } catch {
+        // Network error — fall through to retry.
       }
-    } catch (err) {
-      setError("Failed to fetch booking details");
+      if (attempt < maxAttempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
     }
+    setError("Booking not found");
   };
 
   const handleChange = (field: keyof IntakeForm, value: string) => {

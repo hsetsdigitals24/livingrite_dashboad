@@ -161,7 +161,7 @@ export default function SignIn() {
                     href="/auth/reset-password"
                     className="text-xs text-[#00adef] hover:text-[#0091c4] transition-colors font-medium"
                   >
-                    Forgot?
+                    Forgot Password?
                   </Link>
                 </div>
                 <div className="relative group">
